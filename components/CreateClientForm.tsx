@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { supabaseBrowser } from '@/lib/supabaseBrowser'
+import { supabaseBrowser } from '@/lib/supabasebrowser'
 
 export function CreateClientForm() {
   const [email, setEmail] = useState('')

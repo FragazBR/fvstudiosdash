@@ -1,9 +1,9 @@
-import { supabaseServer } from "@/lib/supabaseServer"
+import { supabaseServer } from "@/lib/supabaseserver"
 import { redirect } from "next/navigation"
 import { PerformanceMetrics } from "@/components/performancemetrics"
 import { CampaignChart } from "@/components/campaignchart"
-import { CreateClientForm } from "@/components/CreateClientForm"
-import { ListClients } from "@/components/ListClients"
+import { CreateClientForm } from "@/components/createclientform"
+import { ListClients } from "@/components/listclients"
 
 export default async function AdminPage() {
   const supabase = await supabaseServer()

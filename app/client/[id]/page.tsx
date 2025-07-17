@@ -1,4 +1,4 @@
-import { supabaseServer } from "@/lib/supabaseServer"
+import { supabaseServer } from "@/lib/supabaseserver"
 import { redirect } from "next/navigation"
 import { PerformanceMetrics } from "@/components/performancemetrics"
 import { CampaignChart } from "@/components/campaignchart"
