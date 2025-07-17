@@ -1,9 +1,8 @@
-
 'use client'
 
 import { useState } from 'react'
-import { supabaseBrowser } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
+import { supabaseBrowser } from '@/lib/supabaseBrowser'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -16,31 +15,43 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    console.log("🚀 Iniciando login...")
+
+    const { data, error: loginError } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
-    if (error) {
-      setError(error.message)
+    if (loginError) {
+      console.error("❌ Erro no login:", loginError.message)
+      setError(loginError.message)
       return
     }
 
-    const { data: profile } = await supabase
-      .from('users')
+    console.log("✅ Login efetuado:", data)
+
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
       .select('role, id')
-      .eq('id', data.user?.id)
+      .eq('id', data.user.id)
       .single()
 
-    if (!profile) {
+    console.log("🧾 Profile carregado:", profile)
+
+    if (!profile || profileError) {
+      console.error("❌ Erro ao buscar perfil:", profileError)
       setError('Usuário não encontrado.')
       return
     }
 
     if (profile.role === 'agency') {
+      console.log("📍 Redirecionando para /admin")
       router.push('/admin')
+      console.log("⏭️ Após router.push('/admin')")
     } else if (profile.role === 'client') {
+      console.log(`📍 Redirecionando para /client/${profile.id}`)
       router.push(`/client/${profile.id}`)
+      console.log("⏭️ Após router.push('/client/...')")
     } else {
       setError('Permissão inválida.')
     }

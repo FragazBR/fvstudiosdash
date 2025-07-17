@@ -1,13 +1,21 @@
-import { CampaignChart } from "@/components/CampaignChart"
-import { PerformanceMetrics } from "@/components/PerformanceMetrics"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { supabaseServer } from "@/lib/supabaseServer"
 import { redirect } from "next/navigation"
+import { PerformanceMetrics } from "@/components/PerformanceMetrics"
+import { CampaignChart } from "@/components/CampaignChart"
 
 export default async function ClientDashboard({ params }: { params: { id: string } }) {
-  const session = await getServerSession(authOptions)
+  const supabase = await supabaseServer()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  if (!session || session.user.role !== "client") {
+  if (!user) redirect("/login")
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, role")
+    .eq("id", user.id)
+    .single()
+
+  if (!profile || profile.role !== "client" || profile.id.toString() !== params.id) {
     redirect("/unauthorized")
   }
 
