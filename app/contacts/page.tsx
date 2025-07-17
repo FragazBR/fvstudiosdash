@@ -1,4 +1,4 @@
-import { supabaseServer } from "@/lib/supabaseserver"
+import { supabaseServer } from "@/lib/supabaseServer"
 import { redirect } from "next/navigation"
 import ContactsPage from "@/components/contacts-page"
 
