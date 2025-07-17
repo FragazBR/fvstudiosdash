@@ -1,7 +1,7 @@
 import { supabaseServer } from "@/lib/supabaseserver"
 import { redirect } from "next/navigation"
-import { PerformanceMetrics } from "@/components/performancemetrics"
-import { CampaignChart } from "@/components/campaignchart"
+import { PerformanceMetrics } from "@/components/PerformanceMetrics"
+import { CampaignChart } from "@/components/CampaignChart"
 
 export default async function ClientDashboard({ params }: { params: { id: string } }) {
   const supabase = await supabaseServer()
