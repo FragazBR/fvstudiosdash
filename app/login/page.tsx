@@ -15,7 +15,7 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
 
-    console.log("🚀 Iniciando login...")
+    console.log('🚀 Iniciando login...')
 
     const { data, error: loginError } = await supabase.auth.signInWithPassword({
       email,
@@ -23,12 +23,12 @@ export default function LoginPage() {
     })
 
     if (loginError) {
-      console.error("❌ Erro no login:", loginError.message)
+      console.error('❌ Erro no login:', loginError.message)
       setError(loginError.message)
       return
     }
 
-    console.log("✅ Login efetuado:", data)
+    console.log('✅ Login efetuado:', data)
 
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
@@ -36,22 +36,20 @@ export default function LoginPage() {
       .eq('id', data.user.id)
       .single()
 
-    console.log("🧾 Profile carregado:", profile)
-
-    if (!profile || profileError) {
-      console.error("❌ Erro ao buscar perfil:", profileError)
-      setError('Usuário não encontrado.')
+    if (profileError || !profile) {
+      console.error('❌ Erro ao buscar perfil:', profileError)
+      setError(profileError?.message || 'Usuário não encontrado.')
       return
     }
 
+    console.log('🧾 Perfil:', profile)
+
     if (profile.role === 'agency') {
-      console.log("📍 Redirecionando para /admin")
+      console.log('📍 Redirecionando para /admin')
       router.push('/admin')
-      console.log("⏭️ Após router.push('/admin')")
     } else if (profile.role === 'client') {
       console.log(`📍 Redirecionando para /client/${profile.id}`)
       router.push(`/client/${profile.id}`)
-      console.log("⏭️ Após router.push('/client/...')")
     } else {
       setError('Permissão inválida.')
     }

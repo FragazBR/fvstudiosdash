@@ -7,17 +7,21 @@ import { ListClients } from "@/components/ListClients"
 
 export default async function AdminPage() {
   const supabase = await supabaseServer()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
 
-  if (!user) redirect("/login")
+  if (userError || !user) {
+    console.error("Erro ao obter usuário:", userError)
+    redirect("/login")
+  }
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("role")
     .eq("id", user.id)
     .single()
 
-  if (!profile || profile.role !== "agency") {
+  if (profileError || !profile || profile.role !== "agency") {
+    console.error("Acesso negado para admin:", profileError)
     redirect("/unauthorized")
   }
 
