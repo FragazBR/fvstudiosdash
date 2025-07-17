@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbo",
     "build": "next build",
+    "build:trace": "set NODE_OPTIONS=--trace-uncaught && next build",
     "start": "next start",
     "lint": "next lint"
   },

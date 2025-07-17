@@ -2,7 +2,7 @@ import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { NextAuthOptions } from "next-auth"
 
-export const authOptions: NextAuthOptions = {
+const handler = NextAuth({
   providers: [
     CredentialsProvider({
       name: "Login",
@@ -13,7 +13,6 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials.password) return null
 
-        // Simulação de login fixo (substituir com validação real)
         if (credentials.email === "admin@agencia.com" && credentials.password === "admin123") {
           return { id: "1", name: "Agência", email: credentials.email, role: "agency" }
         }
@@ -23,8 +22,8 @@ export const authOptions: NextAuthOptions = {
         }
 
         return null
-      }
-    })
+      },
+    }),
   ],
   callbacks: {
     async jwt({ token, user }) {
@@ -36,16 +35,14 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       session.user.role = token.role as string
       return session
-    }
+    },
   },
   pages: {
-    signIn: "/login"
+    signIn: "/login",
   },
   session: {
-    strategy: "jwt"
-  }
-}
-
-const handler = NextAuth(authOptions)
+    strategy: "jwt",
+  },
+} satisfies NextAuthOptions)
 
 export { handler as GET, handler as POST }

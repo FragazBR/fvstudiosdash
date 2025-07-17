@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabaseBrowser } from '@/lib/supabasebrowser'
+import { supabaseBrowser } from '@/lib/supabaseBrowser'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
