@@ -3,7 +3,8 @@ import { redirect } from "next/navigation"
 import { PerformanceMetrics } from "@/components/PerformanceMetrics"
 import { CampaignChart } from "@/components/CampaignChart"
 import { CreateClientForm } from "@/components/CreateClientForm"
-import { ListClients } from "@/components/ListClients"
+import ListClients from '@/components/ListClients'
+
 
 export default async function AdminPage() {
   const supabase = await supabaseServer()
