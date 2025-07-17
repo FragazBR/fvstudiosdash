@@ -3,27 +3,34 @@ import { redirect } from "next/navigation"
 import { PerformanceMetrics } from "@/components/PerformanceMetrics"
 import { CampaignChart } from "@/components/CampaignChart"
 import { CreateClientForm } from "@/components/CreateClientForm"
-import ListClients from '@/components/ListClients'
-
+import ListClients from "@/components/ListClients"
 
 export default async function AdminPage() {
-  const supabase = await supabaseServer()
-  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  "use server"
 
-  if (userError || !user) {
+  const supabase = await supabaseServer()
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser()
+
+  if (!user || userError) {
     console.error("Erro ao obter usuário:", userError)
-    redirect("/login")
+    return redirect("/login")
   }
 
-  const { data: profile, error: profileError } = await supabase
+  const {
+    data: profile,
+    error: profileError,
+  } = await supabase
     .from("profiles")
     .select("role")
     .eq("id", user.id)
     .single()
 
-  if (profileError || !profile || profile.role !== "agency") {
+  if (!profile || profileError || profile.role !== "agency") {
     console.error("Acesso negado para admin:", profileError)
-    redirect("/unauthorized")
+    return redirect("/unauthorized")
   }
 
   return (

@@ -3,20 +3,41 @@ import { redirect } from "next/navigation"
 import { PerformanceMetrics } from "@/components/PerformanceMetrics"
 import { CampaignChart } from "@/components/CampaignChart"
 
-export default async function ClientDashboard({ params }: { params: { id: string } }) {
+export default async function ClientDashboard({
+  params,
+}: {
+  params: { id: string }
+}) {
+  "use server"
+
   const supabase = await supabaseServer()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser()
 
-  if (!user) redirect("/login")
+  if (!user || userError) {
+    console.error("Usuário não autenticado:", userError)
+    return redirect("/login")
+  }
 
-  const { data: profile } = await supabase
+  const {
+    data: profile,
+    error: profileError,
+  } = await supabase
     .from("profiles")
     .select("id, role")
     .eq("id", user.id)
     .single()
 
-  if (!profile || profile.role !== "client" || profile.id.toString() !== params.id) {
-    redirect("/unauthorized")
+  if (
+    !profile ||
+    profileError ||
+    profile.role !== "client" ||
+    profile.id.toString() !== params.id
+  ) {
+    console.error("Acesso não autorizado:", profileError)
+    return redirect("/unauthorized")
   }
 
   return (

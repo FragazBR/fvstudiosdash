@@ -24,7 +24,7 @@ export default function LoginPage() {
 
     if (loginError) {
       console.error('❌ Erro no login:', loginError.message)
-      setError(loginError.message)
+      setError('Credenciais inválidas.')
       return
     }
 
@@ -46,10 +46,10 @@ export default function LoginPage() {
 
     if (profile.role === 'agency') {
       console.log('📍 Redirecionando para /admin')
-      router.push('/admin')
+      setTimeout(() => router.push('/admin'), 50)
     } else if (profile.role === 'client') {
       console.log(`📍 Redirecionando para /client/${profile.id}`)
-      router.push(`/client/${profile.id}`)
+      setTimeout(() => router.push(`/client/${profile.id}`), 50)
     } else {
       setError('Permissão inválida.')
     }
