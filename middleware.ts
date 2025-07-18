@@ -5,66 +5,131 @@ import { type Database } from './lib/supabase.types'
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
+  
+  // Verificar se há cookies corrompidos e limpá-los
+  const cookieString = req.headers.get('cookie') || ''
+  if (cookieString.includes('base64-eyJ') || cookieString.includes('"base64-')) {
+    const response = NextResponse.redirect(new URL('/login', req.url))
+    
+    // Limpar todos os cookies relacionados ao Supabase
+    const cookieNames = [
+      'supabase-auth-token',
+      'sb-access-token',
+      'sb-refresh-token',
+      'sb-auth-token'
+    ]
+    
+    cookieNames.forEach(name => {
+      response.cookies.delete(name)
+    })
+    
+    return response
+  }
+
   const supabase = createMiddlewareClient<Database>({ req, res })
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-  const path = req.nextUrl.pathname;
-  // Só redireciona para login se não estiver já em /login
-  if (!session && path !== '/login') {
-    return NextResponse.redirect(new URL('/login', req.url))
-  }
-  if (!session && path === '/login') {
-    return res;
-  }
+  try {
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+    
+    if (sessionError) {
+      console.error('Session error:', sessionError)
+      // Se há erro na sessão, limpar cookies e redirecionar para login
+      const response = NextResponse.redirect(new URL('/login', req.url))
+      response.cookies.delete('supabase-auth-token')
+      response.cookies.delete('sb-auth-token')
+      return response
+    }
 
-  // Busca perfil do usuário
-  const {
-    data: profile,
-    error: profileError,
-  }: { data: { id: string; role: string; agency_id?: string } | null; error: any } = await supabase
-    .from('profiles')
-    .select('id, role, agency_id')
-    .eq('id', session.user.id)
-    .single();
+    const path = req.nextUrl.pathname
 
-  if (!profile || profileError) {
-    // Permite acesso à página de login ou home mesmo sem perfil
-    if (['/login', '/'].includes(path)) return res;
-    return NextResponse.redirect(new URL('/login', req.url));
-  }
+    // Rotas públicas que não requerem autenticação
+    const publicRoutes = ['/login', '/signup', '/']
+    
+    if (publicRoutes.includes(path)) {
+      // Se o usuário está autenticado e tenta acessar página de login, redireciona para dashboard
+      if (session) {
+        return NextResponse.redirect(new URL('/dashboard', req.url))
+      }
+      return res
+    }
 
-  const { role, id } = profile;
+    // Se não há sessão e está tentando acessar rota protegida, redireciona para login
+    if (!session) {
+      return NextResponse.redirect(new URL('/login', req.url))
+    }
 
-  // Redirecionamento pós-login
-  if (path === '/login') {
-    if (role === 'admin') return NextResponse.redirect(new URL('/admin/dashboard', req.url))
-    if (role === 'agency') return NextResponse.redirect(new URL('/dashboard', req.url))
-    if (role === 'client') return NextResponse.redirect(new URL(`/client/${id}`, req.url))
-    if (role === 'personal') return NextResponse.redirect(new URL('/personal/dashboard', req.url))
-  }
+    // Buscar perfil do usuário para verificar role
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, role, agency_id')
+      .eq('id', session.user.id)
+      .single()
 
-  // Proteção de rotas
-  if (path.startsWith('/admin') && role !== 'admin') {
-    return NextResponse.redirect(new URL('/unauthorized', req.url))
-  }
-  // /dashboard: agency e user
-  if (path.startsWith('/dashboard') && !['agency', 'user'].includes(role)) {
-    return NextResponse.redirect(new URL('/unauthorized', req.url))
-  }
-  // /client/[id]: apenas o próprio client
-  if (path.startsWith('/client')) {
-    const clientId = path.split('/')[2];
-    if (role !== 'client' || clientId !== id) {
+    let userProfile = profile
+
+    if (!profile || profileError) {
+      // Se não tem perfil, cria um básico para usuário personal
+      const { data: newProfile } = await supabase
+        .from('profiles')
+        .insert({
+          id: session.user.id,
+          email: session.user.email,
+          role: 'personal',
+        })
+        .select('id, role, agency_id')
+        .single()
+
+      if (!newProfile) {
+        // Se falhou em criar perfil, permite acesso limitado
+        return res
+      }
+
+      userProfile = newProfile
+    }
+
+    if (!userProfile) {
+      return NextResponse.redirect(new URL('/login', req.url))
+    }
+
+    const { role, id } = userProfile
+
+    // Verificações de role para rotas específicas
+    if (path.startsWith('/admin') && role !== 'admin') {
       return NextResponse.redirect(new URL('/unauthorized', req.url))
     }
-  }
-  if (path.startsWith('/personal') && role !== 'personal') {
-    return NextResponse.redirect(new URL('/unauthorized', req.url))
-  }
+    
+    // /dashboard: agency e user
+    if (path.startsWith('/dashboard') && !['agency', 'user'].includes(role || '')) {
+      return NextResponse.redirect(new URL('/unauthorized', req.url))
+    }
+    
+    // /user: apenas user
+    if (path.startsWith('/user') && role !== 'user') {
+      return NextResponse.redirect(new URL('/unauthorized', req.url))
+    }
+    
+    // /client/[id]: apenas o próprio client
+    if (path.startsWith('/client')) {
+      const clientId = path.split('/')[2]
+      if (role !== 'client' || clientId !== id) {
+        return NextResponse.redirect(new URL('/unauthorized', req.url))
+      }
+    }
+    
+    if (path.startsWith('/personal') && role !== 'personal') {
+      return NextResponse.redirect(new URL('/unauthorized', req.url))
+    }
 
-  return res
+    return res
+
+  } catch (error) {
+    console.error('Middleware error:', error)
+    // Em caso de erro, limpar cookies e redirecionar para login
+    const response = NextResponse.redirect(new URL('/login', req.url))
+    response.cookies.delete('supabase-auth-token')
+    response.cookies.delete('sb-auth-token')
+    return response
+  }
 }
 
 export const config = {
