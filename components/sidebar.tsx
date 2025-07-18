@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Logo } from "@/components/ui/logo";
+// import { Logo } from "@/components/ui/logo";
 import {
   Home,
   CheckSquare,
@@ -22,7 +22,7 @@ import {
 import { useState } from "react";
 import { SearchModal } from "./search-modal";
 import { useTheme } from "next-themes";
-import { useUser } from "@/hooks/useUser";
+// import { useUser } from "@/hooks/useUser";
 
 interface SidebarProps {
   open: boolean;
@@ -39,7 +39,9 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   const [showAllProjects, setShowAllProjects] = useState(false);
   const [showAllMessage, setShowAllMessage] = useState(false);
   const { theme, resolvedTheme } = useTheme();
-  const { user, loading } = useUser();
+  // const { user, loading } = useUser();
+  const user = null;
+  const loading = false;
 
   const visiableProjects = showAllProjects ? projects : projects.slice(0, 3);
   const visiableMessages = showAllMessage ? messages : messages.slice(0, 3);
@@ -61,7 +63,8 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
       >
         <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
           <Link href="/" className="flex items-center space-x-2">
-            <Logo className="h-8 w-auto" />
+            {/* <Logo className="h-8 w-auto" /> */}
+            <div className="text-lg font-bold text-gray-900">FVSTUDIOS</div>
           </Link>
 
           <Button
@@ -81,15 +84,15 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
               <>
                 <NavItem href="/" icon={Home}>Home</NavItem>
                 {/* Admin */}
-                {user?.role === "admin" && (
+                {/* user?.role === "admin" && (
                   <>
                     <NavItem href="/admin" icon={LayoutGrid}>Admin Panel</NavItem>
                     <NavItem href="/projects" icon={FileText}>Projects</NavItem>
                     <NavItem href="/contacts" icon={ContactRound}>Contacts</NavItem>
                   </>
-                )}
+                )}*/
                 {/* Agency */}
-                {user?.role === "agency" && (
+                {/* user?.role === "agency" && (
                   <>
                     <NavItem href="/dashboard" icon={LayoutGrid}>Agency Dashboard</NavItem>
                     <NavItem href="/projects" icon={FileText}>Projects</NavItem>
@@ -99,24 +102,24 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
                     <NavItem href="/contacts" icon={ContactRound}>Contacts</NavItem>
                     <NavItem href="/notifications" icon={Bell}>Notifications</NavItem>
                   </>
-                )}
+                )}*/
                 {/* Client */}
-                {user?.role === "client" && (
+                {/* user?.role === "client" && (
                   <>
                     <NavItem href={`/client/${user.id}`} icon={LayoutGrid}>Client Dashboard</NavItem>
                     <NavItem href="/projects" icon={FileText}>Projects</NavItem>
                     <NavItem href="/calendar" icon={Calendar}>Calendar</NavItem>
                     <NavItem href="/contacts" icon={ContactRound}>Contacts</NavItem>
                   </>
-                )}
+                )}*/
                 {/* Personal/Free */}
-                {user?.role === "personal" && (
+                {/* user?.role === "personal" && (
                   <>
                     <NavItem href="/personal/dashboard" icon={LayoutGrid}>Personal Dashboard</NavItem>
                     <NavItem href="/kanban" icon={LayoutGrid}>Kanban desk</NavItem>
                     <NavItem href="/calendar" icon={Calendar}>Calendar</NavItem>
                   </>
-                )}
+                )}*/
                 {/* Search (todos) */}
                 <NavItem
                   href="#"
