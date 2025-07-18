@@ -1,3 +1,4 @@
+import "../i18n";
 import type React from "react";
 import "../i18n";
 import type { Metadata } from "next";

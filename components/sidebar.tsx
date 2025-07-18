@@ -35,7 +35,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [showAllProjects, setShowAllProjects] = useState(false);
   const [showAllMessage, setShowAllMessage] = useState(false);
-  const { theme } = useTheme();
+  const { theme, resolvedTheme } = useTheme();
 
   const visiableProjects = showAllProjects ? projects : projects.slice(0, 3);
   const visiableMessages = showAllMessage ? messages : messages.slice(0, 3);
@@ -57,16 +57,21 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
       >
         <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
           <Link href="/" className="flex items-center space-x-2">
-            <img
-              src={theme === "dark" ? "/logo-c-white.png" : "/logo-c.png"}
-              alt="FVSTUDIOS"
-              className="w-8 h-8 object-contain"
-            />
-            <img
-              src={theme === "dark" ? "/Logotipo-FVstudios-Branco.png" : "/Logotipo-FVstudios-Preto.png"}
-              alt="FVSTUDIOS"
-              className="h-5 object-contain max-w-[120px]"
-            />
+            {/* Only render logos if theme is resolved to avoid hydration mismatch */}
+            {typeof window === "undefined" || !resolvedTheme ? null : (
+              <>
+                <img
+                  src={resolvedTheme === "dark" ? "/logo-c-white.png" : "/logo-c.png"}
+                  alt="FVSTUDIOS"
+                  className="w-8 h-8 object-contain"
+                />
+                <img
+                  src={resolvedTheme === "dark" ? "/Logotipo-FVstudios-Branco.png" : "/Logotipo-FVstudios-Preto.png"}
+                  alt="FVSTUDIOS"
+                  className="h-5 object-contain max-w-[120px]"
+                />
+              </>
+            )}
           </Link>
 
           <Button

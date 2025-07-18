@@ -34,6 +34,9 @@ export default function LoginPage() {
       .eq('id', data.user.id)
       .single()
 
+    // Log para depuração
+    console.log('profile', profile, 'profileError', profileError, 'user', data.user)
+
     if (profileError || !profile) {
       setError(t('login.profileFetchError'))
       return
