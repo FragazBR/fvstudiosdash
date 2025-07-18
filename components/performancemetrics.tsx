@@ -1,5 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
+// Arquivo renomeado temporariamente para forçar git a reconhecer case-sensitive
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+
 type Metric = {
   label: string
   value: string

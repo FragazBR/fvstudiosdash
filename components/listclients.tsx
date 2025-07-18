@@ -1,5 +1,8 @@
 'use client'
 
+// Arquivo renomeado temporariamente para forçar git a reconhecer case-sensitive
+'use client'
+
 import React from 'react'
 
 interface Client {
