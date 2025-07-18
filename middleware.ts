@@ -43,11 +43,16 @@ export async function middleware(req: NextRequest) {
   if (path.startsWith('/admin') && role !== 'admin') {
     return NextResponse.redirect(new URL('/unauthorized', req.url))
   }
-  if (path.startsWith('/dashboard') && role !== 'agency') {
+  // /dashboard: agency e user
+  if (path.startsWith('/dashboard') && !['agency', 'user'].includes(role)) {
     return NextResponse.redirect(new URL('/unauthorized', req.url))
   }
-  if (path.startsWith('/client') && role !== 'client') {
-    return NextResponse.redirect(new URL('/unauthorized', req.url))
+  // /client/[id]: apenas o próprio client
+  if (path.startsWith('/client')) {
+    const clientId = path.split('/')[2];
+    if (role !== 'client' || clientId !== id) {
+      return NextResponse.redirect(new URL('/unauthorized', req.url))
+    }
   }
   if (path.startsWith('/personal') && role !== 'personal') {
     return NextResponse.redirect(new URL('/unauthorized', req.url))
