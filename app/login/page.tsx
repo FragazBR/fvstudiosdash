@@ -57,10 +57,10 @@ export default function LoginPage() {
         onSubmit={handleLogin}
         className="bg-white p-6 rounded-lg shadow-md w-full max-w-sm space-y-4"
       >
-        <h1 className="text-xl font-bold">{t('login.title')}</h1>
+        <h1 className="text-xl font-bold">Login</h1>
         <input
           type="email"
-          placeholder={t('login.emailPlaceholder')}
+          placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="w-full border p-2 rounded"
@@ -68,7 +68,7 @@ export default function LoginPage() {
         />
         <input
           type="password"
-          placeholder={t('login.passwordPlaceholder')}
+          placeholder="Senha"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="w-full border p-2 rounded"
@@ -79,7 +79,7 @@ export default function LoginPage() {
           type="submit"
           className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition"
         >
-          {t('login.button')}
+          Login
         </button>
       </form>
     </div>
