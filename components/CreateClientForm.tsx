@@ -17,25 +17,32 @@ export function CreateClientForm() {
     setLoading(true)
     setMessage('')
 
-    const { data, error } = await supabase.auth.admin.createUser({
+    const {
+      data: created,
+      error: createError
+    } = await supabase.auth.admin.createUser({
       email,
       password,
       email_confirm: true,
     })
 
-    if (error) {
-      setMessage(`Erro: ${error.message}`)
+    if (createError) {
+      setMessage(`Erro: ${createError.message}`)
       setLoading(false)
       return
     }
 
-    // Opcional: atualizar campo "name" se desejado
-    if (name) {
-      await supabase
-        .from('profiles')
-        .update({ name })
-        .eq('id', data.user?.id)
-    }
+    const {
+      data: { user: currentUser },
+    } = await supabase.auth.getUser()
+
+    await supabase
+      .from('profiles')
+      .update({
+        name,
+        agency_id: currentUser?.id ?? null
+      })
+      .eq('id', created.user?.id)
 
     setMessage('Cliente criado com sucesso!')
     setEmail('')

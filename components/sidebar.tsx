@@ -124,14 +124,14 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
           open ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        {/* Sidebar header - fixed at top */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
-          <Link href="/" className="flex items-center">
-            <div className="w-8 h-8 rounded-md bg-blue-600 flex items-center justify-center text-white font-bold mr-2">
-              T
-            </div>
-            <span className="text-xl font-semibold">Taskora</span>
-          </Link>
+{/* Sidebar header - fixed at top */}
+<div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
+  <Link href="/" className="flex items-center space-x-2">
+    <img src="/logo-c.png" alt="Logo ícone" className="w-8 h-8 rounded-md object-contain" />
+    <img src="/Logotipo-FVstudios-Preto.png" alt="FVStudios" className="h-6 object-contain" />
+  </Link>
+</div>
+
           <Button
             variant="ghost"
             size="icon"
