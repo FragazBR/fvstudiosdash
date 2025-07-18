@@ -86,7 +86,6 @@ export default function DashboardClient({ clientId }: DashboardClientProps) {
             <BarChart data={chartData.bar} />
           </div>
         </div>
-
       </div>
     </div>
   );
