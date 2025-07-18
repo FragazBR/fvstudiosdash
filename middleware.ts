@@ -30,8 +30,8 @@ export async function middleware(req: NextRequest) {
     .single();
 
   if (!profile || profileError) {
-    // Permite acesso à página de login mesmo sem perfil
-    if (path === '/login') return res;
+    // Permite acesso à página de login ou home mesmo sem perfil
+    if (['/login', '/'].includes(path)) return res;
     return NextResponse.redirect(new URL('/login', req.url));
   }
 
