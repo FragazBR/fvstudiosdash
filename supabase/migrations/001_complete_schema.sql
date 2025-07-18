@@ -2,11 +2,25 @@
 -- FVSTUDIOS DASHBOARD - SCHEMA COMPLETO
 -- ============================================================================
 
--- Tipos enum para roles
-CREATE TYPE user_role AS ENUM ('admin', 'agency', 'user', 'client', 'personal');
-CREATE TYPE project_status AS ENUM ('planning', 'progress', 'completed', 'on_hold', 'cancelled');
-CREATE TYPE task_status AS ENUM ('todo', 'in_progress', 'review', 'done');
-CREATE TYPE task_priority AS ENUM ('low', 'medium', 'high', 'urgent');
+-- Tipos enum para roles (com verificação se já existem)
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_role') THEN
+        CREATE TYPE user_role AS ENUM ('admin', 'agency', 'user', 'client', 'personal');
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'project_status') THEN
+        CREATE TYPE project_status AS ENUM ('planning', 'progress', 'completed', 'on_hold', 'cancelled');
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'task_status') THEN
+        CREATE TYPE task_status AS ENUM ('todo', 'in_progress', 'review', 'done');
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'task_priority') THEN
+        CREATE TYPE task_priority AS ENUM ('low', 'medium', 'high', 'urgent');
+    END IF;
+END $$;
 
 -- ============================================================================
 -- TABELA AGENCIES

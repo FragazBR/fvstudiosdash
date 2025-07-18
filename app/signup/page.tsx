@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabaseBrowser'
 
@@ -11,8 +11,27 @@ export default function SignupPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [hasSession, setHasSession] = useState(false)
   const router = useRouter()
   const supabase = supabaseBrowser()
+
+  useEffect(() => {
+    checkSession()
+  }, [])
+
+  const checkSession = async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session) {
+      setHasSession(true)
+      setError('Você já está logado. Faça logout primeiro para criar uma nova conta.')
+    }
+  }
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    setHasSession(false)
+    setError('')
+  }
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -84,14 +103,45 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <form
-        onSubmit={handleSignup}
-        className="bg-white p-6 rounded-lg shadow-md w-full max-w-sm space-y-4"
-      >
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">FVSTUDIOS</h1>
-          <p className="text-gray-600">Criar uma nova conta</p>
+      {hasSession ? (
+        // Se tem sessão ativa, mostrar opção de logout
+        <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-sm space-y-4">
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-bold text-gray-900">FVSTUDIOS</h1>
+            <p className="text-gray-600">Você já está logado</p>
+          </div>
+          
+          <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-md text-sm">
+            Para criar uma nova conta, você precisa fazer logout primeiro.
+          </div>
+          
+          <button
+            onClick={handleLogout}
+            className="w-full bg-red-600 text-white py-3 rounded-md hover:bg-red-700 transition"
+          >
+            Fazer Logout
+          </button>
+          
+          <div className="text-center mt-4">
+            <button
+              type="button"
+              onClick={() => router.push('/login')}
+              className="text-blue-600 hover:underline text-sm"
+            >
+              Ir para Login
+            </button>
+          </div>
         </div>
+      ) : (
+        // Formulário normal de signup
+        <form
+          onSubmit={handleSignup}
+          className="bg-white p-6 rounded-lg shadow-md w-full max-w-sm space-y-4"
+        >
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-bold text-gray-900">FVSTUDIOS</h1>
+            <p className="text-gray-600">Criar uma nova conta</p>
+          </div>
         
         <input
           type="text"
@@ -150,7 +200,8 @@ export default function SignupPage() {
             </button>
           </p>
         </div>
-      </form>
+        </form>
+      )}
     </div>
   )
 }

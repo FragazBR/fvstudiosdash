@@ -3,10 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabaseBrowser'
-import { useTranslation } from 'react-i18next'
 
 export default function LoginPage() {
-  const { t } = useTranslation();
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -26,7 +24,7 @@ export default function LoginPage() {
       })
 
       if (loginError || !data.user) {
-        setError(t('login.invalidCredentials'))
+        setError('Email ou senha inválidos')
         return
       }
 
@@ -46,6 +44,7 @@ export default function LoginPage() {
           .insert({
             id: data.user.id,
             email: data.user.email,
+            name: data.user.email?.split('@')[0] || 'Usuário',
             role: 'personal',
           })
           .select('role, id')

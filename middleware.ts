@@ -46,9 +46,35 @@ export async function middleware(req: NextRequest) {
     const publicRoutes = ['/login', '/signup', '/']
     
     if (publicRoutes.includes(path)) {
-      // Se o usuário está autenticado e tenta acessar página de login, redireciona para dashboard
+      // Se o usuário está autenticado e tenta acessar página de login, busca o perfil para redirecionar corretamente
       if (session) {
-        return NextResponse.redirect(new URL('/dashboard', req.url))
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id, role')
+          .eq('id', session.user.id)
+          .single()
+        
+        if (profile) {
+          const { role, id } = profile
+          let redirectPath = '/dashboard' // default
+          
+          if (role === 'admin') {
+            redirectPath = '/admin'
+          } else if (role === 'agency') {
+            redirectPath = '/dashboard'
+          } else if (role === 'user') {
+            redirectPath = '/user/dashboard'
+          } else if (role === 'client') {
+            redirectPath = `/client/${id}`
+          } else if (role === 'personal') {
+            redirectPath = '/personal/dashboard'
+          }
+          
+          return NextResponse.redirect(new URL(redirectPath, req.url))
+        } else {
+          // Se não tem perfil, redireciona para dashboard genérico
+          return NextResponse.redirect(new URL('/dashboard', req.url))
+        }
       }
       return res
     }
