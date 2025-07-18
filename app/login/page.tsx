@@ -39,6 +39,7 @@ export default function LoginPage() {
       console.log('Login success:', { profile, user: data.user })
 
       if (profileError || !profile) {
+        console.log('Perfil não encontrado, criando novo perfil...')
         // Se não tem perfil, cria um básico
         const { data: newProfile } = await supabase
           .from('profiles')
@@ -52,6 +53,7 @@ export default function LoginPage() {
           .single();
 
         if (newProfile) {
+          console.log('Novo perfil criado:', newProfile)
           // Redireciona para dashboard pessoal
           router.replace('/personal/dashboard');
         } else {
@@ -61,12 +63,15 @@ export default function LoginPage() {
       }
 
       if (!profile.role) {
+        console.log('Perfil sem role:', profile)
         setError('Perfil do usuário sem role definido');
         return;
       }
 
       const role = profile.role
       const id = profile.id
+
+      console.log('Dados do perfil:', { role, id })
 
       // Redireciona baseado no role
       let redirectPath = '';
@@ -86,7 +91,11 @@ export default function LoginPage() {
       }
 
       console.log('Redirecionando para:', redirectPath);
-      router.replace(redirectPath);
+      
+      // Aguardar um pouco antes do redirect para garantir que a sessão foi estabelecida
+      setTimeout(() => {
+        router.replace(redirectPath);
+      }, 500);
       
     } catch (error) {
       console.error('Login error:', error);
