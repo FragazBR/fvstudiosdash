@@ -15,20 +15,15 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
 
-    console.log('🚀 Iniciando login...')
-
     const { data, error: loginError } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
-    if (loginError) {
-      console.error('❌ Erro no login:', loginError.message)
+    if (loginError || !data.user) {
       setError('Credenciais inválidas.')
       return
     }
-
-    console.log('✅ Login efetuado:', data)
 
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
@@ -37,19 +32,17 @@ export default function LoginPage() {
       .single()
 
     if (profileError || !profile) {
-      console.error('❌ Erro ao buscar perfil:', profileError)
-      setError(profileError?.message || 'Usuário não encontrado.')
+      setError('Erro ao buscar perfil.')
       return
     }
 
-    console.log('🧾 Perfil:', profile)
+    const role = profile.role
+    const id = profile.id
 
-    if (profile.role === 'agency') {
-      console.log('📍 Redirecionando para /admin')
-      setTimeout(() => router.push('/admin'), 50)
-    } else if (profile.role === 'client') {
-      console.log(`📍 Redirecionando para /client/${profile.id}`)
-      setTimeout(() => router.push(`/client/${profile.id}`), 50)
+    if (role === 'agency') {
+      router.push('/')
+    } else if (role === 'client') {
+      router.push(`/client/${id}`)
     } else {
       setError('Permissão inválida.')
     }

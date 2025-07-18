@@ -1,12 +1,9 @@
-import DashboardClient from "@/components/dashboardClient";
+// app/dashboard/page.tsx
+import Dashboard from "@/components/dashboard";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { redirect } from "next/navigation";
 
-export default async function ClientPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function DashboardPage() {
   "use server";
 
   const supabase = await supabaseServer();
@@ -17,20 +14,22 @@ export default async function ClientPage({
 
   if (!user || userError) {
     console.error("❌ Usuário não autenticado:", userError);
-    return redirect("/login");
+    redirect("/login");
   }
 
-  const { data: profile, error: profileError } = await supabase
+  const {
+    data: profile,
+    error: profileError,
+  } = await supabase
     .from("profiles")
-    .select("role,id")
+    .select("role")
     .eq("id", user.id)
-    .eq("id", params.id)
     .single();
 
-  if (profileError || !profile || profile.role !== "client") {
+  if (!profile || profileError || profile.role !== "agency") {
     console.error("❌ Acesso negado:", profileError);
-    return redirect("/unauthorized");
+    redirect("/unauthorized");
   }
 
-  return <DashboardClient clientId={params.id} />;
+  return <Dashboard />;
 }
