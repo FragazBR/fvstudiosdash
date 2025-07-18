@@ -9,26 +9,26 @@ export default async function HomePage(): Promise<JSX.Element> {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return redirect("/login")
+    redirect("/login")
   }
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("role")
     .eq("id", user.id)
-    .single()
+    .single<any>()
 
   if (!profile) {
-    return redirect("/login")
+    redirect("/login")
   }
 
   if (profile.role === "client") {
-    return redirect(`/client/${user.id}`)
+    redirect(`/client/${user.id}`)
   }
 
   if (profile.role === "agency") {
-    return redirect("/dashboard")
+    redirect("/dashboard")
   }
 
-  return redirect("/unauthorized")
+  redirect("/unauthorized")
 }

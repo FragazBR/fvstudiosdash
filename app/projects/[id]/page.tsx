@@ -1,6 +1,7 @@
+"use client";
 import ProjectDetailPage from "@/components/project-detail-page"
 
-export default async function ProjectDetail({
+export default function ProjectDetail({
   params,
 }: {
   params: { id: string }
