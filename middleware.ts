@@ -7,72 +7,40 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
   const path = req.nextUrl.pathname
 
-  // Rotas que não precisam de middleware
-  const publicRoutes = ['/login', '/signup', '/', '/clear-cookies']
-  const staticRoutes = ['/favicon.ico', '/_next', '/images', '/api']
+  // Skip middleware para rotas específicas
+  const skipRoutes = [
+    '/login', 
+    '/signup', 
+    '/', 
+    '/clear-cookies',
+    '/favicon.ico',
+    '/_next',
+    '/images',
+    '/api'
+  ]
   
-  // Skip middleware para rotas estáticas e públicas
-  if (staticRoutes.some(route => path.startsWith(route)) || publicRoutes.includes(path)) {
+  if (skipRoutes.some(route => path.startsWith(route))) {
     return res
   }
 
-  const supabase = createMiddlewareClient<Database>({ req, res })
-
   try {
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-    
-    if (sessionError) {
-      console.error('Session error:', sessionError)
-      return NextResponse.redirect(new URL('/login', req.url))
-    }
+    const supabase = createMiddlewareClient<Database>({ req, res })
+    const { data: { session } } = await supabase.auth.getSession()
 
-    // Se não há sessão e está tentando acessar rota protegida
+    // Se não há sessão, redireciona para login
     if (!session) {
       return NextResponse.redirect(new URL('/login', req.url))
     }
 
-    // Buscar perfil do usuário
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id, role')
-      .eq('id', session.user.id)
-      .single()
-
-    // Se não tem perfil, permitir acesso (será criado no login)
-    if (!profile) {
-      return res
-    }
-
-    const { role, id } = profile
-
-    // Verificações básicas de autorização
-    if (path.startsWith('/admin') && role !== 'admin') {
-      return NextResponse.redirect(new URL('/unauthorized', req.url))
-    }
-    
-    if (path.startsWith('/user') && role !== 'user') {
-      return NextResponse.redirect(new URL('/unauthorized', req.url))
-    }
-    
-    if (path.startsWith('/client')) {
-      const clientId = path.split('/')[2]
-      if (role !== 'client' || clientId !== id) {
-        return NextResponse.redirect(new URL('/unauthorized', req.url))
-      }
-    }
-    
-    if (path.startsWith('/personal') && role !== 'personal') {
-      return NextResponse.redirect(new URL('/unauthorized', req.url))
-    }
-
+    // Se há sessão, permite acesso
     return res
 
   } catch (error) {
     console.error('Middleware error:', error)
-    return res // Em caso de erro, permitir acesso
+    return res
   }
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|images).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|images|api).*)'],
 }

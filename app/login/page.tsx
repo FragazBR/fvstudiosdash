@@ -55,7 +55,9 @@ export default function LoginPage() {
         if (newProfile) {
           console.log('Novo perfil criado:', newProfile)
           // Redireciona para dashboard pessoal
-          router.replace('/personal/dashboard');
+          setTimeout(() => {
+            window.location.replace('/personal/dashboard');
+          }, 100);
         } else {
           setError('Erro ao criar perfil do usuário');
         }
@@ -92,8 +94,10 @@ export default function LoginPage() {
 
       console.log('Redirecionando para:', redirectPath);
       
-      // Usar window.location para evitar conflitos com middleware
-      window.location.href = redirectPath;
+      // Força redirecionamento imediato
+      setTimeout(() => {
+        window.location.replace(redirectPath);
+      }, 100);
       
     } catch (error) {
       console.error('Login error:', error);
