@@ -1,25 +1,4 @@
-  "personal": {
-    "welcome": "Bem-vindo à sua área gratuita!",
-    "limitedResources": "Recursos limitados. Faça upgrade para acessar mais funcionalidades."
-  },
-  "unauthorized": {
-    "title": "Acesso não autorizado",
-    "message": "Você não tem permissão para acessar esta página."
-  },
-  "login": {
-    "title": "Login",
-    "emailPlaceholder": "Email",
-    "passwordPlaceholder": "Senha",
-    "button": "Entrar",
-    "invalidCredentials": "Credenciais inválidas.",
-    "profileFetchError": "Erro ao buscar perfil.",
-    "invalidPermission": "Permissão inválida."
-  },
 {
-  "dashboard": {
-    "agencyPanel": "Painel da Agência",
-    "welcome": "Bem-vindo ao Painel",
-    "cpc": "CPC",
   "dashboard": {
     "agencyPanel": "Painel da Agência",
     "welcome": "Bem-vindo ao Painel",
@@ -81,28 +60,5 @@
     "invalidCredentials": "Credenciais inválidas.",
     "profileFetchError": "Erro ao buscar perfil.",
     "invalidPermission": "Permissão inválida."
-  }
-  "clients": {
-    "title": "Clientes",
-    "status": {
-      "active": "Ativo",
-      "inactive": "Inativo"
-    }
-  },
-  "metrics": {
-    "cpc": "CPC",
-    "ctr": "CTR",
-    "cpm": "CPM",
-    "conversions": "Conversões",
-    "roi": "ROI"
-  },
-  "charts": {
-    "campaign": {
-      "title": "Campanhas Facebook vs Google"
-    }
-  },
-  "errors": {
-    "userFetch": "Erro ao obter usuário:",
-    "accessDenied": "Acesso negado para admin:"
   }
 }
