@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Logo } from "@/components/ui/logo";
 import {
   Home,
   CheckSquare,
@@ -60,21 +61,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
       >
         <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
           <Link href="/" className="flex items-center space-x-2">
-            {/* Only render logos if theme is resolved to avoid hydration mismatch */}
-            {typeof window === "undefined" || !resolvedTheme ? null : (
-              <>
-                <img
-                  src={resolvedTheme === "dark" ? "/logo-c-white.png" : "/logo-c.png"}
-                  alt="FVSTUDIOS"
-                  className="w-8 h-8 object-contain"
-                />
-                <img
-                  src={resolvedTheme === "dark" ? "/Logotipo-FVstudios-Branco.png" : "/Logotipo-FVstudios-Preto.png"}
-                  alt="FVSTUDIOS"
-                  className="h-5 object-contain max-w-[120px]"
-                />
-              </>
-            )}
+            <Logo className="h-8 w-auto" />
           </Link>
 
           <Button

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabaseBrowser'
+import { Logo } from '@/components/ui/logo'
 
 export default function SignupPage() {
   const [email, setEmail] = useState('')
@@ -107,7 +108,9 @@ export default function SignupPage() {
         // Se tem sessão ativa, mostrar opção de logout
         <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-sm space-y-4">
           <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">FVSTUDIOS</h1>
+            <div className="flex justify-center mb-2">
+              <Logo width={150} height={50} />
+            </div>
             <p className="text-gray-600">Você já está logado</p>
           </div>
           
@@ -139,7 +142,9 @@ export default function SignupPage() {
           className="bg-white p-6 rounded-lg shadow-md w-full max-w-sm space-y-4"
         >
           <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">FVSTUDIOS</h1>
+            <div className="flex justify-center mb-2">
+              <Logo width={150} height={50} />
+            </div>
             <p className="text-gray-600">Criar uma nova conta</p>
           </div>
         

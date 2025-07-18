@@ -9,7 +9,7 @@ import { UserProvider } from "@/hooks/useUser";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "FVSTUDIOS - DASHBOARD.v1",
+  title: "FVSTUDIOS - Dashboard",
   description: "Gerenciamento em um só lugar.",
 };
 

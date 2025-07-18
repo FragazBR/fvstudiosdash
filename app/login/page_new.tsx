@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabaseBrowser'
 import { useTranslation } from 'react-i18next'
+import { Logo } from '@/components/ui/logo'
 
 export default function LoginPage() {
   const { t } = useTranslation();
@@ -103,7 +104,9 @@ export default function LoginPage() {
         className="bg-white p-6 rounded-lg shadow-md w-full max-w-sm space-y-4"
       >
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">FVSTUDIOS</h1>
+          <div className="flex justify-center mb-2">
+            <Logo width={150} height={50} />
+          </div>
           <p className="text-gray-600">Faça login na sua conta</p>
         </div>
         

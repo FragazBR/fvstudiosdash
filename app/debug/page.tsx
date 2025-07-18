@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabaseBrowser } from '@/lib/supabaseBrowser'
 import { useRouter } from 'next/navigation'
+import { Logo } from '@/components/ui/logo'
 
 export default function DebugPage() {
   const [session, setSession] = useState<any>(null)
@@ -169,7 +170,10 @@ export default function DebugPage() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6">
-      <h1 className="text-3xl font-bold">Debug Dashboard - FVSTUDIOS</h1>
+      <div className="flex items-center space-x-4">
+        <Logo className="h-10 w-auto" />
+        <h1 className="text-3xl font-bold">Debug Dashboard</h1>
+      </div>
       
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
