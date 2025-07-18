@@ -1,21 +1,28 @@
-import { redirect } from "next/navigation"
-import { PerformanceMetrics } from "@/components/PerformanceMetrics"
-import { CampaignChart } from "@/components/CampaignChart"
-import { CreateClientForm } from "@/components/CreateClientForm"
-import ListClients from "@/components/ListClients"
 
-import React from "react"
 
-export default async function AdminPage(): Promise<React.ReactElement> {
-  const supabase = await supabaseServer()
+
+import { redirect } from "next/navigation";
+import { PerformanceMetrics } from "@/components/PerformanceMetrics";
+import { CampaignChart } from "@/components/CampaignChart";
+import { CreateClientForm } from "@/components/CreateClientForm";
+import ListClients from "@/components/ListClients";
+import React from "react";
+
+import { useTranslation } from "react-i18next";
+import { supabaseServer } from "@/lib/supabaseServer";
+
+
+export default async function AdminPage() {
+  const { t } = useTranslation();
+  const supabase = await supabaseServer();
   const {
     data: { user },
     error: userError,
-  } = await supabase.auth.getUser()
+  } = await supabase.auth.getUser();
 
   if (!user || userError) {
-    console.error("Erro ao obter usuário:", userError)
-    return redirect("/login")
+    console.error(t("errors.userFetch"), userError);
+    return redirect("/login");
   }
 
   const {
@@ -25,20 +32,20 @@ export default async function AdminPage(): Promise<React.ReactElement> {
     .from("profiles")
     .select("role")
     .eq("id", user.id)
-    .single()
+    .single();
 
   if (!profile || profileError || profile.role !== "agency") {
-    console.error("Acesso negado para admin:", profileError)
-    return redirect("/unauthorized")
+    console.error(t("errors.accessDenied"), profileError);
+    return redirect("/unauthorized");
   }
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Painel da Agência</h1>
+      <h1 className="text-2xl font-bold">{t("dashboard.agencyPanel")}</h1>
       <CreateClientForm />
       <ListClients />
       <PerformanceMetrics />
       <CampaignChart />
     </div>
-  )
+  );
 }

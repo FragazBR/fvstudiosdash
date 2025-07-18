@@ -4,6 +4,7 @@
 'use client'
 
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 
 interface Client {
   id: string
@@ -18,16 +19,17 @@ const mockClients: Client[] = [
   { id: '3', name: 'Carlos Santos', email: 'carlos@email.com', status: 'Ativo' },
 ]
 
-export default function ListClients() {
+function ListClients() {
+  const { t } = useTranslation();
   return (
     <div className="w-full bg-white p-4 rounded-2xl shadow-md">
-      <h2 className="text-xl font-semibold mb-4">Clientes</h2>
+      <h2 className="text-xl font-semibold mb-4">{t('clients.title')}</h2>
       <table className="w-full text-left">
         <thead>
           <tr className="border-b">
-            <th className="py-2">Nome</th>
+            <th className="py-2">{t('clients.name')}</th>
             <th className="py-2">Email</th>
-            <th className="py-2">Status</th>
+            <th className="py-2">{t('clients.status.title')}</th>
           </tr>
         </thead>
         <tbody>
@@ -37,13 +39,14 @@ export default function ListClients() {
               <td className="py-2">{client.email}</td>
               <td className="py-2">
                 <span
+export default ListClients;
                   className={`px-2 py-1 rounded-full text-sm font-medium ${
-                    client.status === 'Ativo'
+                    client.status === t('clients.status.active')
                       ? 'bg-green-100 text-green-700'
                       : 'bg-red-100 text-red-700'
                   }`}
                 >
-                  {client.status}
+                  {client.status === 'Ativo' ? t('clients.status.active') : t('clients.status.inactive')}
                 </span>
               </td>
             </tr>

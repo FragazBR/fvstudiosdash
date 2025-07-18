@@ -1,10 +1,13 @@
 'use client'
 
+
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabaseBrowser'
+import { useTranslation } from 'react-i18next'
 
 export default function LoginPage() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -21,7 +24,7 @@ export default function LoginPage() {
     })
 
     if (loginError || !data.user) {
-      setError('Credenciais inválidas.')
+      setError(t('login.invalidCredentials'))
       return
     }
 
@@ -32,7 +35,7 @@ export default function LoginPage() {
       .single()
 
     if (profileError || !profile) {
-      setError('Erro ao buscar perfil.')
+      setError(t('login.profileFetchError'))
       return
     }
 
@@ -44,7 +47,7 @@ export default function LoginPage() {
     } else if (role === 'client') {
       router.push(`/client/${id}`)
     } else {
-      setError('Permissão inválida.')
+      setError(t('login.invalidPermission'))
     }
   }
 
@@ -54,10 +57,10 @@ export default function LoginPage() {
         onSubmit={handleLogin}
         className="bg-white p-6 rounded-lg shadow-md w-full max-w-sm space-y-4"
       >
-        <h1 className="text-xl font-bold">Login</h1>
+        <h1 className="text-xl font-bold">{t('login.title')}</h1>
         <input
           type="email"
-          placeholder="Email"
+          placeholder={t('login.emailPlaceholder')}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="w-full border p-2 rounded"
@@ -65,7 +68,7 @@ export default function LoginPage() {
         />
         <input
           type="password"
-          placeholder="Senha"
+          placeholder={t('login.passwordPlaceholder')}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="w-full border p-2 rounded"
@@ -76,7 +79,7 @@ export default function LoginPage() {
           type="submit"
           className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition"
         >
-          Entrar
+          {t('login.button')}
         </button>
       </form>
     </div>

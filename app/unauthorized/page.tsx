@@ -1,10 +1,12 @@
+import React from "react";
+import { useTranslation } from "react-i18next";
+
 export default function UnauthorizedPage() {
+  const { t } = useTranslation();
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center space-y-4">
-        <h1 className="text-3xl font-bold text-red-600">Acesso negado</h1>
-        <p className="text-gray-600">Você não tem permissão para acessar esta página.</p>
-      </div>
+    <div className="flex flex-col items-center justify-center min-h-screen">
+      <h1 className="text-3xl font-bold text-red-600 mb-4">{t('unauthorized.title')}</h1>
+      <p className="text-lg">{t('unauthorized.message')}</p>
     </div>
-  )
+  );
 }

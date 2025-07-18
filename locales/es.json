@@ -1,0 +1,64 @@
+{
+  "dashboard": {
+    "agencyPanel": "Panel de la Agencia",
+    "welcome": "Bienvenido al Panel",
+    "cpc": "CPC",
+    "cpcChange": "↓ 3,2%",
+    "cpcChangeText": "en comparación con el mes anterior",
+    "ctr": "CTR",
+    "ctrChange": "↑ 1,1%",
+    "ctrChangeText": "la tasa de clics mejoró",
+    "cpm": "CPM",
+    "cpmChange": "↓ 0,8%",
+    "cpmChangeText": "costo por mil impresiones",
+    "conversions": "Conversiones",
+    "conversionsChange": "↑ 12,4%",
+    "conversionsChangeText": "número de conversiones",
+    "roi": "ROI",
+    "roiChange": "↑ 4,5%",
+    "roiChangeText": "retorno de la inversión",
+    "performanceOverTime": "Rendimiento a lo Largo del Tiempo",
+    "campaignDistribution": "Distribución por Campaña",
+    "details": "Detalles"
+  },
+  "clients": {
+    "title": "Clientes",
+    "status": {
+      "active": "Activo",
+      "inactive": "Inactivo"
+    }
+  },
+  "metrics": {
+    "cpc": "CPC",
+    "ctr": "CTR",
+    "cpm": "CPM",
+    "conversions": "Conversiones",
+    "roi": "ROI"
+  },
+  "charts": {
+    "campaign": {
+      "title": "Campañas Facebook vs Google"
+    }
+  },
+  "errors": {
+    "userFetch": "Error al obtener usuario:",
+    "accessDenied": "Acceso denegado para admin:"
+  },
+  "personal": {
+    "welcome": "¡Bienvenido a tu área gratuita!",
+    "limitedResources": "Recursos limitados. Actualiza para acceder a más funcionalidades."
+  },
+  "unauthorized": {
+    "title": "Acceso no autorizado",
+    "message": "No tienes permiso para acceder a esta página."
+  },
+  "login": {
+    "title": "Iniciar sesión",
+    "emailPlaceholder": "Correo electrónico",
+    "passwordPlaceholder": "Contraseña",
+    "button": "Entrar",
+    "invalidCredentials": "Credenciales inválidas.",
+    "profileFetchError": "Error al buscar el perfil.",
+    "invalidPermission": "Permiso inválido."
+  }
+}

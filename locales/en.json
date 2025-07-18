@@ -1,0 +1,64 @@
+{
+  "dashboard": {
+    "agencyPanel": "Agency Panel",
+    "welcome": "Welcome to the Dashboard",
+    "cpc": "CPC",
+    "cpcChange": "↓ 3.2%",
+    "cpcChangeText": "compared to last month",
+    "ctr": "CTR",
+    "ctrChange": "↑ 1.1%",
+    "ctrChangeText": "click-through rate improved",
+    "cpm": "CPM",
+    "cpmChange": "↓ 0.8%",
+    "cpmChangeText": "cost per thousand impressions",
+    "conversions": "Conversions",
+    "conversionsChange": "↑ 12.4%",
+    "conversionsChangeText": "number of conversions",
+    "roi": "ROI",
+    "roiChange": "↑ 4.5%",
+    "roiChangeText": "return on investment",
+    "performanceOverTime": "Performance Over Time",
+    "campaignDistribution": "Campaign Distribution",
+    "details": "Details"
+  },
+  "clients": {
+    "title": "Clients",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    }
+  },
+  "metrics": {
+    "cpc": "CPC",
+    "ctr": "CTR",
+    "cpm": "CPM",
+    "conversions": "Conversions",
+    "roi": "ROI"
+  },
+  "charts": {
+    "campaign": {
+      "title": "Facebook vs Google Campaigns"
+    }
+  },
+  "errors": {
+    "userFetch": "Error fetching user:",
+    "accessDenied": "Access denied for admin:"
+  },
+  "personal": {
+    "welcome": "Welcome to your free area!",
+    "limitedResources": "Limited resources. Upgrade to access more features."
+  },
+  "unauthorized": {
+    "title": "Unauthorized access",
+    "message": "You do not have permission to access this page."
+  },
+  "login": {
+    "title": "Login",
+    "emailPlaceholder": "Email",
+    "passwordPlaceholder": "Password",
+    "button": "Sign in",
+    "invalidCredentials": "Invalid credentials.",
+    "profileFetchError": "Error fetching profile.",
+    "invalidPermission": "Invalid permission."
+  }
+}

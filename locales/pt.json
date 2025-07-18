@@ -1,0 +1,108 @@
+  "personal": {
+    "welcome": "Bem-vindo à sua área gratuita!",
+    "limitedResources": "Recursos limitados. Faça upgrade para acessar mais funcionalidades."
+  },
+  "unauthorized": {
+    "title": "Acesso não autorizado",
+    "message": "Você não tem permissão para acessar esta página."
+  },
+  "login": {
+    "title": "Login",
+    "emailPlaceholder": "Email",
+    "passwordPlaceholder": "Senha",
+    "button": "Entrar",
+    "invalidCredentials": "Credenciais inválidas.",
+    "profileFetchError": "Erro ao buscar perfil.",
+    "invalidPermission": "Permissão inválida."
+  },
+{
+  "dashboard": {
+    "agencyPanel": "Painel da Agência",
+    "welcome": "Bem-vindo ao Painel",
+    "cpc": "CPC",
+  "dashboard": {
+    "agencyPanel": "Painel da Agência",
+    "welcome": "Bem-vindo ao Painel",
+    "cpc": "CPC",
+    "cpcChange": "↓ 3,2%",
+    "cpcChangeText": "em relação ao mês anterior",
+    "ctr": "CTR",
+    "ctrChange": "↑ 1,1%",
+    "ctrChangeText": "taxa de cliques melhorou",
+    "cpm": "CPM",
+    "cpmChange": "↓ 0,8%",
+    "cpmChangeText": "custo por mil visualizações",
+    "conversions": "Conversões",
+    "conversionsChange": "↑ 12,4%",
+    "conversionsChangeText": "número de conversões",
+    "roi": "ROI",
+    "roiChange": "↑ 4,5%",
+    "roiChangeText": "retorno sobre investimento",
+    "performanceOverTime": "Performance ao Longo do Tempo",
+    "campaignDistribution": "Distribuição por Campanha",
+    "details": "Detalhes"
+  },
+  "clients": {
+    "title": "Clientes",
+    "status": {
+      "active": "Ativo",
+      "inactive": "Inativo"
+    }
+  },
+  "metrics": {
+    "cpc": "CPC",
+    "ctr": "CTR",
+    "cpm": "CPM",
+    "conversions": "Conversões",
+    "roi": "ROI"
+  },
+  "charts": {
+    "campaign": {
+      "title": "Campanhas Facebook vs Google"
+    }
+  },
+  "errors": {
+    "userFetch": "Erro ao obter usuário:",
+    "accessDenied": "Acesso negado para admin:"
+  },
+  "personal": {
+    "welcome": "Bem-vindo à sua área gratuita!",
+    "limitedResources": "Recursos limitados. Faça upgrade para acessar mais funcionalidades."
+  },
+  "unauthorized": {
+    "title": "Acesso não autorizado",
+    "message": "Você não tem permissão para acessar esta página."
+  },
+  "login": {
+    "title": "Login",
+    "emailPlaceholder": "Email",
+    "passwordPlaceholder": "Senha",
+    "button": "Entrar",
+    "invalidCredentials": "Credenciais inválidas.",
+    "profileFetchError": "Erro ao buscar perfil.",
+    "invalidPermission": "Permissão inválida."
+  }
+  "clients": {
+    "title": "Clientes",
+    "status": {
+      "active": "Ativo",
+      "inactive": "Inativo"
+    }
+  },
+  "metrics": {
+    "cpc": "CPC",
+    "ctr": "CTR",
+    "cpm": "CPM",
+    "conversions": "Conversões",
+    "roi": "ROI"
+  },
+  "charts": {
+    "campaign": {
+      "title": "Campanhas Facebook vs Google"
+    }
+  },
+  "errors": {
+    "userFetch": "Erro ao obter usuário:",
+    "accessDenied": "Acesso negado para admin:"
+  }
+}
