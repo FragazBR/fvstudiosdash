@@ -92,10 +92,8 @@ export default function LoginPage() {
 
       console.log('Redirecionando para:', redirectPath);
       
-      // Aguardar um pouco antes do redirect para garantir que a sessão foi estabelecida
-      setTimeout(() => {
-        router.replace(redirectPath);
-      }, 500);
+      // Usar window.location para evitar conflitos com middleware
+      window.location.href = redirectPath;
       
     } catch (error) {
       console.error('Login error:', error);
