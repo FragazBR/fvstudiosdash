@@ -6,7 +6,6 @@ import CalendarHeader from "./calendar-header";
 import CalendarWrapper from "./calendar-wrapper";
 import { Toaster } from "@/components/ui/toaster";
 
-export default function CalendarPage() {
 type CalendarPageProps = {
   personalMode?: boolean;
 };

@@ -3,14 +3,19 @@ import { useState } from "react";
 import { Sidebar } from "./sidebar";
 import Topbar from "./Shared/Topbar";
 import { StatCard } from "./stat-card";
-import { FileText, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import { FileText, Clock, CheckCircle, AlertCircle, Star, Calendar, MoreHorizontal, BarChart2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DonutChart } from "./donut-chart";
 import { AreaChart } from "./area-chart";
 import { BarChart } from "./bar-chart";
 import Link from "next/link";
-"use client";
 import { useTranslation } from 'react-i18next';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type projectT = {
   id: number;
