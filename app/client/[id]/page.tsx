@@ -1,8 +1,9 @@
 import DashboardClient from "@/components/dashboardClient";
 import { type Metadata, type ResolvingMetadata } from "next";
 
-type PageProps = { params: { id: string } };
+type PageProps = { params: Promise<{ id: string }> };
 
-export default function ClientPage({ params }: PageProps) {
-  return <DashboardClient clientId={params.id} />;
+export default async function ClientPage({ params }: PageProps) {
+  const { id } = await params;
+  return <DashboardClient clientId={id} />;
 }
