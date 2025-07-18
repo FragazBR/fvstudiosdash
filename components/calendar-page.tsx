@@ -7,6 +7,11 @@ import CalendarWrapper from "./calendar-wrapper";
 import { Toaster } from "@/components/ui/toaster";
 
 export default function CalendarPage() {
+type CalendarPageProps = {
+  personalMode?: boolean;
+};
+
+export default function CalendarPage({ personalMode }: CalendarPageProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [view, setView] = useState<"month" | "week" | "day">("month");
   const [filterProject, setFilterProject] = useState<string | null>(null);
@@ -40,6 +45,9 @@ export default function CalendarPage() {
 
       {/* Toast notifications */}
       <Toaster />
+      {personalMode && (
+        <div className="text-sm text-gray-500 mb-4">Modo pessoal: recursos limitados.</div>
+      )}
     </div>
-  );
+   );
 }

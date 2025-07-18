@@ -22,13 +22,17 @@ export default async function HomePage(): Promise<JSX.Element> {
     redirect("/login")
   }
 
+  if (profile.role === "admin") {
+    redirect("/admin/dashboard")
+  }
+  if (profile.role === "personal") {
+    redirect("/personal/dashboard")
+  }
   if (profile.role === "client") {
     redirect(`/client/${user.id}`)
   }
-
   if (profile.role === "agency") {
     redirect("/dashboard")
   }
-
   redirect("/unauthorized")
 }

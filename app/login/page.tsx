@@ -42,12 +42,16 @@ export default function LoginPage() {
     const role = profile.role
     const id = profile.id
 
-    if (role === 'agency') {
-      router.push('/')
+    if (role === 'admin') {
+      window.location.href = '/admin/dashboard'
+    } else if (role === 'agency') {
+      window.location.href = '/dashboard'
     } else if (role === 'client') {
-      router.push(`/client/${id}`)
+      window.location.href = `/client/${id}`
+    } else if (role === 'personal') {
+      window.location.href = '/personal/dashboard'
     } else {
-      setError(t('login.invalidPermission'))
+      setError('Permissão inválida')
     }
   }
 
