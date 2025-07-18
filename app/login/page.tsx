@@ -97,15 +97,19 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4">
+      {/* Logo fora da caixa */}
+      <div className="text-center mb-8">
+        <SimpleLogo width={180} height={60} />
+        <h1 className="mt-4 text-2xl font-bold text-gray-800">FVSTUDIOS</h1>
+        <p className="text-gray-600">Dashboard de Gerenciamento</p>
+      </div>
+      
       <form
         onSubmit={handleLogin}
         className="bg-white p-6 rounded-lg shadow-md w-full max-w-sm space-y-4"
       >
         <div className="text-center mb-6">
-          <div className="flex justify-center mb-2">
-            <SimpleLogo width={150} height={50} />
-          </div>
           <p className="text-gray-600">Faça login na sua conta</p>
         </div>
         
