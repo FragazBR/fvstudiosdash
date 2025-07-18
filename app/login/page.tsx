@@ -45,17 +45,26 @@ export default function LoginPage() {
     const role = profile.role
     const id = profile.id
 
+    // Use router.replace para navegação client-side e garantir atualização do estado
+    let redirectPath = '';
     if (role === 'admin') {
-      window.location.href = '/admin/dashboard'
+      redirectPath = '/admin/dashboard';
     } else if (role === 'agency') {
-      window.location.href = '/dashboard'
+      redirectPath = '/dashboard';
     } else if (role === 'client') {
-      window.location.href = `/client/${id}`
+      redirectPath = `/client/${id}`;
     } else if (role === 'personal') {
-      window.location.href = '/personal/dashboard'
+      redirectPath = '/personal/dashboard';
     } else {
-      setError('Permissão inválida')
+      setError('Permissão inválida');
+      return;
     }
+    // Redireciona usando router.replace
+    router.replace(redirectPath);
+    // Fallback: força reload para garantir sessão reconhecida pelo middleware
+    setTimeout(() => {
+      window.location.replace(redirectPath);
+    }, 500);
   }
 
   return (
