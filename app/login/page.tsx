@@ -59,12 +59,15 @@ export default function LoginPage() {
       setError('Permissão inválida');
       return;
     }
+    // Log para depuração do redirecionamento
+    console.log('Redirecionando para:', redirectPath);
     // Redireciona usando router.replace
     router.replace(redirectPath);
     // Fallback: força reload para garantir sessão reconhecida pelo middleware
     setTimeout(() => {
+      console.log('Fallback: window.location.replace', redirectPath);
       window.location.replace(redirectPath);
-    }, 500);
+    }, 1000);
   }
 
   return (

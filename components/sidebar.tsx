@@ -21,14 +21,16 @@ import {
 import { useState } from "react";
 import { SearchModal } from "./search-modal";
 import { useTheme } from "next-themes";
+import { useUser } from "@/hooks/useUser";
 
 interface SidebarProps {
   open: boolean;
   setOpen: (open: boolean) => void;
 }
 
-const projects = [/* ... seus dados ... */];
-const messages = [/* ... seus dados ... */];
+const projects: any[] = [/* ... seus dados ... */];
+const messages: any[] = [/* ... seus dados ... */];
+
 
 export function Sidebar({ open, setOpen }: SidebarProps) {
   const pathname = usePathname();
@@ -36,6 +38,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   const [showAllProjects, setShowAllProjects] = useState(false);
   const [showAllMessage, setShowAllMessage] = useState(false);
   const { theme, resolvedTheme } = useTheme();
+  const { user, loading } = useUser();
 
   const visiableProjects = showAllProjects ? projects : projects.slice(0, 3);
   const visiableMessages = showAllMessage ? messages : messages.slice(0, 3);
@@ -87,23 +90,59 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
 
         <div className="h-[calc(100vh-4rem)] px-3 py-4">
           <nav className="space-y-1 mb-6">
-            <NavItem href="/" icon={Home}>Home</NavItem>
-            <NavItem href="/projects" icon={FileText}>Projects</NavItem>
-            <NavItem href="/my-tasks" icon={CheckSquare}>My Tasks</NavItem>
-            <NavItem href="/kanban" icon={LayoutGrid}>Kanban desk</NavItem>
-            <NavItem href="/calendar" icon={Calendar}>Calendar</NavItem>
-            <NavItem href="/contacts" icon={ContactRound}>Contacts</NavItem>
-            <NavItem href="/notifications" icon={Bell}>Notifications</NavItem>
-            <NavItem
-              href="#"
-              icon={Search}
-              onClick={(e) => {
-                e.preventDefault();
-                setSearchModalOpen(true);
-              }}
-            >
-              Search
-            </NavItem>
+            {loading ? null : (
+              <>
+                <NavItem href="/" icon={Home}>Home</NavItem>
+                {/* Admin */}
+                {user?.role === "admin" && (
+                  <>
+                    <NavItem href="/admin" icon={LayoutGrid}>Admin Panel</NavItem>
+                    <NavItem href="/projects" icon={FileText}>Projects</NavItem>
+                    <NavItem href="/contacts" icon={ContactRound}>Contacts</NavItem>
+                  </>
+                )}
+                {/* Agency */}
+                {user?.role === "agency" && (
+                  <>
+                    <NavItem href="/dashboard" icon={LayoutGrid}>Agency Dashboard</NavItem>
+                    <NavItem href="/projects" icon={FileText}>Projects</NavItem>
+                    <NavItem href="/my-tasks" icon={CheckSquare}>My Tasks</NavItem>
+                    <NavItem href="/kanban" icon={LayoutGrid}>Kanban desk</NavItem>
+                    <NavItem href="/calendar" icon={Calendar}>Calendar</NavItem>
+                    <NavItem href="/contacts" icon={ContactRound}>Contacts</NavItem>
+                    <NavItem href="/notifications" icon={Bell}>Notifications</NavItem>
+                  </>
+                )}
+                {/* Client */}
+                {user?.role === "client" && (
+                  <>
+                    <NavItem href={`/client/${user.id}`} icon={LayoutGrid}>Client Dashboard</NavItem>
+                    <NavItem href="/projects" icon={FileText}>Projects</NavItem>
+                    <NavItem href="/calendar" icon={Calendar}>Calendar</NavItem>
+                    <NavItem href="/contacts" icon={ContactRound}>Contacts</NavItem>
+                  </>
+                )}
+                {/* Personal/Free */}
+                {user?.role === "personal" && (
+                  <>
+                    <NavItem href="/personal/dashboard" icon={LayoutGrid}>Personal Dashboard</NavItem>
+                    <NavItem href="/kanban" icon={LayoutGrid}>Kanban desk</NavItem>
+                    <NavItem href="/calendar" icon={Calendar}>Calendar</NavItem>
+                  </>
+                )}
+                {/* Search (todos) */}
+                <NavItem
+                  href="#"
+                  icon={Search}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setSearchModalOpen(true);
+                  }}
+                >
+                  Search
+                </NavItem>
+              </>
+            )}
           </nav>
 
           {/* Projects */}
