@@ -5,9 +5,7 @@ import { CampaignChart } from "@/components/CampaignChart"
 import { CreateClientForm } from "@/components/CreateClientForm"
 import ListClients from "@/components/ListClients"
 
-export default async function AdminPage() {
-  "use server"
-
+export default async function AdminPage(): Promise<JSX.Element> {
   const supabase = await supabaseServer()
   const {
     data: { user },

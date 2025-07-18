@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 import { supabaseServer } from "@/lib/supabaseServer"
 
-export default async function HomePage() {
+export default async function HomePage(): Promise<JSX.Element> {
   const supabase = await supabaseServer()
 
   const {

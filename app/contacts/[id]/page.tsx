@@ -1,5 +1,7 @@
 import ContactDetailPage from "@/components/contact-detail-page"
 
-export default function ContactDetail({ params }: { params: { id: string } }) {
+import { type PageProps } from "next"
+
+export default function ContactDetail({ params }: PageProps<{ id: string }>) {
   return <ContactDetailPage id={params.id} />
 }
