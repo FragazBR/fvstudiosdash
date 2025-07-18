@@ -1,15 +1,14 @@
 "use client"
 
-import Image from "next/image"
 import { useEffect, useState } from "react"
 
-interface LogoProps {
+interface SimpleLogoProps {
   className?: string
   width?: number
   height?: number
 }
 
-export function Logo({ className = "", width = 120, height = 40 }: LogoProps) {
+export function SimpleLogo({ className = "", width = 120, height = 40 }: SimpleLogoProps) {
   const [isDark, setIsDark] = useState(false)
   const [mounted, setMounted] = useState(false)
 
@@ -17,23 +16,19 @@ export function Logo({ className = "", width = 120, height = 40 }: LogoProps) {
     setMounted(true)
     
     const checkTheme = () => {
-      // Verificar preferência do sistema
       const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      // Verificar classe dark no html
       const htmlDark = document.documentElement.classList.contains('dark')
       setIsDark(htmlDark || systemDark)
     }
 
     checkTheme()
     
-    // Observer para mudanças na classe dark
     const observer = new MutationObserver(checkTheme)
     observer.observe(document.documentElement, { 
       attributes: true, 
       attributeFilter: ['class'] 
     })
 
-    // Listener para mudanças do sistema
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
     mediaQuery.addEventListener('change', checkTheme)
 
@@ -43,30 +38,25 @@ export function Logo({ className = "", width = 120, height = 40 }: LogoProps) {
     }
   }, [])
 
-  // Mostrar fallback durante SSR
   if (!mounted) {
-    return (
-      <div 
-        className={`flex items-center justify-center ${className}`}
-        style={{ width, height }}
-      >
-        <span className="text-lg font-bold text-gray-700">FVSTUDIOS</span>
-      </div>
-    )
+    return <span className="text-lg font-bold">FVSTUDIOS</span>
   }
 
   const logoSrc = isDark ? "/Logotipo-FVstudios-Branco.png" : "/Logotipo-FVstudios-Preto.png"
 
   return (
-    <Image
+    <img
       src={logoSrc}
       alt="FVSTUDIOS"
       width={width}
       height={height}
       className={`object-contain ${className}`}
-      priority
       onError={(e) => {
         console.error('Logo failed to load:', logoSrc)
+        e.currentTarget.style.display = 'none'
+      }}
+      onLoad={() => {
+        console.log('Logo loaded:', logoSrc)
       }}
     />
   )
