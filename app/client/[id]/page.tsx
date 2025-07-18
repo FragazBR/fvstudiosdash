@@ -1,9 +1,8 @@
-import { type PageProps } from "next"
 import DashboardClient from "@/components/dashboardClient"
 import { supabaseServer } from "@/lib/supabaseServer"
 import { redirect } from "next/navigation"
 
-export default async function ClientPage({ params }: PageProps<{ id: string }>) {
+export default async function ClientPage({ params }: { params: { id: string } }) {
   const supabase = await supabaseServer()
   const {
     data: { user },

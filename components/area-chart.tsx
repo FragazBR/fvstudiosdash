@@ -24,11 +24,16 @@ const data = [
   { name: "Dec", tasks: 35, completed: 25 },
 ]
 
-export function AreaChart() {
+export interface AreaChartProps {
+  data?: Array<{ name: string; tasks: number; completed: number }>
+}
+
+export function AreaChart({ data: propData }: AreaChartProps) {
+  const chartData = propData && propData.length > 0 ? propData : data;
   return (
     <ResponsiveContainer width="100%" height="100%">
       <RechartsAreaChart
-        data={data}
+        data={chartData}
         margin={{
           top: 10,
           right: 30,

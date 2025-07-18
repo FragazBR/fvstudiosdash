@@ -1,11 +1,12 @@
-import { supabaseServer } from "@/lib/supabaseServer"
 import { redirect } from "next/navigation"
 import { PerformanceMetrics } from "@/components/PerformanceMetrics"
 import { CampaignChart } from "@/components/CampaignChart"
 import { CreateClientForm } from "@/components/CreateClientForm"
 import ListClients from "@/components/ListClients"
 
-export default async function AdminPage(): Promise<JSX.Element> {
+import React from "react"
+
+export default async function AdminPage(): Promise<React.ReactElement> {
   const supabase = await supabaseServer()
   const {
     data: { user },

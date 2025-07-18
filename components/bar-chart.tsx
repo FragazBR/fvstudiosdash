@@ -9,11 +9,16 @@ const data = [
   { name: "David K.", completed: 11, total: 16 },
 ]
 
-export function BarChart() {
+export interface BarChartProps {
+  data?: Array<{ name: string; completed: number; total: number }>
+}
+
+export function BarChart({ data: propData }: BarChartProps) {
+  const chartData = propData && propData.length > 0 ? propData : data;
   return (
     <ResponsiveContainer width="100%" height="100%">
       <RechartsBarChart
-        data={data}
+        data={chartData}
         margin={{
           top: 20,
           right: 30,
