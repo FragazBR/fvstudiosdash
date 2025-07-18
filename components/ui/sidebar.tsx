@@ -232,6 +232,7 @@ const SidebarFooter = React.forwardRef<HTMLDivElement, React.ComponentProps<"div
 SidebarFooter.displayName = "SidebarFooter"
 
 const SidebarContent = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(({ className, ...props }, ref) => {
+  const { dir, ...scrollAreaProps } = props;
   return (
     <ScrollArea
       ref={ref}
@@ -240,7 +241,7 @@ const SidebarContent = React.forwardRef<HTMLDivElement, React.ComponentProps<"di
         "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden",
         className,
       )}
-      {...props}
+      {...scrollAreaProps}
     />
   )
 })
