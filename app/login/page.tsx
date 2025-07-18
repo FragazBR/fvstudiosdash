@@ -59,6 +59,11 @@ export default function LoginPage() {
         return;
       }
 
+      if (!profile.role) {
+        setError('Perfil do usuário sem role definido');
+        return;
+      }
+
       const role = profile.role
       const id = profile.id
 

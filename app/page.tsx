@@ -22,6 +22,10 @@ export default async function HomePage(): Promise<JSX.Element> {
     redirect("/login")
   }
 
+  if (!profile.role) {
+    redirect("/unauthorized")
+  }
+
   if (profile.role === "admin") {
     redirect("/admin/dashboard")
   }
