@@ -51,6 +51,7 @@ import { BarChart } from "./bar-chart";
 import { StatCard } from "./stat-card";
 import Topbar from "./Shared/Topbar";
 import Link from "next/link";
+"use client";
 import { useTranslation } from 'react-i18next';
 
 type projectT = {

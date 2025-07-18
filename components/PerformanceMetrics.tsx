@@ -1,5 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+"use client";
 import { useTranslation } from 'react-i18next';
 
 type Metric = {

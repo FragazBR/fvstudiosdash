@@ -10,8 +10,13 @@ export async function middleware(req: NextRequest) {
   const {
     data: { session },
   } = await supabase.auth.getSession()
-  if (!session) {
+  const path = req.nextUrl.pathname;
+  // Só redireciona para login se não estiver já em /login
+  if (!session && path !== '/login') {
     return NextResponse.redirect(new URL('/login', req.url))
+  }
+  if (!session && path === '/login') {
+    return res;
   }
 
   // Busca perfil do usuário
@@ -25,11 +30,12 @@ export async function middleware(req: NextRequest) {
     .single();
 
   if (!profile || profileError) {
+    // Permite acesso à página de login mesmo sem perfil
+    if (path === '/login') return res;
     return NextResponse.redirect(new URL('/login', req.url));
   }
 
   const { role, id } = profile;
-  const path = req.nextUrl.pathname
 
   // Redirecionamento pós-login
   if (path === '/login') {
