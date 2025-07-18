@@ -39,7 +39,6 @@ function ListClients() {
               <td className="py-2">{client.email}</td>
               <td className="py-2">
                 <span
-export default ListClients;
                   className={`px-2 py-1 rounded-full text-sm font-medium ${
                     client.status === t('clients.status.active')
                       ? 'bg-green-100 text-green-700'
@@ -54,5 +53,8 @@ export default ListClients;
         </tbody>
       </table>
     </div>
+
   )
 }
+
+export default ListClients;
