@@ -68,11 +68,20 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
         )}
       >
         <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
-          <Link href="/" className="flex items-center justify-center">
+          <Link href="/" className="flex items-center space-x-3">
             <div className="h-8 w-8 relative">
               <Image
                 src={resolvedTheme === 'dark' ? "/logo-c-white.png" : "/logo-c.png"}
                 alt="FVSTUDIOS Logo"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+            <div className="relative w-32 h-8">
+              <Image
+                src={resolvedTheme === 'dark' ? "/Logotipo-FVstudios-Branco.png" : "/Logotipo-FVstudios-Preto.png"}
+                alt="FVSTUDIOS"
                 fill
                 className="object-contain"
                 priority
