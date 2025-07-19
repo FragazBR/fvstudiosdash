@@ -22,6 +22,7 @@ import { useState } from "react";
 import { SearchModal } from "./search-modal";
 import { useTheme } from "next-themes";
 import { useUser } from "@/hooks/useUser";
+import Image from "next/image";
 
 interface SidebarProps {
   open: boolean;
@@ -67,8 +68,17 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
         )}
       >
         <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="text-lg font-bold text-gray-900">FVSTUDIOS</div>
+          <Link href="/" className="flex flex-col items-center space-y-1">
+            <div className="h-8 w-8 relative">
+              <Image
+                src={resolvedTheme === 'dark' ? "/logo-c-white.png" : "/logo-c.png"}
+                alt="FVSTUDIOS Logo"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+            <div className="text-xs font-bold text-gray-900">FVSTUDIOS</div>
           </Link>
 
           <Button
