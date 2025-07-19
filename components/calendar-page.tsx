@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Sidebar } from "./sidebar";
+import Sidebar from "./sidebar";
 import CalendarHeader from "./calendar-header";
 import CalendarWrapper from "./calendar-wrapper";
 import { Toaster } from "@/components/ui/toaster";

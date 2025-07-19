@@ -2,7 +2,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Sidebar } from "./sidebar";
+import Sidebar from "./sidebar";
 import { StatCard } from "./stat-card";
 import { AreaChart } from "./area-chart";
 import { BarChart } from "./bar-chart";

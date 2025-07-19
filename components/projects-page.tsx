@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Sidebar } from "./sidebar";
+import Sidebar from "./sidebar";
 import ProjectsHeader from "./projects-header";
 import ProjectsList from "./projects-list";
 import { Toaster } from "@/components/ui/toaster";

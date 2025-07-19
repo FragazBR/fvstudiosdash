@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Sidebar } from "./sidebar";
+import Sidebar from "./sidebar";
 import KanbanHeader from "./kanban-header";
 import KanbanBoard from "./kanban-board";
 import { Toaster } from "@/components/ui/toaster";

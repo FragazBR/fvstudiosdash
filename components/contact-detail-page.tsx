@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Sidebar } from "./sidebar";
+import Sidebar from "./sidebar";
 import {
   Card,
   CardContent,

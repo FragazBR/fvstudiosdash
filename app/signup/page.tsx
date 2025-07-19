@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabaseBrowser'
-import { Logo } from '@/components/ui/logo'
 
 export default function SignupPage() {
   const [email, setEmail] = useState('')
@@ -106,7 +105,11 @@ export default function SignupPage() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4">
       {/* Logo fora da caixa */}
       <div className="text-center mb-8">
-        <Logo width={180} height={60} />
+        <img 
+          src="/Logotipo-FVstudios-Preto.png" 
+          alt="FVSTUDIOS" 
+          className="h-15 w-auto mx-auto"
+        />
         <h1 className="mt-4 text-2xl font-bold text-gray-800">FVSTUDIOS</h1>
         <p className="text-gray-600">Dashboard de Gerenciamento</p>
       </div>

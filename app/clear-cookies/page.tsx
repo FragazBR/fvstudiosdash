@@ -2,13 +2,18 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { supabaseBrowser } from '@/lib/supabaseBrowser'
 
 export default function ClearCookiesPage() {
   const router = useRouter()
+  const supabase = supabaseBrowser()
 
   useEffect(() => {
     const clearAndRedirect = async () => {
       try {
+        // Fazer logout no Supabase
+        await supabase.auth.signOut()
+        
         // Limpar localStorage
         if (typeof window !== 'undefined') {
           localStorage.clear()
@@ -24,7 +29,7 @@ export default function ClearCookiesPage() {
     }
 
     clearAndRedirect()
-  }, [router])
+  }, [router, supabase])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
