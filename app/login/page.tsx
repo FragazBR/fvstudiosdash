@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabaseBrowser'
+import { useTheme } from 'next-themes'
+import Image from 'next/image'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -11,6 +13,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const supabase = supabaseBrowser()
+  const { resolvedTheme } = useTheme()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -110,15 +113,25 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4">
       {/* Logo fora da caixa */}
       <div className="text-center mb-8">
-        <img 
-          src="/Logotipo-FVstudios-Preto.png" 
-          alt="FVSTUDIOS" 
-          width={180} 
-          height={60}
-          className="mx-auto object-contain"
-        />
-        <h1 className="mt-4 text-2xl font-bold text-gray-800">FVSTUDIOS</h1>
-        <p className="text-gray-600">Dashboard de Gerenciamento</p>
+        <div className="relative w-16 h-16 mx-auto mb-4">
+          <Image
+            src={resolvedTheme === 'dark' ? "/logo-c-white.png" : "/logo-c.png"}
+            alt="FVSTUDIOS Logo"
+            fill
+            className="object-contain"
+            priority
+          />
+        </div>
+        <div className="relative w-44 h-12 mx-auto">
+          <Image
+            src={resolvedTheme === 'dark' ? "/Logotipo-FVstudios-Branco.png" : "/Logotipo-FVstudios-Preto.png"}
+            alt="FVSTUDIOS"
+            fill
+            className="object-contain"
+            priority
+          />
+        </div>
+        <p className="text-gray-600 mt-2">Dashboard de Gerenciamento</p>
       </div>
       
       <form

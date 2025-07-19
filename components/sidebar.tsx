@@ -68,7 +68,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
         )}
       >
         <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
-          <Link href="/" className="flex flex-col items-center space-y-1">
+          <Link href="/" className="flex items-center justify-center">
             <div className="h-8 w-8 relative">
               <Image
                 src={resolvedTheme === 'dark' ? "/logo-c-white.png" : "/logo-c.png"}
@@ -78,7 +78,6 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
                 priority
               />
             </div>
-            <div className="text-xs font-bold text-gray-900">FVSTUDIOS</div>
           </Link>
 
           <Button
