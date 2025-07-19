@@ -226,7 +226,7 @@ export default function Dashboard({ userMode }: DashboardProps) {
           {isAdmin && (
             <section className="mb-8">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Acesso Rápido de Administrador</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 <Link href="/admin" className="block">
                   <div className="bg-white p-4 rounded-lg shadow-sm border hover:shadow-md transition-shadow">
                     <div className="flex items-center">
@@ -234,36 +234,22 @@ export default function Dashboard({ userMode }: DashboardProps) {
                         <BarChart2 className="h-6 w-6 text-red-600" />
                       </div>
                       <div className="ml-3">
-                        <h3 className="font-semibold text-gray-900">Admin Panel</h3>
-                        <p className="text-sm text-gray-600">Gerenciar sistema</p>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-                
-                <Link href="/user/dashboard" className="block">
-                  <div className="bg-white p-4 rounded-lg shadow-sm border hover:shadow-md transition-shadow">
-                    <div className="flex items-center">
-                      <div className="bg-blue-100 p-2 rounded-lg">
-                        <FileText className="h-6 w-6 text-blue-600" />
-                      </div>
-                      <div className="ml-3">
-                        <h3 className="font-semibold text-gray-900">User Dashboard</h3>
-                        <p className="text-sm text-gray-600">Visão do usuário</p>
+                        <h3 className="font-semibold text-gray-900">Admin</h3>
+                        <p className="text-sm text-gray-600">Painel administrativo</p>
                       </div>
                     </div>
                   </div>
                 </Link>
 
-                <Link href="/personal/dashboard" className="block">
+                <Link href="/dashboard" className="block">
                   <div className="bg-white p-4 rounded-lg shadow-sm border hover:shadow-md transition-shadow">
                     <div className="flex items-center">
-                      <div className="bg-green-100 p-2 rounded-lg">
-                        <Star className="h-6 w-6 text-green-600" />
+                      <div className="bg-orange-100 p-2 rounded-lg">
+                        <BarChart2 className="h-6 w-6 text-orange-600" />
                       </div>
                       <div className="ml-3">
-                        <h3 className="font-semibold text-gray-900">Personal</h3>
-                        <p className="text-sm text-gray-600">Dashboard pessoal</p>
+                        <h3 className="font-semibold text-gray-900">Agency</h3>
+                        <p className="text-sm text-gray-600">Dashboard agência</p>
                       </div>
                     </div>
                   </div>
@@ -276,8 +262,36 @@ export default function Dashboard({ userMode }: DashboardProps) {
                         <AlertCircle className="h-6 w-6 text-purple-600" />
                       </div>
                       <div className="ml-3">
-                        <h3 className="font-semibold text-gray-900">Client Area</h3>
+                        <h3 className="font-semibold text-gray-900">Client Agency</h3>
                         <p className="text-sm text-gray-600">Área do cliente</p>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+                
+                <Link href="/user/dashboard" className="block">
+                  <div className="bg-white p-4 rounded-lg shadow-sm border hover:shadow-md transition-shadow">
+                    <div className="flex items-center">
+                      <div className="bg-blue-100 p-2 rounded-lg">
+                        <FileText className="h-6 w-6 text-blue-600" />
+                      </div>
+                      <div className="ml-3">
+                        <h3 className="font-semibold text-gray-900">User</h3>
+                        <p className="text-sm text-gray-600">Dashboard usuário</p>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+
+                <Link href="/personal/dashboard" className="block">
+                  <div className="bg-white p-4 rounded-lg shadow-sm border hover:shadow-md transition-shadow">
+                    <div className="flex items-center">
+                      <div className="bg-green-100 p-2 rounded-lg">
+                        <Star className="h-6 w-6 text-green-600" />
+                      </div>
+                      <div className="ml-3">
+                        <h3 className="font-semibold text-gray-900">Personal (Free)</h3>
+                        <p className="text-sm text-gray-600">Dashboard pessoal</p>
                       </div>
                     </div>
                   </div>
