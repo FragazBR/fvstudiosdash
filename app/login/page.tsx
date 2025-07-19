@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { supabaseBrowser } from '@/lib/supabaseBrowser'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -9,6 +10,7 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const supabase = supabaseBrowser()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -16,12 +18,91 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      // Temporariamente desabilitado para teste
-      router.replace('/dashboard')
-    } catch (err: any) {
-      setError(err.message)
+      const { data, error: loginError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (loginError || !data.user) {
+        setError('Email ou senha inválidos')
+        return
+      }
+
+      // Busca o perfil do usuário
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role, id')
+        .eq('id', data.user.id)
+        .single()
+
+      console.log('Login success:', { profile, user: data.user })
+
+      if (profileError || !profile) {
+        console.log('Perfil não encontrado, criando novo perfil...')
+        // Se não tem perfil, cria um básico
+        const { data: newProfile } = await supabase
+          .from('profiles')
+          .insert({
+            id: data.user.id,
+            email: data.user.email,
+            name: data.user.email?.split('@')[0] || 'Usuário',
+            role: 'personal',
+          })
+          .select('role, id')
+          .single();
+
+        if (newProfile) {
+          console.log('Novo perfil criado:', newProfile)
+          // Redireciona para dashboard pessoal
+          setTimeout(() => {
+            window.location.replace('/personal/dashboard');
+          }, 100);
+        } else {
+          setError('Erro ao criar perfil do usuário');
+        }
+        return;
+      }
+
+      if (!profile.role) {
+        console.log('Perfil sem role:', profile)
+        setError('Perfil do usuário sem role definido');
+        return;
+      }
+
+      const role = profile.role
+      const id = profile.id
+
+      console.log('Dados do perfil:', { role, id })
+
+      // Redireciona baseado no role
+      let redirectPath = '';
+      if (role === 'admin') {
+        redirectPath = '/admin';
+      } else if (role === 'agency') {
+        redirectPath = '/dashboard';
+      } else if (role === 'user') {
+        redirectPath = '/user/dashboard';
+      } else if (role === 'client') {
+        redirectPath = `/client/${id}`;
+      } else if (role === 'personal') {
+        redirectPath = '/personal/dashboard';
+      } else {
+        setError('Tipo de usuário inválido');
+        return;
+      }
+
+      console.log('Redirecionando para:', redirectPath);
+      
+      // Força redirecionamento imediato
+      setTimeout(() => {
+        window.location.replace(redirectPath);
+      }, 100);
+      
+    } catch (error) {
+      console.error('Login error:', error);
+      setError('Erro interno do servidor');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -32,70 +113,69 @@ export default function LoginPage() {
         <img 
           src="/Logotipo-FVstudios-Preto.png" 
           alt="FVSTUDIOS" 
-          className="h-15 w-auto mx-auto"
+          width={180} 
+          height={60}
+          className="mx-auto object-contain"
         />
         <h1 className="mt-4 text-2xl font-bold text-gray-800">FVSTUDIOS</h1>
         <p className="text-gray-600">Dashboard de Gerenciamento</p>
       </div>
-
-      <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-sm">
-        <h2 className="text-xl font-bold text-center text-gray-800 mb-6">Entrar</h2>
-
+      
+      <form
+        onSubmit={handleLogin}
+        className="bg-white p-6 rounded-lg shadow-md w-full max-w-sm space-y-4"
+      >
+        <div className="text-center mb-6">
+          <p className="text-gray-600">Faça login na sua conta</p>
+        </div>
+        
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full border border-gray-300 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          required
+          disabled={loading}
+        />
+        
+        <input
+          type="password"
+          placeholder="Senha"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full border border-gray-300 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          required
+          disabled={loading}
+        />
+        
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
             {error}
           </div>
         )}
-
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              placeholder="seu@email.com"
-              required
-              disabled={loading}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Senha
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              placeholder="Sua senha"
-              required
-              disabled={loading}
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-          >
-            {loading ? 'Entrando...' : 'Entrar'}
-          </button>
-        </form>
-
-        <p className="mt-4 text-center text-sm text-gray-600">
-          Não tem uma conta?{' '}
-          <a href="/signup" className="font-medium text-blue-600 hover:text-blue-500">
-            Cadastre-se
-          </a>
-        </p>
-      </div>
+        
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {loading ? 'Entrando...' : 'Entrar'}
+        </button>
+        
+        <div className="text-center mt-4">
+          <p className="text-sm text-gray-600">
+            Ainda não tem conta?{' '}
+            <button
+              type="button"
+              onClick={() => router.push('/signup')}
+              className="text-blue-600 hover:underline"
+            >
+              Criar conta
+            </button>
+          </p>
+        </div>
+      </form>
     </div>
   )
 }
