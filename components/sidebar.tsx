@@ -20,6 +20,7 @@ import {
   Bot,
   Building2,
   Users,
+  UserCog,
 } from "lucide-react";
 import { useState } from "react";
 import { SearchModal } from "./search-modal";
@@ -78,6 +79,9 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
 
   // Verificar se o usuário pode acessar o módulo Agency
   const canAccessAgency = isAgencyOwnerOrAdmin(user?.role);
+
+  // Verificar se é admin para mostrar opções administrativas
+  const isAdmin = user?.role === 'admin';
 
   return (
     <>
@@ -139,6 +143,9 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
             <NavItem href="/ai-agents" icon={Bot}>IA Agents</NavItem>
             {canAccessAgency && (
               <NavItem href="/agency" icon={Building2}>Agência</NavItem>
+            )}
+            {isAdmin && (
+              <NavItem href="/admin/users" icon={UserCog}>Gerenciar Usuários</NavItem>
             )}
             <NavItem href="/notifications" icon={Bell}>Notificações</NavItem>
             <NavItem

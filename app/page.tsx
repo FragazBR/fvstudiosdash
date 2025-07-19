@@ -28,15 +28,17 @@ export default async function HomePage() {
     // Redirecionamentos baseados no role
     switch (profile.role) {
       case "admin":
-        redirect("/admin")
+        redirect("/admin")  // FVStudios - Controle total
       case "agency":
-        redirect("/dashboard")
-      case "user":
-        redirect("/user/dashboard")
-      case "personal":
-        redirect("/personal/dashboard")
+        redirect("/agency")  // Agências - Com níveis hierárquicos
+      case "independent":
+        redirect("/independent")  // Produtores Independentes - Autônomos
+      case "influencer":
+        redirect("/influencer")  // Influencers/Criadores - Individual
+      case "free":
+        redirect("/free")  // Plano Gratuito - Limitado
       case "client":
-        redirect(`/client/${user.id}`)
+        redirect(`/client/${user.id}`)  // Clientes das agências
       default:
         redirect("/unauthorized")
     }

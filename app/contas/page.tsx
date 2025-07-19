@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { PermissionGuard } from '@/components/permission-guard'
 import Topbar from '@/components/Shared/Topbar'
 import { Sidebar } from '@/components/sidebar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -101,7 +102,7 @@ const getStatusColor = (status: string) => {
   }
 }
 
-export default function ContasPage() {
+function ContasContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedConta, setSelectedConta] = useState<any>(null)
@@ -306,5 +307,13 @@ export default function ContasPage() {
         </main>
       </div>
     </div>
+  )
+}
+
+export default function ContasPage() {
+  return (
+    <PermissionGuard allowedRoles={['admin', 'agency']} showUnauthorized>
+      <ContasContent />
+    </PermissionGuard>
   )
 }

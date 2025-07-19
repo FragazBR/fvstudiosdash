@@ -24,15 +24,15 @@ export function AppSidebar() {
   const pathname = usePathname()
 
   const navItems = [
-    { href: "/", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/my-tasks", label: "My Tasks", icon: CheckSquare },
-    { href: "/projects", label: "Projects", icon: FolderKanban },
+    { href: "/admin", label: "Home", icon: Home },
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/contas", label: "Contas", icon: Users },
+    { href: "/projects", label: "Projetos", icon: FolderKanban },
+    { href: "/calendar", label: "Calendário", icon: Calendar },
+    { href: "/contacts", label: "Contatos", icon: Users },
     { href: "/kanban", label: "Kanban", icon: FolderKanban },
-    { href: "/calendar", label: "Calendar", icon: Calendar },
-    { href: "/contacts", label: "Contacts", icon: Users },
-    { href: "/chat", label: "Chat", icon: MessageSquare },
-    { href: "/notifications", label: "Notifications", icon: Bell },
-    { href: "#settings", label: "Settings", icon: Settings },
+    { href: "/notifications", label: "Notificações", icon: Bell },
+    { href: "/settings", label: "Configurações", icon: Settings },
   ]
 
   return (
@@ -43,9 +43,9 @@ export function AppSidebar() {
       )}
     >
       <div className="flex h-14 items-center px-4 border-b">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/admin" className="flex items-center gap-2">
           <Home className="h-6 w-6" />
-          {!collapsed && <span className="font-bold text-xl">Taskora</span>}
+          {!collapsed && <span className="font-bold text-xl">FVStudios</span>}
         </Link>
         <Button variant="ghost" size="icon" className="ml-auto" onClick={() => setCollapsed(!collapsed)}>
           <Menu className="h-5 w-5" />
