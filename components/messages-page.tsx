@@ -7,6 +7,9 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import Sidebar from './sidebar'
+import Topbar from './Shared/Topbar'
+import { Toaster } from '@/components/ui/toaster'
 import { 
   Send, 
   Search, 
@@ -133,6 +136,7 @@ const mockAIAgents: AIAgent[] = [
 ]
 
 export function MessagesPage() {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [selectedConversation, setSelectedConversation] = useState<string | null>('1')
   const [messageText, setMessageText] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
@@ -179,9 +183,19 @@ export function MessagesPage() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Conversations Sidebar */}
-      <div className="w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+    <div className="bg-gray-50 dark:bg-[#121212]">
+      <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
+
+      {/* Main Content */}
+      <div className="lg:w-[calc(100%-16rem)] lg:ml-64 flex pt-16">
+        <Topbar
+          name="Mensagens"
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+        />
+        <div className="flex h-screen bg-gray-50 dark:bg-gray-900 w-full">
+          {/* Conversations Sidebar */}
+          <div className="w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
         {/* Header */}
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
@@ -475,6 +489,10 @@ export function MessagesPage() {
           </Button>
         </div>
       )}
+        </div>
+      </div>
+      {/* Toast notifications */}
+      <Toaster />
     </div>
   )
 }

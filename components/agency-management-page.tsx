@@ -3,6 +3,9 @@
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import Sidebar from './sidebar'
+import Topbar from './Shared/Topbar'
+import { Toaster } from '@/components/ui/toaster'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Input } from '@/components/ui/input'
@@ -441,6 +444,7 @@ const mockAgencyGrowth: AgencyGrowthMetrics = {
 }
 
 export function AgencyManagementPage() {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [selectedTab, setSelectedTab] = useState('overview')
   const [selectedContract, setSelectedContract] = useState<ClientContract | null>(null)
   const [filterStatus, setFilterStatus] = useState('all')
@@ -487,33 +491,43 @@ export function AgencyManagementPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-[#64f481]/20 rounded-lg">
-            <Building2 className="h-8 w-8 text-[#64f481]" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Agency Management</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Controle financeiro, contratos e performance interna da agência
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            Exportar Relatório
-          </Button>
-          <Button className="bg-[#64f481] hover:bg-[#50d66f] text-black">
-            <Plus className="h-4 w-4 mr-2" />
-            Novo Contrato
-          </Button>
-        </div>
-      </div>
+    <div className="bg-gray-50 dark:bg-[#121212]">
+      <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
 
-      <Tabs value={selectedTab} onValueChange={setSelectedTab}>
+      {/* Main Content */}
+      <div className="lg:w-[calc(100%-16rem)] lg:ml-64 flex flex-col pt-16">
+        <Topbar
+          name="Gestão da Agência"
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+        />
+        <div className="p-6 space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-[#64f481]/20 rounded-lg">
+                <Building2 className="h-8 w-8 text-[#64f481]" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Agency Management</h1>
+                <p className="text-gray-600 dark:text-gray-400 mt-1">
+                  Controle financeiro, contratos e performance interna da agência
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline">
+                <Download className="h-4 w-4 mr-2" />
+                Exportar Relatório
+              </Button>
+              <Button className="bg-[#64f481] hover:bg-[#50d66f] text-black">
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Contrato
+              </Button>
+            </div>
+          </div>
+
+          <Tabs value={selectedTab} onValueChange={setSelectedTab}>
         <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="contracts">Contratos</TabsTrigger>
@@ -1354,6 +1368,10 @@ export function AgencyManagementPage() {
           onClose={() => setSelectedContract(null)}
         />
       )}
+        </div>
+      </div>
+      {/* Toast notifications */}
+      <Toaster />
     </div>
   )
 }

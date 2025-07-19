@@ -6,6 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Progress } from '@/components/ui/progress'
+import Sidebar from './sidebar'
+import Topbar from './Shared/Topbar'
+import { Toaster } from '@/components/ui/toaster'
 import { 
   Play, 
   Pause, 
@@ -115,6 +118,7 @@ const mockAIAgents: AIAgent[] = [
 ]
 
 export function WorkstationPage() {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
@@ -151,20 +155,30 @@ export function WorkstationPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Workstation</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Gerencie projetos individuais e acompanhe todas as etapas do workflow
-          </p>
-        </div>
-        <Button className="bg-[#64f481] hover:bg-[#50d66f] text-black">
-          <Plus className="h-4 w-4 mr-2" />
-          Novo Projeto
-        </Button>
-      </div>
+    <div className="bg-gray-50 dark:bg-[#121212]">
+      <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
+
+      {/* Main Content */}
+      <div className="lg:w-[calc(100%-16rem)] lg:ml-64 flex flex-col pt-16">
+        <Topbar
+          name="Estação de Trabalho"
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+        />
+        <div className="p-6 space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Workstation</h1>
+              <p className="text-gray-600 dark:text-gray-400 mt-1">
+                Gerencie projetos individuais e acompanhe todas as etapas do workflow
+              </p>
+            </div>
+            <Button className="bg-[#64f481] hover:bg-[#50d66f] text-black">
+              <Plus className="h-4 w-4 mr-2" />
+              Novo Projeto
+            </Button>
+          </div>
 
       {/* Filters */}
       <div className="flex items-center gap-4">
@@ -296,6 +310,10 @@ export function WorkstationPage() {
           onClose={() => setSelectedProject(null)} 
         />
       )}
+        </div>
+      </div>
+      {/* Toast notifications */}
+      <Toaster />
     </div>
   )
 }

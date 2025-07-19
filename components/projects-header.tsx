@@ -33,7 +33,7 @@ export default function ProjectsHeader({
   onFilterStatusChange,
 }: ProjectsHeaderProps) {
   return (
-    <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+    <div className="bg-white dark:bg-[#1e1e1e] border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10">
       <Topbar
         name="Project"
         sidebarOpen={sidebarOpen}
@@ -41,15 +41,15 @@ export default function ProjectsHeader({
       />
 
       {/* Filters Bar */}
-      <div className="border-t border-gray-100 px-4 sm:px-6 lg:px-8 py-3">
+      <div className="border-t border-gray-100 dark:border-gray-800 px-4 sm:px-6 lg:px-8 py-3">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-3 sm:space-y-0">
           <div className="flex items-center space-x-3 w-full sm:w-auto">
             <div className="relative w-full sm:w-64">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
               <Input
                 type="search"
                 placeholder="Search projects..."
-                className="pl-8 h-9 w-full sm:w-64 bg-gray-50 border-gray-200"
+                className="pl-8 h-9 w-full sm:w-64 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
               />
             </div>
 
@@ -113,15 +113,15 @@ export default function ProjectsHeader({
           </div>
 
           <div className="flex items-center space-x-2 w-full sm:w-auto justify-between sm:justify-end">
-            <div className="bg-gray-100 rounded-lg p-1 flex items-center">
+            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-1 flex items-center">
               <Button
                 variant="ghost"
                 size="sm"
                 className={cn(
                   "h-8 px-3 text-sm font-medium",
                   viewMode === "grid"
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50"
+                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm"
+                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-200/50 dark:hover:bg-gray-600/50"
                 )}
                 onClick={() => onViewModeChange("grid")}
               >
@@ -134,8 +134,8 @@ export default function ProjectsHeader({
                 className={cn(
                   "h-8 px-3 text-sm font-medium",
                   viewMode === "list"
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50"
+                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm"
+                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-200/50 dark:hover:bg-gray-600/50"
                 )}
                 onClick={() => onViewModeChange("list")}
               >

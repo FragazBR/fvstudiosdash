@@ -9,6 +9,9 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Progress } from '@/components/ui/progress'
+import Sidebar from './sidebar'
+import Topbar from './Shared/Topbar'
+import { Toaster } from '@/components/ui/toaster'
 import { 
   Bot, 
   Plus, 
@@ -91,6 +94,7 @@ const agentStats: Record<string, { tasksCompleted: number; timeSaved: number; ac
 }
 
 export function AIAgentsManager() {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [typeFilter, setTypeFilter] = useState('all')
@@ -140,23 +144,33 @@ export function AIAgentsManager() {
   const averageAccuracy = Object.values(agentStats).reduce((acc, stat) => acc + stat.accuracy, 0) / Object.values(agentStats).length
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">IA Agents</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Gerencie assistentes de IA para cada etapa do workflow da agência
-          </p>
-        </div>
-        <Button 
-          onClick={() => setShowCreateModal(true)}
-          className="bg-[#64f481] hover:bg-[#50d66f] text-black"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Novo Agent
-        </Button>
-      </div>
+    <div className="bg-gray-50 dark:bg-[#121212]">
+      <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
+
+      {/* Main Content */}
+      <div className="lg:w-[calc(100%-16rem)] lg:ml-64 flex flex-col pt-16">
+        <Topbar
+          name="IA Agents"
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+        />
+        <div className="p-6 space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">IA Agents</h1>
+              <p className="text-gray-600 dark:text-gray-400 mt-1">
+                Gerencie assistentes de IA para cada etapa do workflow da agência
+              </p>
+            </div>
+            <Button 
+              onClick={() => setShowCreateModal(true)}
+              className="bg-[#64f481] hover:bg-[#50d66f] text-black"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Novo Agent
+            </Button>
+          </div>
 
       {/* Overview Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -375,6 +389,10 @@ export function AIAgentsManager() {
       {showCreateModal && (
         <CreateAgentModal onClose={() => setShowCreateModal(false)} />
       )}
+        </div>
+      </div>
+      {/* Toast notifications */}
+      <Toaster />
     </div>
   )
 }

@@ -14,10 +14,22 @@ export const supabaseServer = async () => {
           return cookieStore.get(name)?.value
         },
         set(name, value, options) {
-          cookieStore.set({ name, value, ...options })
+          // Silently fail in read-only contexts
+          try {
+            cookieStore.set({ name, value, ...options })
+          } catch (error) {
+            // Cookie modification not available in this context
+            console.warn('Cookie modification attempted in read-only context:', name)
+          }
         },
         remove(name) {
-          cookieStore.set({ name, value: "", maxAge: -1 })
+          // Silently fail in read-only contexts
+          try {
+            cookieStore.set({ name, value: "", maxAge: -1 })
+          } catch (error) {
+            // Cookie modification not available in this context
+            console.warn('Cookie removal attempted in read-only context:', name)
+          }
         },
       },
     }

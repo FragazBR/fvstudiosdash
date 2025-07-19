@@ -19,6 +19,7 @@ import {
   ChevronUp,
   Bot,
   Building2,
+  Users,
 } from "lucide-react";
 import { useState } from "react";
 import { SearchModal } from "./search-modal";
@@ -52,6 +53,26 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   const { theme, resolvedTheme } = useTheme();
   const { user, loading } = useUser();
 
+  // Função para determinar a home page baseada no role
+  const getHomePage = () => {
+    if (!user?.role) return '/login';
+    
+    switch (user.role) {
+      case 'admin':
+        return '/admin';
+      case 'agency':
+        return '/dashboard';
+      case 'user':
+        return '/dashboard'; // Usuários também vão para dashboard
+      case 'personal':
+        return '/personal/dashboard';
+      case 'client':
+        return `/client/${user.id}`;
+      default:
+        return '/dashboard';
+    }
+  };
+
   const visiableProjects = showAllProjects ? projects : projects.slice(0, 3);
   const visiableMessages = showAllMessage ? messages : messages.slice(0, 3);
 
@@ -74,7 +95,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
         )}
       >
         <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200 dark:border-[#272727]">
-          <Link href="/" className="flex items-center space-x-3">
+          <Link href={getHomePage()} className="flex items-center space-x-3">
             <div className="h-8 w-8 relative">
               <Image
                 src={resolvedTheme === 'dark' ? "/logo-c-white.png" : "/logo-c.png"}
@@ -108,17 +129,18 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
 
         <div className="h-[calc(100vh-4rem)] px-3 py-4">
           <nav className="space-y-1 mb-6">
-            <NavItem href="/" icon={Home}>Home</NavItem>
+            <NavItem href={getHomePage()} icon={Home}>Home</NavItem>
             <NavItem href="/dashboard" icon={LayoutGrid}>Dashboard</NavItem>
-            <NavItem href="/projects" icon={FileText}>Projects</NavItem>
-            <NavItem href="/workstation" icon={LayoutGrid}>Workstation</NavItem>
-            <NavItem href="/calendar" icon={Calendar}>Calendar</NavItem>
-            <NavItem href="/messages" icon={ContactRound}>Messages</NavItem>
+            <NavItem href="/contas" icon={Users}>Contas</NavItem>
+            <NavItem href="/projects" icon={FileText}>Projetos</NavItem>
+            <NavItem href="/workstation" icon={LayoutGrid}>Estação de Trabalho</NavItem>
+            <NavItem href="/calendar" icon={Calendar}>Calendário</NavItem>
+            <NavItem href="/messages" icon={ContactRound}>Mensagens</NavItem>
             <NavItem href="/ai-agents" icon={Bot}>IA Agents</NavItem>
             {canAccessAgency && (
-              <NavItem href="/agency" icon={Building2}>Agency</NavItem>
+              <NavItem href="/agency" icon={Building2}>Agência</NavItem>
             )}
-            <NavItem href="/notifications" icon={Bell}>Notifications</NavItem>
+            <NavItem href="/notifications" icon={Bell}>Notificações</NavItem>
             <NavItem
               href="#"
               icon={Search}
@@ -127,11 +149,11 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
                 setSearchModalOpen(true);
               }}
             >
-              Search
+              Buscar
             </NavItem>
           </nav>
 
-          <Section title="Latest Projects">
+          <Section title="Projetos Recentes">
             {visiableProjects.map(({ name, completed, link, color }, idx) => (
               <ProjectItem key={idx} name={name} href={link} color={color} status={completed} />
             ))}
@@ -143,7 +165,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
             )}
           </Section>
 
-          <Section title="Latest Message">
+          <Section title="Mensagens Recentes">
             {visiableMessages.map(({ name, message, avatar, time, unread }, idx) => (
               <MessageItem key={idx} name={name} message={message} avatar={avatar} time={time} unread={unread} />
             ))}
