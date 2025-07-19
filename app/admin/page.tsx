@@ -7,16 +7,13 @@ import { CampaignChart } from "@/components/CampaignChart";
 import { CreateClientForm } from "@/components/CreateClientForm";
 import ListClients from "@/components/ListClients";
 import React from "react";
-
-import { getTranslation } from "@/lib/utils-ssr";
 import { supabaseServer } from "@/lib/supabaseServer";
 
 
 export default async function AdminPage() {
-  const t = await getTranslation();
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">{t("dashboard.agencyPanel")}</h1>
+      <h1 className="text-2xl font-bold">Painel Administrativo</h1>
       <CreateClientForm />
       <ListClients />
       <PerformanceMetrics />

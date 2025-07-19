@@ -9,13 +9,13 @@ import { DonutChart } from "./donut-chart";
 import { AreaChart } from "./area-chart";
 import { BarChart } from "./bar-chart";
 import Link from "next/link";
-import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useUser } from "@/hooks/useUser";
 
 type projectT = {
   id: number;
@@ -199,6 +199,10 @@ type DashboardProps = {
 
 export default function Dashboard({ userMode }: DashboardProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user } = useUser();
+  
+  // Verifica se o usuário é admin
+  const isAdmin = user?.role === 'admin';
 
   return (
     <div className="bg-gray-50">
@@ -210,6 +214,78 @@ export default function Dashboard({ userMode }: DashboardProps) {
           setSidebarOpen={setSidebarOpen}
         />
         <main className="flex-1 overflow-y-auto p-3 lg:p-6">
+          {/* Admin Badge */}
+          {isAdmin && (
+            <div className="bg-red-100 border border-red-200 text-red-800 px-4 py-2 rounded-md mb-4 flex items-center">
+              <span className="font-semibold">🔑 Modo Administrador</span>
+              <span className="ml-2 text-sm">Você tem acesso completo a todos os recursos</span>
+            </div>
+          )}
+
+          {/* Admin Dashboard Quick Access */}
+          {isAdmin && (
+            <section className="mb-8">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Acesso Rápido de Administrador</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Link href="/admin" className="block">
+                  <div className="bg-white p-4 rounded-lg shadow-sm border hover:shadow-md transition-shadow">
+                    <div className="flex items-center">
+                      <div className="bg-red-100 p-2 rounded-lg">
+                        <BarChart2 className="h-6 w-6 text-red-600" />
+                      </div>
+                      <div className="ml-3">
+                        <h3 className="font-semibold text-gray-900">Admin Panel</h3>
+                        <p className="text-sm text-gray-600">Gerenciar sistema</p>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+                
+                <Link href="/user/dashboard" className="block">
+                  <div className="bg-white p-4 rounded-lg shadow-sm border hover:shadow-md transition-shadow">
+                    <div className="flex items-center">
+                      <div className="bg-blue-100 p-2 rounded-lg">
+                        <FileText className="h-6 w-6 text-blue-600" />
+                      </div>
+                      <div className="ml-3">
+                        <h3 className="font-semibold text-gray-900">User Dashboard</h3>
+                        <p className="text-sm text-gray-600">Visão do usuário</p>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+
+                <Link href="/personal/dashboard" className="block">
+                  <div className="bg-white p-4 rounded-lg shadow-sm border hover:shadow-md transition-shadow">
+                    <div className="flex items-center">
+                      <div className="bg-green-100 p-2 rounded-lg">
+                        <Star className="h-6 w-6 text-green-600" />
+                      </div>
+                      <div className="ml-3">
+                        <h3 className="font-semibold text-gray-900">Personal</h3>
+                        <p className="text-sm text-gray-600">Dashboard pessoal</p>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+
+                <Link href="/client" className="block">
+                  <div className="bg-white p-4 rounded-lg shadow-sm border hover:shadow-md transition-shadow">
+                    <div className="flex items-center">
+                      <div className="bg-purple-100 p-2 rounded-lg">
+                        <AlertCircle className="h-6 w-6 text-purple-600" />
+                      </div>
+                      <div className="ml-3">
+                        <h3 className="font-semibold text-gray-900">Client Area</h3>
+                        <p className="text-sm text-gray-600">Área do cliente</p>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </div>
+            </section>
+          )}
+          
           {userMode && (
             <div className="text-sm text-gray-500 mb-4">Modo usuário autônomo: recursos de compartilhamento desabilitados.</div>
           )}

@@ -80,7 +80,8 @@ export default function LoginPage() {
       // Redireciona baseado no role
       let redirectPath = '';
       if (role === 'admin') {
-        redirectPath = '/admin';
+        // Admin tem acesso completo - redireciona para dashboard principal
+        redirectPath = '/dashboard';
       } else if (role === 'agency') {
         redirectPath = '/dashboard';
       } else if (role === 'user') {
