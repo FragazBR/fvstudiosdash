@@ -13,7 +13,7 @@ export default function ContactsPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   return (
-    <div className=" bg-gray-50">
+    <div className=" bg-gray-50 dark:bg-gray-900">
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
 
       {/* Main Content */}
@@ -30,7 +30,7 @@ export default function ContactsPage() {
         />
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto bg-gray-50 p-3 lg:p-6">
+        <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 p-3 lg:p-6">
           <ContactsList
             viewMode={viewMode}
             filterTag={filterTag}

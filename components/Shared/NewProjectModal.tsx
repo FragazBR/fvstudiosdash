@@ -66,18 +66,18 @@ const NewProjectModal = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button className="hidden md:flex bg-blue-600 hover:bg-blue-700">
+        <Button className="hidden md:flex bg-green-600 hover:bg-green-700 text-white border-0">
           <Plus className="h-4 w-4 mr-2" />
           New Project
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="hidden md:block w-full lg:max-w-[900px] h-full lg:h-max overflow-y-auto">
+      <DialogContent className="hidden md:block w-full lg:max-w-[900px] h-full lg:h-max overflow-y-auto bg-black/95 border-white/10 backdrop-blur-xl">
         <DialogHeader>
-          <DialogTitle className="text-xl lg:text-2xl">
+          <DialogTitle className="text-xl lg:text-2xl text-gray-100">
             Create New Project
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-gray-400">
             Fill in the details to create a new project.
           </DialogDescription>
         </DialogHeader>
@@ -90,21 +90,22 @@ const NewProjectModal = () => {
               <div className="space-y-2">
                 <label
                   htmlFor="project-name"
-                  className="block text-lg md:text-xl font-medium"
+                  className="block text-lg md:text-xl font-medium text-gray-100"
                 >
-                  Project name<span className="text-red-500">*</span>
+                  Project name<span className="text-red-400">*</span>
                 </label>
                 <Input
                   id="project-name"
                   placeholder="Project name"
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
+                  className="bg-white/5 border-white/10 text-gray-100 placeholder:text-gray-400"
                 />
               </div>
 
               {/* Team Section */}
               <div className="mt-5">
-                <h3 className="text-lg lg:text-xl font-medium mb-3">Team</h3>
+                <h3 className="text-lg lg:text-xl font-medium mb-3 text-gray-100">Team</h3>
                 <div className="space-y-3">
                   {teamMembers.map(
                     (
@@ -136,8 +137,8 @@ const NewProjectModal = () => {
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-medium">{name}</p>
-                            <p className="text-sm text-gray-500">{role}</p>
+                            <p className="font-medium text-gray-100">{name}</p>
+                            <p className="text-sm text-gray-400">{role}</p>
                           </div>
                         </div>
                         <Select defaultValue={permission.toLowerCase()}>
@@ -254,16 +255,16 @@ const NewProjectModal = () => {
                 </TabsContent>
               </Tabs>
               <div className="flex justify-end mt-4 lg:mt-8">
-                <Button variant="outline">Update</Button>
+                <Button variant="outline" className="bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:text-gray-100">Update</Button>
               </div>
             </div>
           </div>
         </div>
 
         <DialogFooter className="sm:justify-start gap-2 mt-4">
-          <Button type="submit">Create</Button>
+          <Button type="submit" className="bg-green-600 hover:bg-green-700 text-white">Create</Button>
           <DialogClose asChild>
-            <Button type="button" variant="secondary">
+            <Button type="button" variant="secondary" className="bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:text-gray-100">
               Cancel
             </Button>
           </DialogClose>

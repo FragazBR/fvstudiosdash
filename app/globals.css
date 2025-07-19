@@ -1,9 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 @layer utilities {
@@ -14,13 +20,14 @@ body {
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    /* Light mode - cores claras com cinza degradê ao invés de verde */
+    --background: 0 0% 98%;       /* #fafafa - background principal mais suave */
+    --foreground: 0 0% 9%;        /* Texto escuro */
+    --card: 0 0% 100%;            /* #ffffff - background dos cards */
+    --card-foreground: 0 0% 9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
+    --popover-foreground: 0 0% 9%;
+    --primary: 0 0% 25%;          /* Cinza escuro ao invés de verde */
     --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
@@ -30,23 +37,59 @@ body {
     --accent-foreground: 0 0% 9%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
+    --border: 0 0% 89.8%;         /* #e5e5e5 - bordas suaves */
     --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --ring: 0 0% 25%;             /* Cinza para focus */
+    --chart-1: 0 0% 40%;          /* Cinza médio */
+    --chart-2: 210 100% 50%;      /* Azul */
+    --chart-3: 35 100% 50%;       /* Laranja */
+    --chart-4: 280 100% 50%;      /* Roxo */
+    --chart-5: 340 100% 50%;      /* Rosa */
     --radius: 0.5rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-background: 0 0% 100%;      /* #ffffff - sidebar branca */
+    --sidebar-foreground: 0 0% 45%;       /* Cinza médio para links */
+    --sidebar-primary: 0 0% 25%;          /* Cinza escuro para items ativos */
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 0 0% 94%;           /* Hover com cinza claro */
+    --sidebar-accent-foreground: 0 0% 25%;
+    --sidebar-border: 0 0% 89.8%;         /* Bordas suaves */
+    --sidebar-ring: 0 0% 25%;
+  }
+
+  .dark {
+    /* Supabase cores exatas coletadas manualmente */
+    --background: 0 0% 7.1%;     /* #121212 - background principal do site */
+    --foreground: 0 0% 90%;      /* Branco acinzentado para textos principais */
+    --card: 0 0% 9.0%;           /* #171717 - background das tabelas e cards */
+    --card-foreground: 0 0% 88%;
+    --popover: 0 0% 9.0%;
+    --popover-foreground: 0 0% 88%;
+    --primary: 142 76% 73%;      /* #64f481 - verde exato das imagens Supabase */
+    --primary-foreground: 0 0% 7.1%;
+    --secondary: 0 0% 11%;       /* #1c1c1c - elementos secundários */
+    --secondary-foreground: 0 0% 75%;
+    --muted: 0 0% 11%;
+    --muted-foreground: 0 0% 45%;    /* #737373 - cinza médio para textos auxiliares */
+    --accent: 0 0% 11%;
+    --accent-foreground: 0 0% 75%;
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 0 0% 88%;
+    --border: 0 0% 15.3%;        /* #272727 - bordas das tabelas e cards */
+    --input: 0 0% 11%;
+    --ring: 142 76% 73%;         /* Verde para focus */
+    --chart-1: 142 76% 73%;      /* Verde Supabase */
+    --chart-2: 210 100% 70%;     /* Azul */
+    --chart-3: 35 100% 60%;      /* Laranja */
+    --chart-4: 280 100% 70%;     /* Roxo */
+    --chart-5: 340 100% 70%;     /* Rosa */
+    --sidebar-background: 0 0% 9.0%;     /* #171717 - background da sidebar */
+    --sidebar-foreground: 0 0% 55%;      /* Cinza médio para links normais */
+    --sidebar-primary: 142 76% 73%;      /* Verde para items ativos */
+    --sidebar-primary-foreground: 0 0% 7.1%;
+    --sidebar-accent: 0 0% 11.8%;        /* #1e1e1e - hover mais sutil */
+    --sidebar-accent-foreground: 142 76% 73%;
+    --sidebar-border: 0 0% 15.3%;        /* #272727 - bordas */
+    --sidebar-ring: 142 76% 73%;
   }
 }
 
@@ -56,5 +99,10 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+  }
+  
+  /* Fix gradient override in dark mode */
+  .dark .bg-gradient-to-r.dark\:bg-\[\#64f481\]\/10 {
+    background: rgba(100, 244, 129, 0.1) !important;
   }
 }

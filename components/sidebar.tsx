@@ -17,11 +17,14 @@ import {
   ContactRound,
   ChevronDown,
   ChevronUp,
+  Bot,
+  Building2,
 } from "lucide-react";
 import { useState } from "react";
 import { SearchModal } from "./search-modal";
 import { useTheme } from "next-themes";
 import { useUser } from "@/hooks/useUser";
+import { isAgencyOwnerOrAdmin } from "@/lib/permissions";
 import Image from "next/image";
 
 interface SidebarProps {
@@ -52,6 +55,9 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   const visiableProjects = showAllProjects ? projects : projects.slice(0, 3);
   const visiableMessages = showAllMessage ? messages : messages.slice(0, 3);
 
+  // Verificar se o usuário pode acessar o módulo Agency
+  const canAccessAgency = isAgencyOwnerOrAdmin(user?.role);
+
   return (
     <>
       {open && (
@@ -63,11 +69,11 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
 
       <div
         className={cn(
-          "fixed top-0 bottom-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transition-transform duration-500 ease-in-out lg:translate-x-0 overflow-y-auto",
+          "fixed top-0 bottom-0 left-0 z-50 w-64 bg-white dark:bg-[#171717] border-r border-gray-200 dark:border-[#272727] transition-transform duration-500 ease-in-out lg:translate-x-0 overflow-y-auto backdrop-blur-xl",
           open ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
+        <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200 dark:border-[#272727]">
           <Link href="/" className="flex items-center space-x-3">
             <div className="h-8 w-8 relative">
               <Image
@@ -93,7 +99,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
             variant="ghost"
             size="icon"
             onClick={() => setOpen(false)}
-            className="lg:hidden"
+            className="lg:hidden text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#1e1e1e]/80"
           >
             <X className="h-5 w-5" />
             <span className="sr-only">Fechar sidebar</span>
@@ -105,9 +111,13 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
             <NavItem href="/" icon={Home}>Home</NavItem>
             <NavItem href="/dashboard" icon={LayoutGrid}>Dashboard</NavItem>
             <NavItem href="/projects" icon={FileText}>Projects</NavItem>
-            <NavItem href="/kanban" icon={LayoutGrid}>Kanban</NavItem>
+            <NavItem href="/workstation" icon={LayoutGrid}>Workstation</NavItem>
             <NavItem href="/calendar" icon={Calendar}>Calendar</NavItem>
-            <NavItem href="/contacts" icon={ContactRound}>Contacts</NavItem>
+            <NavItem href="/messages" icon={ContactRound}>Messages</NavItem>
+            <NavItem href="/ai-agents" icon={Bot}>IA Agents</NavItem>
+            {canAccessAgency && (
+              <NavItem href="/agency" icon={Building2}>Agency</NavItem>
+            )}
             <NavItem href="/notifications" icon={Bell}>Notifications</NavItem>
             <NavItem
               href="#"
@@ -158,7 +168,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mb-6">
-      <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 mb-2">
+      <h3 className="text-xs font-medium text-gray-400 dark:text-[#737373] uppercase tracking-wider px-3 mb-3 font-inter">
         {title}
       </h3>
       <div className="space-y-1">{children}</div>
@@ -171,7 +181,7 @@ function SectionToggle({ expanded, onToggle }: { expanded: boolean; onToggle: ()
     <Button
       variant="ghost"
       size="sm"
-      className="w-full justify-start mt-2 text-xs text-gray-500"
+      className="w-full justify-start mt-2 text-xs text-gray-400 dark:text-[#737373] hover:text-slate-700 dark:hover:text-gray-300 hover:bg-slate-50 dark:hover:bg-[#1e1e1e]/80 transition-colors font-inter"
       onClick={onToggle}
     >
       {expanded ? "Menos" : "Ver todos"}
@@ -204,12 +214,21 @@ function NavItem({
     <Link
       href={href}
       className={cn(
-        "flex items-center px-3 py-2 text-sm font-medium rounded-md",
-        isActive ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-100"
+        "group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 font-inter",
+        isActive 
+          ? "text-slate-800 border-r-2 border-slate-600 dark:bg-[#64f481]/10 dark:text-[#64f481] dark:border-[#64f481]" 
+          : "text-gray-600 dark:text-[#737373] hover:text-gray-900 dark:hover:text-gray-200 hover:bg-slate-50 dark:hover:bg-[#1e1e1e]/80",
+        // Aplicar gradient apenas quando ativo (será sobrescrito no dark)
+        isActive && "bg-gradient-to-r from-slate-100 to-slate-200"
       )}
       onClick={onClick}
     >
-      <Icon className={cn("h-5 w-5 mr-3", isActive ? "text-blue-700" : "text-gray-500")} />
+      <Icon className={cn(
+        "h-5 w-5 mr-3 transition-colors", 
+        isActive 
+          ? "text-slate-700 dark:text-[#64f481]" 
+          : "text-gray-400 dark:text-[#6b7280] group-hover:text-slate-600 dark:group-hover:text-gray-300"
+      )} />
       {children}
     </Link>
   );
@@ -219,16 +238,16 @@ function ProjectItem({ name, href, color, status }: any) {
   return (
     <Link
       href={href}
-      className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-gray-100"
+      className="flex items-center px-3 py-2.5 text-sm rounded-lg text-gray-600 dark:text-[#737373] hover:text-gray-900 dark:hover:text-gray-200 hover:bg-slate-50 dark:hover:bg-[#1e1e1e]/80 transition-colors font-inter"
     >
       <span className={`h-2 w-2 rounded-full ${color} mr-3`} />
-      <span className="text-gray-700">{name}</span>
+      <span className="flex-1">{name}</span>
       <span
         className={cn(
-          "ml-auto text-xs px-1.5 py-0.5 rounded-full",
-          status === "planning" && "bg-blue-100 text-blue-800",
-          status === "progress" && "bg-yellow-100 text-yellow-800",
-          status === "completed" && "bg-green-100 text-green-800"
+          "ml-auto text-xs px-2 py-1 rounded-full font-medium",
+          status === "planning" && "bg-blue-500/20 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400",
+          status === "progress" && "bg-amber-500/20 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400",
+          status === "completed" && "bg-slate-500/20 text-slate-700 dark:bg-[#64f481]/20 dark:text-[#64f481]"
         )}
       >
         {status === "progress"
@@ -243,7 +262,7 @@ function MessageItem({ name, message, avatar, time, unread }: any) {
   return (
     <Link
       href="/messages"
-      className="flex items-center px-3 py-2 rounded-md hover:bg-gray-100"
+      className="flex items-center px-3 py-2.5 rounded-lg text-gray-600 dark:text-[#737373] hover:text-gray-900 dark:hover:text-gray-200 hover:bg-slate-50 dark:hover:bg-[#1e1e1e]/80 transition-colors font-inter"
     >
       <Avatar className="h-8 w-8 mr-3">
         <AvatarImage src={avatar || "/placeholder.svg"} alt={name} />
@@ -251,14 +270,14 @@ function MessageItem({ name, message, avatar, time, unread }: any) {
       </Avatar>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between">
-          <span className={cn("text-sm font-medium", unread ? "text-gray-900" : "text-gray-700")}>
+          <span className={cn("text-sm font-medium", unread ? "text-gray-800 dark:text-gray-200" : "text-gray-600 dark:text-[#737373]")}>
             {name}
           </span>
-          <span className="text-xs text-gray-500">{time}</span>
+          <span className="text-xs text-gray-400 dark:text-[#737373]">{time}</span>
         </div>
-        <p className="text-xs text-gray-500 truncate">{message}</p>
+        <p className="text-xs text-gray-500 dark:text-[#737373] truncate">{message}</p>
       </div>
-      {unread && <span className="h-2 w-2 bg-blue-600 rounded-full ml-2" />}
+      {unread && <span className="h-2 w-2 bg-slate-600 dark:bg-[#64f481] rounded-full ml-2" />}
     </Link>
   );
 }

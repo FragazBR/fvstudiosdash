@@ -4,7 +4,7 @@
 import { useUser } from '@/hooks/useUser'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import Dashboard from "@/components/dashboard";
+import { AgencyDashboard } from "@/components/agency-dashboard";
 
 export default function DashboardPage() {
   const { user, loading } = useUser()
@@ -32,5 +32,5 @@ export default function DashboardPage() {
     return null
   }
 
-  return <Dashboard />;
+  return <AgencyDashboard />;
 }

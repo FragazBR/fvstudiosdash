@@ -636,7 +636,7 @@ function ProjectActions({
           <Star
             className={cn(
               "h-4 w-4 mr-2",
-              project.starred && "fill-yellow-500 text-yellow-500"
+              project.starred ? "fill-yellow-500 text-yellow-500" : "text-gray-500 dark:text-[#6b7280]"
             )}
           />
           <span>{project.starred ? "Remove Star" : "Star Project"}</span>

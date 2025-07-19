@@ -12,7 +12,7 @@ export default function ProjectsPage() {
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
 
   return (
-    <div className="bg-gray-50">
+    <div className="bg-gray-50 dark:bg-[#121212]">
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
 
       {/* Main Content */}
@@ -27,7 +27,7 @@ export default function ProjectsPage() {
         />
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto min-h-0 bg-gray-50 p-3 lg:p-6">
+        <main className="flex-1 overflow-y-auto min-h-0 bg-gray-50 dark:bg-[#121212] p-3 lg:p-6">
           <ProjectsList viewMode={viewMode} filterStatus={filterStatus} />
         </main>
       </div>

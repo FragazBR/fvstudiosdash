@@ -17,7 +17,7 @@ export default function CalendarPage({ personalMode }: CalendarPageProps) {
   const [filterAssignee, setFilterAssignee] = useState<string | null>(null);
 
   return (
-    <div className="bg-gray-50">
+    <div className="bg-gray-50 dark:bg-gray-900">
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
 
       <div className="lg:w-[calc(100%-16rem)] lg:ml-64 flex flex-col overflow-hidden pt-16">
@@ -33,7 +33,7 @@ export default function CalendarPage({ personalMode }: CalendarPageProps) {
         />
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto bg-gray-50">
+        <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900">
           <CalendarWrapper
             view={view}
             filterProject={filterProject}

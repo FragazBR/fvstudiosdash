@@ -111,7 +111,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 px-4">
       {/* Logo fora da caixa */}
       <div className="text-center mb-8">
         <div className="relative w-16 h-16 mx-auto mb-4">
@@ -132,15 +132,15 @@ export default function LoginPage() {
             priority
           />
         </div>
-        <p className="text-gray-600 mt-2">Dashboard de Gerenciamento</p>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">Dashboard de Gerenciamento</p>
       </div>
       
       <form
         onSubmit={handleLogin}
-        className="bg-white p-6 rounded-lg shadow-md w-full max-w-sm space-y-4"
+        className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md w-full max-w-sm space-y-4"
       >
         <div className="text-center mb-6">
-          <p className="text-gray-600">Faça login na sua conta</p>
+          <p className="text-gray-600 dark:text-gray-400">Faça login na sua conta</p>
         </div>
         
         <input
@@ -148,7 +148,7 @@ export default function LoginPage() {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full border border-gray-300 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
           disabled={loading}
         />
@@ -158,7 +158,7 @@ export default function LoginPage() {
           placeholder="Senha"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full border border-gray-300 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
           disabled={loading}
         />

@@ -16,7 +16,7 @@ export default function KanbanPage({ personalMode }: KanbanPageProps) {
   const [filterPriority, setFilterPriority] = useState<string | null>(null);
 
   return (
-    <div className="bg-gray-50">
+    <div className="bg-gray-50 dark:bg-gray-900">
       {personalMode && (
         <div className="text-sm text-gray-500 mb-4">Modo pessoal: recursos limitados.</div>
       )}
@@ -32,7 +32,7 @@ export default function KanbanPage({ personalMode }: KanbanPageProps) {
           filterPriority={filterPriority}
           onFilterPriorityChange={setFilterPriority}
         />
-        <main className="flex-1 overflow-y-auto bg-gray-50">
+        <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900">
           <KanbanBoard
             filterProject={filterProject}
             filterAssignee={filterAssignee}

@@ -21,7 +21,7 @@ const mockClients: Client[] = [
 
 function ListClients() {
   return (
-    <div className="w-full bg-white p-4 rounded-2xl shadow-md">
+    <div className="w-full bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md">
       <h2 className="text-xl font-semibold mb-4">Lista de Clientes</h2>
       <table className="w-full text-left">
         <thead>
@@ -33,7 +33,7 @@ function ListClients() {
         </thead>
         <tbody>
           {mockClients.map(client => (
-            <tr key={client.id} className="border-b hover:bg-gray-50">
+            <tr key={client.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
               <td className="py-2">{client.name}</td>
               <td className="py-2">{client.email}</td>
               <td className="py-2">

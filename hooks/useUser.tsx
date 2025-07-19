@@ -50,11 +50,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             .single();
 
           if (profile && !error) {
+            // Para demonstração: verificar se há um role simulado
+            const demoRole = typeof window !== 'undefined' ? localStorage.getItem('demo_user_role') : null;
+            
             setUser({
               id: profile.id,
               name: profile.name || undefined,
               email: profile.email || session.user.email || undefined,
-              role: profile.role || undefined,
+              role: demoRole || profile.role || undefined,
               agency_id: profile.agency_id || undefined,
               phone: profile.phone || undefined,
               avatar_url: profile.avatar_url || undefined,
