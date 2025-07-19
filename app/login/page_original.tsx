@@ -3,11 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabaseBrowser'
-import { useTranslation } from 'react-i18next'
-import { Logo } from '@/components/ui/logo'
 
 export default function LoginPage() {
-  const { t } = useTranslation();
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -27,7 +24,7 @@ export default function LoginPage() {
       })
 
       if (loginError || !data.user) {
-        setError(t('login.invalidCredentials'))
+        setError('Email ou senha inválidos')
         return
       }
 
@@ -41,20 +38,25 @@ export default function LoginPage() {
       console.log('Login success:', { profile, user: data.user })
 
       if (profileError || !profile) {
+        console.log('Perfil não encontrado, criando novo perfil...')
         // Se não tem perfil, cria um básico
         const { data: newProfile } = await supabase
           .from('profiles')
           .insert({
             id: data.user.id,
             email: data.user.email,
+            name: data.user.email?.split('@')[0] || 'Usuário',
             role: 'personal',
           })
           .select('role, id')
           .single();
 
         if (newProfile) {
+          console.log('Novo perfil criado:', newProfile)
           // Redireciona para dashboard pessoal
-          router.replace('/personal/dashboard');
+          setTimeout(() => {
+            window.location.replace('/personal/dashboard');
+          }, 100);
         } else {
           setError('Erro ao criar perfil do usuário');
         }
@@ -62,12 +64,15 @@ export default function LoginPage() {
       }
 
       if (!profile.role) {
+        console.log('Perfil sem role:', profile)
         setError('Perfil do usuário sem role definido');
         return;
       }
 
       const role = profile.role
       const id = profile.id
+
+      console.log('Dados do perfil:', { role, id })
 
       // Redireciona baseado no role
       let redirectPath = '';
@@ -87,7 +92,11 @@ export default function LoginPage() {
       }
 
       console.log('Redirecionando para:', redirectPath);
-      router.replace(redirectPath);
+      
+      // Força redirecionamento imediato
+      setTimeout(() => {
+        window.location.replace(redirectPath);
+      }, 100);
       
     } catch (error) {
       console.error('Login error:', error);
@@ -101,7 +110,13 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4">
       {/* Logo fora da caixa */}
       <div className="text-center mb-8">
-        <Logo width={180} height={60} />
+        <img 
+          src="/Logotipo-FVstudios-Preto.png" 
+          alt="FVSTUDIOS" 
+          width={180} 
+          height={60}
+          className="mx-auto object-contain"
+        />
         <h1 className="mt-4 text-2xl font-bold text-gray-800">FVSTUDIOS</h1>
         <p className="text-gray-600">Dashboard de Gerenciamento</p>
       </div>
