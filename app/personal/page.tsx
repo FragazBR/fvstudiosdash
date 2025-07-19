@@ -3,9 +3,8 @@
 import { useUser } from '@/hooks/useUser'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import Dashboard from '@/components/dashboard'
 
-export default function UserDashboardPage() {
+export default function PersonalPage() {
   const { user, loading } = useUser()
   const router = useRouter()
 
@@ -16,8 +15,14 @@ export default function UserDashboardPage() {
         return
       }
       
-      // Admin tem acesso a tudo, user role também pode acessar
-      if (user.role !== 'admin' && user.role !== 'user') {
+      // Admin tem acesso a tudo, outros roles redirecionam para seu dashboard específico
+      if (user.role === 'admin') {
+        // Admin pode acessar, redireciona para dashboard pessoal
+        router.replace('/personal/dashboard')
+      } else if (user.role === 'personal') {
+        router.replace('/personal/dashboard')
+      } else {
+        // Outros roles não têm acesso direto ao personal
         router.replace('/unauthorized')
       }
     }
@@ -27,10 +32,5 @@ export default function UserDashboardPage() {
     return <div className="flex items-center justify-center min-h-screen">Carregando...</div>
   }
 
-  if (!user || (user.role !== 'admin' && user.role !== 'user')) {
-    return null
-  }
-
-  // Dashboard para user autônomo: igual agência, mas sem compartilhamento
-  return <Dashboard userMode />
+  return null
 }
