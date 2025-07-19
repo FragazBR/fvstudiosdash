@@ -1,8 +1,9 @@
-import i18n from "@/i18n";
+// Temporariamente desabilitado - conflitos createContext
+// import i18n from "@/i18n";
 
 export async function getTranslation(locale = "pt") {
-  // SSR-safe translation util
+  // SSR-safe translation util - desabilitado temporariamente
   return (key: string) => {
-    return i18n.t(key, { lng: locale });
+    return key; // Retorna a própria chave até resolver i18n
   };
 }
