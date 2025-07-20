@@ -2,7 +2,7 @@
 // Cliente Supabase configurado com os novos tipos
 
 import { createClient } from '@supabase/supabase-js'
-import type { Database } from '@/types/database'
+import type { Database } from '@/types/supabase'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -29,7 +29,7 @@ export const supabaseHelpers = {
           slug,
           logo_url
         ),
-        agency_member:agency_members!inner(
+      agency_member:agency_members!inner(
           id,
           role,
           permissions,
@@ -61,7 +61,7 @@ export const supabaseHelpers = {
           role,
           permissions,
           status,
-          user:profiles(
+          user:user_profiles(
             id,
             email,
             full_name,
@@ -102,7 +102,7 @@ export const supabaseHelpers = {
           id,
           role,
           permissions,
-          user:profiles(
+          user:user_profiles(
             id,
             full_name,
             avatar_url

@@ -23,26 +23,63 @@ Sistema de gerenciamento avançado para agências de marketing digital, seus cli
 
 ## 🏗️ Arquitetura Multi-Tenant
 
-### Hierarquia de Usuários
+## 🧱 Hierarquia de Usuários (Multi-Tenant)
+
+O sistema adota uma arquitetura multi-tenant com **isolamento rígido** entre clientes, agências, produtores independentes e usuários individuais.
+
+### 🧩 Fluxo Hierárquico
+
 ```
-🔧 Admin Global
-├── 🏢 Agência FV Studios (agency_owner: João)
-│   ├── 👤 Maria (agency_staff)
-│   ├── 💼 Cliente Empresa ABC (APIs próprias)
-│   ├── 💼 Cliente Loja XYZ (APIs próprias)
-│   └── 💼 Cliente Startup DEF (APIs próprias)
-├── 🏢 Agência Digital Growth (agency_owner: Carlos)
-│   ├── 👤 Julia (agency_staff)
-│   ├── 💼 Cliente Restaurante GHI
-│   └── 💼 Cliente Academia JKL
-└── 💼 Cliente Independente (sem agência)
+Admin Global
+├── Agência A
+│   ├── agency_owner
+│   ├── agency_staff
+│   ├── Cliente 1 (APIs próprias)
+│   └── Cliente 2 (APIs próprias)
+├── Agência B
+│   ├── agency_owner
+│   ├── agency_staff
+│   └── Clientes
+├── Produtor Independente
+│   └── Clientes individuais
+├── Produtor de Conteúdo / Influencer
+└── Usuário do Plano Gratuito
 ```
 
 ### 4 Roles Principais
-- **`admin`**: Vê e gerencia todo o sistema globalmente
-- **`agency_owner`**: Gerencia sua agência e todos os clientes
-- **`agency_staff`**: Acessa dados dos clientes da sua agência
-- **`client`**: Vê apenas seus próprios dados e configurações
+- **admin**: Acesso global ao sistema, configurações, planos e gerenciamento de todos os usuários.
+- **agency_owner**: Gerencia colaboradores, clientes, contratos e estrutura de produção.
+- **agency_staff**: Visualiza e interage com os projetos e clientes da sua própria agência.
+- **agency_client**: Acesso somente aos seus próprios dados, APIs e visualização de projetos.
+- **independent_producer**: Acesso completo à estrutura de agência, mas para uso individual e clientes próprios.
+- **independent_client**: Acesso somente aos seus próprios dados, APIs e visualização de projetos.
+- **influencer**: Ferramentas individuais, sem visibilidade ou interação com outros usuários.
+- **free_user**: Acesso limitado a ferramentas e sem recursos premium (ex: IA, automações).
+
+### 🔐 Segurança de Dados
+
+- Cada cliente, agência ou produtor só acessa **suas próprias informações**.
+- Toda tabela possui filtros por `agency_id`, `producer_id` ou `client_id`.
+- Supabase RLS ativa para todas as entidades sensíveis.
+- Nenhum cliente ou colaborador pode visualizar dados de outro cliente.
+- Tokens de sessão carregam escopo autorizado (planos, IDs, permissões).
+
+### 🔄 Acesso Controlado (exemplos)
+
+| Módulo          | admin | agency_owner | agency_staff | client | independent | influencer | free_user |
+|----------------|:-----:|:------------:|:------------:|:------:|:-----------:|:----------:|:---------:|
+| Dashboard       | ✅    | ✅           | ✅           | ✅     | ✅          | ✅         | ✅        |
+| Projetos        | ✅    | ✅           | ✅           | 🔍     | ✅          | ❌         | ❌        |
+| Workstation     | ✅    | ✅           | ✅           | 🔍     | ✅          | ✅         | ❌        |
+| Tarefas         | ✅    | ✅           | ✅           | 🔍     | ✅          | ✅         | ❌        |
+| Calendário      | ✅    | ✅           | ✅           | 🔍     | ✅          | ✅         | ❌        |
+| Mensagens       | ✅    | ✅           | ✅           | ✅     | ✅          | ❌         | ❌        |
+| IA Agents       | ✅    | ✅           | ✅           | ✅     | ✅          | ✅         | ❌        |
+| Gerenciar Usuários | ✅ | ✅           | ❌           | ❌     | ✅          | ❌         | ❌        |
+| Agência         | ✅    | ✅           | ❌           | ❌     | ❌          | ❌         | ❌        |
+
+> 🔍 = acesso somente leitura
+
 
 ## 💰 Planos de Assinatura
 
@@ -255,15 +292,18 @@ Para dúvidas ou suporte:
 ---
 
 **FVStudios Dashboard** - Sistema profissional para agências de marketing digital 🚀
-2. Criação automática de perfil na tabela `profiles`
+
+2. Criação automática de perfil na tabela `user_profiles`
 3. Middleware verifica role e redireciona para área apropriada
 4. Context Provider gerencia estado global do usuário
+5. Tipagem automática do Supabase Client usando o tipo `Database` gerado
 
 ## 🗄️ Schema do Banco de Dados
 
+
 ### Tabelas Principais
 
-- **profiles**: Perfis de usuário e roles
+- **user_profiles**: Perfis de usuário e roles
 - **agencies**: Dados das agências
 - **clients**: Informações dos clientes
 - **projects**: Projetos e campanhas
@@ -329,14 +369,35 @@ Acesse [http://localhost:3000](http://localhost:3000)
 
 ## 🔐 Autenticação e Segurança
 
+
 ### Row Level Security (RLS)
 
 Todas as tabelas possuem políticas RLS configuradas:
 
-- **profiles**: Usuários só acessam seu próprio perfil
+- **user_profiles**: Usuários só acessam seu próprio perfil
 - **projects**: Acesso baseado em agency_id ou client_id
 - **tasks**: Acesso para assignees e membros do projeto
 - **messages**: Apenas sender e receiver
+## 📝 Tipagem Automática do Supabase Client
+
+Para garantir segurança de tipos e alinhamento com o schema real do Supabase, utilize o tipo `Database` gerado automaticamente:
+
+1. Gere os tipos:
+   ```bash
+   npx supabase gen types typescript --project-id "SEU_PROJECT_ID" --schema public > types/supabase.ts
+   ```
+2. Importe e use no seu client:
+   ```ts
+   import { createClient } from '@supabase/supabase-js'
+   import type { Database } from '@/types/supabase'
+
+   export const supabase = createClient<Database>(
+     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+   )
+   ```
+
+Assim, todas as queries e inserts terão tipagem automática baseada no seu schema real.
 
 ### Middleware de Proteção
 

@@ -49,8 +49,23 @@ INSERT INTO public.user_profiles (
   ('c2222222-2222-2222-2222-222222222221', 'admin@restauranteghi.com', 'Lucia Ferreira', 'client', 'a2222222-2222-2222-2222-222222222222', 'Restaurante GHI', 'basic', 'active'),
   ('c2222222-2222-2222-2222-222222222222', 'owner@academijkl.com', 'Marcos Almeida', 'client', 'a2222222-2222-2222-2222-222222222222', 'Academia JKL', 'premium', 'active'),
   
-  -- Cliente Independente (sem agência)
-  ('c0000000-0000-0000-0000-000000000001', 'freelancer@exemplo.com', 'Sandra Ribeiro', 'client', NULL, 'Freelancer', 'free', 'active')
+  ('c0000000-0000-0000-0000-000000000001', 'freelancer@exemplo.com', 'Sandra Ribeiro', 'client', NULL, 'Freelancer', 'free', 'active'),
+
+  -- Independent Producer (com clientes próprios)
+  ('p0000000-0000-0000-0000-000000000001', 'produtor@independente.com', 'Lucas Martins', 'independent_producer', NULL, 'Lucas Martins MEI', 'premium', 'active'),
+
+  -- Cliente de Produtor Independente
+  ('p0000000-0000-0000-0000-000000000002', 'cliente1@independente.com', 'Cliente 1 do Lucas', 'independent_client', NULL, 'Cliente 1 do Lucas', 'basic', 'active'),
+  ('p0000000-0000-0000-0000-000000000003', 'cliente2@independente.com', 'Cliente 2 do Lucas', 'independent_client', NULL, 'Cliente 2 do Lucas', 'free', 'active'),
+
+  -- Agency Client (exemplo explícito)
+  ('a0000000-0000-0000-0000-000000000001', 'client1@agencia.com', 'Cliente 1 da Agência', 'agency_client', 'a1111111-1111-1111-1111-111111111111', 'Cliente 1 da Agência', 'basic', 'active'),
+
+  -- Influencer
+  ('i0000000-0000-0000-0000-000000000001', 'influencer@social.com', 'Paula Digital', 'influencer', NULL, 'Paula Digital', 'free', 'active'),
+
+  -- Free User
+  ('f0000000-0000-0000-0000-000000000001', 'freeuser@exemplo.com', 'Bruno Teste', 'free_user', NULL, 'Bruno Teste', 'free', 'active')
 ON CONFLICT (id) DO NOTHING;
 
 -- ==========================================

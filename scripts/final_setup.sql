@@ -78,6 +78,7 @@ CREATE TABLE IF NOT EXISTS public.user_profiles (
   -- Hierarquia
   role VARCHAR(50) DEFAULT 'client',
   agency_id UUID REFERENCES public.agencies(id) ON DELETE CASCADE,
+  producer_id UUID REFERENCES public.user_profiles(id) ON DELETE SET NULL,
   
   -- Dados do Cliente/Usuário
   company VARCHAR(255),
@@ -239,7 +240,7 @@ BEGIN
   -- User profiles
   IF NOT EXISTS (SELECT 1 FROM information_schema.check_constraints WHERE constraint_name = 'user_profiles_role_check') THEN
     ALTER TABLE public.user_profiles ADD CONSTRAINT user_profiles_role_check 
-    CHECK (role IN ('admin', 'agency_owner', 'agency_staff', 'client'));
+    CHECK (role IN ('admin', 'agency_owner', 'agency_staff', 'agency_client', 'independent_producer', 'independent_client', 'influencer', 'free_user'));
   END IF;
 
   -- Projects
@@ -350,12 +351,11 @@ DO $$
 BEGIN
   -- ===== USER PROFILES =====
   
-  -- Usuários podem ver próprio perfil
+
+  -- Usuários podem ver/atualizar próprio perfil (todos os roles)
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'user_profiles' AND policyname = 'Users can view own profile') THEN
     CREATE POLICY "Users can view own profile" ON public.user_profiles FOR SELECT USING (auth.uid() = id);
   END IF;
-
-  -- Usuários podem atualizar próprio perfil
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'user_profiles' AND policyname = 'Users can update own profile') THEN
     CREATE POLICY "Users can update own profile" ON public.user_profiles FOR UPDATE USING (auth.uid() = id);
   END IF;
@@ -367,7 +367,7 @@ BEGIN
     WITH CHECK (EXISTS (SELECT 1 FROM public.user_profiles WHERE id = auth.uid() AND role = 'admin'));
   END IF;
 
-  -- Agência pode ver/gerenciar seus usuários
+  -- Agência pode ver/gerenciar seus usuários (agency_owner, agency_staff, agency_client)
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'user_profiles' AND policyname = 'Agency can manage team') THEN
     CREATE POLICY "Agency can manage team" ON public.user_profiles FOR ALL 
     USING (
@@ -381,6 +381,17 @@ BEGIN
         SELECT agency_id FROM public.user_profiles 
         WHERE id = auth.uid() AND role IN ('agency_owner', 'agency_staff')
       ) OR auth.uid() = id
+    );
+  END IF;
+
+  -- Produtor independente pode ver/gerenciar seus clientes (independent_client)
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'user_profiles' AND policyname = 'Producer can manage own clients') THEN
+    CREATE POLICY "Producer can manage own clients" ON public.user_profiles FOR ALL 
+    USING (
+      producer_id = auth.uid() OR auth.uid() = id
+    )
+    WITH CHECK (
+      producer_id = auth.uid() OR auth.uid() = id
     );
   END IF;
 
@@ -566,13 +577,22 @@ $$ LANGUAGE 'plpgsql';
 -- Função para criar perfil automaticamente
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+  meta_role TEXT;
+  meta_agency UUID;
+  meta_producer UUID;
 BEGIN
-  INSERT INTO public.user_profiles (id, email, name, role)
+  meta_role := COALESCE(NEW.raw_user_meta_data->>'role', 'client');
+  meta_agency := NULLIF(NEW.raw_user_meta_data->>'agency_id', '');
+  meta_producer := NULLIF(NEW.raw_user_meta_data->>'producer_id', '');
+  INSERT INTO public.user_profiles (id, email, name, role, agency_id, producer_id)
   VALUES (
     NEW.id,
     NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
-    'client'
+    meta_role,
+    meta_agency,
+    meta_producer
   )
   ON CONFLICT (id) DO NOTHING;
   RETURN NEW;
@@ -583,7 +603,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE FUNCTION public.handle_new_client()
 RETURNS TRIGGER AS $$
 BEGIN
-  IF NEW.role = 'client' THEN
+  IF NEW.role IN ('client', 'agency_client', 'independent_client') THEN
     INSERT INTO public.client_api_configs (client_id)
     VALUES (NEW.id)
     ON CONFLICT (client_id) DO NOTHING;
@@ -737,7 +757,7 @@ $$;
 -- ==========================================
 
 COMMENT ON TABLE public.agencies IS 'Agências - Master tenants, podem ter múltiplos clientes';
-COMMENT ON TABLE public.user_profiles IS 'Usuários multi-role: admin, agency_owner, agency_staff, client';
+COMMENT ON TABLE public.user_profiles IS 'Usuários multi-role: admin, agency_owner, agency_staff, agency_client, independent_producer, independent_client, influencer, free_user. Relacionamento opcional com agency_id (agência) ou producer_id (produtor independente)';
 COMMENT ON TABLE public.client_api_configs IS 'Configurações de API individuais POR CLIENTE (isoladas)';
 COMMENT ON TABLE public.projects IS 'Projetos/campanhas associados a cliente E agência';
 COMMENT ON TABLE public.project_metrics IS 'Métricas com cálculos automáticos (CTR, CPC, CPA, ROAS)';

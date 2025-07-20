@@ -17,32 +17,47 @@ export function CreateClientForm() {
     setLoading(true)
     setMessage('')
 
-    const {
-      data: created,
-      error: createError
-    } = await supabase.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-    })
+    // Primeiro, obter o usuário atual para verificar permissões
+    const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser()
 
-    if (createError) {
-      setMessage(`Erro: ${createError.message}`)
+    if (userError || !currentUser) {
+      setMessage('Erro: Usuário não autenticado')
       setLoading(false)
       return
     }
 
-    const {
-      data: { user: currentUser },
-    } = await supabase.auth.getUser()
-
-    await supabase
-      .from('profiles')
-      .update({
+    // Criar usuário
+    const { data: created, error: createError } = await supabase.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: {
         name,
-        agency_id: currentUser?.id ?? null
+        role: 'client'
+      }
+    })
+
+    if (createError) {
+      setMessage(`Erro ao criar usuário: ${createError.message}`)
+      setLoading(false)
+      return
+    }
+
+    // Inserir perfil manualmente
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .insert({
+        id: created.user?.id,
+        name,
+        role: 'client',
+        agency_id: currentUser.id
       })
-      .eq('id', created.user?.id)
+
+    if (profileError) {
+      setMessage(`Erro ao criar perfil: ${profileError.message}`)
+      setLoading(false)
+      return
+    }
 
     setMessage('Cliente criado com sucesso!')
     setEmail('')

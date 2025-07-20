@@ -62,7 +62,7 @@ export default function SignupPage() {
       if (data.user) {
         // Criar perfil do usuário
         const { error: profileError } = await supabase
-          .from('profiles')
+          .from('user_profiles')
           .insert({
             id: data.user.id,
             name: name,

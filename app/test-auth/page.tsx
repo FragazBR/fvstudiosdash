@@ -33,7 +33,7 @@ export default function TestAuthPage() {
       if (session) {
         setStatus('Buscando perfil do usuário...')
         const { data: profile, error: profileError } = await supabase
-          .from('profiles')
+          .from('user_profiles')
           .select('*')
           .eq('id', session.user.id)
           .single()
@@ -49,7 +49,7 @@ export default function TestAuthPage() {
       // Teste 3: Verificar se tabela profiles existe
       setStatus('Testando acesso às tabelas...')
       const { data: profiles, error: tablesError } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('count')
         .limit(1)
 
@@ -84,7 +84,7 @@ export default function TestAuthPage() {
         // Buscar perfil após login
         if (data.user) {
           const { data: profile, error: profileError } = await supabase
-            .from('profiles')
+            .from('user_profiles')
             .select('*')
             .eq('id', data.user.id)
             .single()

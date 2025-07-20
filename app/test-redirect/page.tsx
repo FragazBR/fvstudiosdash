@@ -23,7 +23,7 @@ export default function TestRedirectPage() {
       setUser(session.user)
 
       const { data: profile } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('*')
         .eq('id', session.user.id)
         .single()
@@ -61,7 +61,7 @@ export default function TestRedirectPage() {
     if (!user) return
 
     const { error } = await supabase
-      .from('profiles')
+      .from('user_profiles')
       .update({ role: newRole })
       .eq('id', user.id)
 

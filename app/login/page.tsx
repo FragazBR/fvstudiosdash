@@ -38,7 +38,7 @@ export default function LoginPage() {
 
       // Busca o perfil do usuário
       const { data: profile, error: profileError } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('role, id')
         .eq('id', data.user.id)
         .single()
@@ -49,7 +49,7 @@ export default function LoginPage() {
         console.log('Perfil não encontrado, criando novo perfil...')
         // Se não tem perfil, cria um básico
         const { data: newProfile } = await supabase
-          .from('profiles')
+          .from('user_profiles')
           .insert({
             id: data.user.id,
             email: data.user.email,

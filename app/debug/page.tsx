@@ -30,7 +30,7 @@ export default function DebugPage() {
 
       if (session) {
         const { data: profile, error: profileError } = await supabase
-          .from('profiles')
+          .from('user_profiles')
           .select('*')
           .eq('id', session.user.id)
           .single()
