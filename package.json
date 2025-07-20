@@ -12,7 +12,8 @@
     "setup": "node scripts/verify-setup.js",
     "create-test-users": "node scripts/create_test_users.js",
     "populate-test-data": "node scripts/create_test_users.js --with-data",
-    "seed-database": "node scripts/create_test_users.js --data-only"
+    "seed-database": "node scripts/create_test_users.js --data-only",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@fullcalendar/core": "latest",
