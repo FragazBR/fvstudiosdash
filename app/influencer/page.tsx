@@ -88,7 +88,7 @@ function InfluencerDashboardContent() {
           setSidebarOpen={setSidebarOpen}
         />
         
-        <main className="py-10">
+        <main className="py-10 pt-20">
           <div className="px-4 sm:px-6 lg:px-8">
             {/* Header */}
             <div className="mb-8">

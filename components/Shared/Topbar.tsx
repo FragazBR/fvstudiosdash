@@ -71,15 +71,15 @@ const Topbar = ({ name, sidebarOpen, setSidebarOpen }: topbarPropsT) => {
 
   return (
     <>
-      <header className="bg-white dark:bg-[#171717] border-b border-gray-200 dark:border-[#272727] shadow-sm backdrop-blur-xl fixed w-full lg:w-[calc(100%-16rem)] top-0 z-10">
-        <div className="px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <header className="bg-white dark:bg-[#171717] border-b border-gray-200 dark:border-[#272727] shadow-sm backdrop-blur-xl fixed w-full lg:w-[calc(100%-16rem)] lg:left-[16rem] top-0 z-10">
+        <div className="px-2 sm:px-4 lg:px-6 h-16 flex items-center justify-between">
           {/* Left: Menu Button (mobile) and Date/Greeting */}
           <div className="flex items-center">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="mr-4 lg:hidden text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800/50"
+              className="mr-2 lg:hidden text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800/50"
             >
               <Menu className="h-10 w-10" />
               <span className="sr-only">Toggle menu</span>

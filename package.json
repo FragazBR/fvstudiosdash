@@ -9,7 +9,10 @@
     "start": "next start",
     "lint": "next lint",
     "verify": "node scripts/verify-setup.js",
-    "setup": "node scripts/verify-setup.js"
+    "setup": "node scripts/verify-setup.js",
+    "create-test-users": "node scripts/create_test_users.js",
+    "populate-test-data": "node scripts/create_test_users.js --with-data",
+    "seed-database": "node scripts/create_test_users.js --data-only"
   },
   "dependencies": {
     "@fullcalendar/core": "latest",
@@ -54,6 +57,7 @@
     "clsx": "^2.1.1",
     "cmdk": "1.1.1",
     "date-fns": "latest",
+    "dotenv": "^17.2.0",
     "embla-carousel-react": "8.6.0",
     "i18next": "^25.3.2",
     "input-otp": "1.4.2",

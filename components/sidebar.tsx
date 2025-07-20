@@ -26,7 +26,7 @@ import { useState } from "react";
 import { SearchModal } from "./search-modal";
 import { useTheme } from "next-themes";
 import { useUser } from "@/hooks/useUser";
-import { isAgencyOwnerOrAdmin } from "@/lib/permissions";
+import { canAccess, getUserPermissions, type UserRole } from "@/lib/permissions";
 import Image from "next/image";
 
 interface SidebarProps {
@@ -78,7 +78,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   const visiableMessages = showAllMessage ? messages : messages.slice(0, 3);
 
   // Verificar se o usuário pode acessar o módulo Agency
-  const canAccessAgency = isAgencyOwnerOrAdmin(user?.role);
+  const canAccessAgency = user?.role && ['admin', 'agency_owner', 'agency_manager', 'agency_employee'].includes(user.role);
 
   // Verificar se é admin para mostrar opções administrativas
   const isAdmin = user?.role === 'admin';

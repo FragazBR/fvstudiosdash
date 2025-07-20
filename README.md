@@ -1,53 +1,260 @@
-# FVSTUDIOS Dashboard
+# 🎯 FVStudios Dashboard - Sistema Multi-Tenant Completo
 
-Sistema de gerenciamento completo para agências criativas, clientes e projetos pessoais.
+Sistema de gerenciamento avançado para agências de marketing digital, seus clientes e campanhas. Arquitetura multi-tenant com isolamento completo de dados e configurações de API individualizadas.
+
+## ✨ Características Principais
+
+- 🏢 **Multi-tenant**: Isolamento completo entre agências e clientes
+- 🔐 **Segurança Avançada**: Row Level Security (RLS) com políticas granulares
+- 📊 **APIs Individuais**: Cada cliente possui suas próprias chaves de API
+- 📈 **Métricas Automáticas**: Cálculo automático de CTR, CPC, CPA, ROAS
+- 💰 **Sistema de Planos**: 6 planos com limites e recursos configuráveis
+- 🌐 **Internacionalização**: Suporte a múltiplos idiomas
+- 📱 **Responsivo**: Interface adaptada para desktop, tablet e mobile
 
 ## 🚀 Tecnologias
 
 - **Frontend**: Next.js 14 (App Router), TypeScript, Tailwind CSS
-- **Backend**: Supabase (PostgreSQL + Auth + Storage)
-- **UI**: Shadcn/ui components, Lucide icons
-- **Internacionalização**: i18next (pt, en, es)
-- **Estado**: React Context + Hooks
-- **Autenticação**: Supabase Auth
+- **Backend**: Supabase (PostgreSQL + Auth + Storage + RLS)
+- **UI**: Shadcn/ui, Lucide icons, Recharts
+- **Autenticação**: Supabase Auth com perfis automáticos
+- **i18n**: next-intl (pt, en, es)
+- **Estado**: React Context + Server Actions
+
+## 🏗️ Arquitetura Multi-Tenant
+
+### Hierarquia de Usuários
+```
+🔧 Admin Global
+├── 🏢 Agência FV Studios (agency_owner: João)
+│   ├── 👤 Maria (agency_staff)
+│   ├── 💼 Cliente Empresa ABC (APIs próprias)
+│   ├── 💼 Cliente Loja XYZ (APIs próprias)
+│   └── 💼 Cliente Startup DEF (APIs próprias)
+├── 🏢 Agência Digital Growth (agency_owner: Carlos)
+│   ├── 👤 Julia (agency_staff)
+│   ├── 💼 Cliente Restaurante GHI
+│   └── 💼 Cliente Academia JKL
+└── 💼 Cliente Independente (sem agência)
+```
+
+### 4 Roles Principais
+- **`admin`**: Vê e gerencia todo o sistema globalmente
+- **`agency_owner`**: Gerencia sua agência e todos os clientes
+- **`agency_staff`**: Acessa dados dos clientes da sua agência
+- **`client`**: Vê apenas seus próprios dados e configurações
+
+## 💰 Planos de Assinatura
+
+| Plano | Clientes | Projetos | Campanhas | APIs | Preço/Mês |
+|-------|----------|----------|-----------|------|-----------|
+| **Free** | 1 | 3 | 3 | Google Analytics | R$ 0 |
+| **Basic** | 5 | 20 | 20 | GA, Google Ads, Facebook | R$ 99 |
+| **Premium** | 25 | 100 | 100 | + LinkedIn, Automação | R$ 299 |
+| **Enterprise** | ∞ | ∞ | ∞ | Todas + API Access | R$ 999 |
+| **Agency Basic** | 50 | 200 | 200 | Multi-client Dashboard | R$ 499 |
+| **Agency Pro** | 200 | 1000 | 1000 | + White Label + Automação | R$ 1299 |
 
 ## 📁 Estrutura do Projeto
 
 ```
-├── app/                    # App Router do Next.js
-│   ├── admin/             # Painel administrativo
-│   ├── dashboard/         # Dashboard principal (agency/user)
-│   ├── client/           # Área do cliente
-│   ├── personal/         # Área pessoal
-│   ├── projects/         # Gerenciamento de projetos
-│   ├── tasks/            # Gerenciamento de tarefas
-│   ├── calendar/         # Calendário de eventos
-│   ├── messages/         # Sistema de mensagens
-│   ├── contacts/         # Gerenciamento de contatos
-│   ├── notifications/    # Central de notificações
-│   ├── login/            # Página de login
-│   └── signup/           # Página de registro
+├── app/                    # Next.js App Router
+│   ├── admin/             # 🔧 Painel administrativo global
+│   ├── agency/            # 🏢 Dashboard da agência
+│   ├── dashboard/         # 📊 Dashboard contextual (admin/agency/client)
+│   ├── client/            # 💼 Portal do cliente
+│   ├── projects/          # 📋 Gerenciamento de projetos/campanhas
+│   ├── calendar/          # 📅 Sistema de calendário
+│   ├── messages/          # 💬 Comunicação interna
+│   ├── contacts/          # 📞 CRM de contatos
+│   ├── notifications/     # 🔔 Central de notificações
+│   ├── settings/          # ⚙️ Configurações (APIs, perfil, agência)
+│   ├── login/            # 🔐 Autenticação
+│   └── signup/           # 📝 Registro
 ├── components/            # Componentes React reutilizáveis
-├── hooks/                # React Hooks customizados
-├── lib/                  # Utilitários e configurações
-├── supabase/             # Migrações e seeds do banco
-├── locales/              # Arquivos de tradução
+│   ├── ui/               # Componentes base (shadcn/ui)
+│   ├── dashboard/        # Componentes específicos do dashboard
+│   ├── agency/           # Componentes da área de agência
+│   └── charts/           # Gráficos e visualizações
+├── hooks/                 # React Hooks customizados
+├── lib/                   # 🛠️ Utilitários e configurações
+│   ├── supabase/         # Cliente Supabase
+│   ├── auth/             # Helpers de autenticação
+│   └── utils/            # Funções auxiliares
+├── scripts/               # 🗄️ Scripts de banco de dados
+│   ├── final_setup.sql   # Setup completo multi-tenant
+│   └── sample_data.sql   # Dados de exemplo
+├── locales/               # 🌐 Arquivos de internacionalização
+├── types/                 # 📝 Definições TypeScript
 └── public/               # Assets estáticos
 ```
 
-## 🏗️ Arquitetura do Sistema
+## 🔒 Segurança e Isolamento
 
-### Roles de Usuário
+### Row Level Security (RLS)
+- ✅ **Isolamento por agência**: Agência A nunca vê dados da Agência B
+- ✅ **Isolamento por cliente**: Cliente 1 nunca vê dados do Cliente 2
+- ✅ **Hierarquia respeitada**: Staff da agência acessa clientes da agência
+- ✅ **APIs isoladas**: Cada cliente tem suas próprias chaves de API
 
-1. **Admin**: Acesso total ao sistema
-2. **Agency**: Gerencia projetos, clientes e equipe
-3. **User**: Membro da agência, acesso a projetos atribuídos
-4. **Client**: Visualiza seus projetos e interage com a agência
-5. **Personal**: Usuário pessoal, gerencia suas próprias tarefas
+### Configurações de API por Cliente
+```sql
+-- Cada cliente tem configurações isoladas
+client_api_configs:
+├── Cliente A: Google Ads (chave_do_cliente_A)
+├── Cliente B: Facebook + Google Analytics (chaves_do_cliente_B)
+└── Cliente C: Todas as APIs configuradas (chaves_do_cliente_C)
+```
 
-### Fluxo de Autenticação
+## 🛠️ Instalação e Configuração
 
-1. Login via Supabase Auth
+### 1. Clonar o Repositório
+```bash
+git clone https://github.com/FragazBR/fvstudiosdash.git
+cd fvstudiosdash
+```
+
+### 2. Instalar Dependências
+```bash
+pnpm install
+```
+
+### 3. Configurar Variáveis de Ambiente
+```bash
+cp .env.example .env.local
+```
+
+Configurar no `.env.local`:
+```env
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=https://sua-url.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sua-chave-anonima
+SUPABASE_SERVICE_ROLE_KEY=sua-chave-service-role
+```
+
+### 4. Configurar Banco de Dados
+1. Acesse o **SQL Editor** no Supabase Dashboard
+2. Cole e execute `scripts/final_setup.sql`
+3. **Opcional**: Execute `scripts/sample_data.sql` para dados de teste
+
+### 5. Executar o Projeto
+```bash
+pnpm dev
+```
+
+## 📊 Funcionalidades Principais
+
+### Dashboard Contextual
+- **Admin**: Estatísticas globais de todas as agências
+- **Agência**: Métricas da agência + todos os clientes
+- **Cliente**: Apenas seus projetos e métricas
+
+### Métricas Automáticas
+- **CTR**: (Clicks ÷ Impressions) × 100
+- **CPC**: Cost ÷ Clicks
+- **CPA**: Cost ÷ Conversions  
+- **ROAS**: Revenue ÷ Cost
+
+### Integrações de API
+- 🔍 Google Analytics 4
+- 🎯 Google Ads
+- 📘 Facebook/Meta Ads
+- 💼 LinkedIn Ads
+- 🎵 TikTok Ads
+- 🌐 Microsoft Ads (Bing)
+- ⚙️ APIs customizadas por plano
+
+### Sistema de Notificações
+- 🚨 Alertas de performance das campanhas
+- 📊 Relatórios automáticos
+- 📅 Lembretes de reuniões
+- 💰 Avisos de orçamento
+
+## 🔧 Tecnologias Avançadas
+
+### Banco de Dados
+- **PostgreSQL** com extensões UUID e full-text search
+- **Row Level Security (RLS)** para isolamento multi-tenant
+- **Triggers automáticos** para auditoria e cálculos
+- **Índices otimizados** para performance
+
+### Frontend
+- **Server Actions** do Next.js 14
+- **Streaming** para carregamento otimizado
+- **Suspense boundaries** para UX melhorada
+- **Error boundaries** para tratamento de erros
+
+### Monitoramento
+- **Logs estruturados** para debug
+- **Métricas de performance** do sistema
+- **Alertas automáticos** para problemas
+
+## 🎯 Casos de Uso
+
+### Para Agências
+- ✅ Gerenciar múltiplos clientes
+- ✅ Dashboards white-label
+- ✅ Relatórios automatizados
+- ✅ Gestão de equipe
+- ✅ Controle de acesso granular
+
+### Para Clientes
+- ✅ Portal próprio com métricas
+- ✅ Configuração de APIs pessoais
+- ✅ Comunicação com a agência
+- ✅ Calendário de eventos
+- ✅ Histórico de campanhas
+
+### Para Freelancers
+- ✅ Gestão pessoal de projetos
+- ✅ Métricas centralizadas
+- ✅ Controle de clientes
+- ✅ Relatórios profissionais
+
+## 🚀 Deploy
+
+### Vercel (Recomendado)
+```bash
+# Conectar ao GitHub
+# Configurar variáveis de ambiente
+# Deploy automático
+```
+
+### Docker
+```bash
+docker build -t fvstudios-dashboard .
+docker run -p 3000:3000 fvstudios-dashboard
+```
+
+## 📚 Documentação Adicional
+
+- 📋 **[Guia de Scripts](scripts/README.md)** - Configuração do banco
+- ⚙️ **[Configuração de APIs](docs/API_CONFIG.md)** - Setup das integrações
+- 👥 **[Gerenciamento de Usuários](docs/USER_MANAGEMENT.md)** - Roles e permissões
+- 📊 **[Sistema de Métricas](docs/METRICS.md)** - Cálculos e dashboards
+
+## 🤝 Contribuição
+
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para detalhes.
+
+## 📞 Suporte
+
+Para dúvidas ou suporte:
+- 📧 Email: suporte@fvstudios.com
+- 🐛 Issues: [GitHub Issues](https://github.com/FragazBR/fvstudiosdash/issues)
+- 📖 Docs: [Documentação Completa](https://docs.fvstudios.com)
+
+---
+
+**FVStudios Dashboard** - Sistema profissional para agências de marketing digital 🚀
 2. Criação automática de perfil na tabela `profiles`
 3. Middleware verifica role e redireciona para área apropriada
 4. Context Provider gerencia estado global do usuário

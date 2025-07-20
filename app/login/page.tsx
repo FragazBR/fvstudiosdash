@@ -53,17 +53,18 @@ export default function LoginPage() {
           .insert({
             id: data.user.id,
             email: data.user.email,
-            name: data.user.email?.split('@')[0] || 'Usuário',
-            role: 'personal',
+            full_name: data.user.email?.split('@')[0] || 'Usuário',
+            role: 'free',
+            email_verified: true,
           })
           .select('role, id')
           .single();
 
         if (newProfile) {
           console.log('Novo perfil criado:', newProfile)
-          // Redireciona para dashboard pessoal
+          // Redireciona para dashboard gratuito
           setTimeout(() => {
-            window.location.replace('/personal/dashboard');
+            window.location.replace('/free');
           }, 100);
         } else {
           setError('Erro ao criar perfil do usuário');
@@ -85,16 +86,23 @@ export default function LoginPage() {
       // Redireciona baseado no role
       let redirectPath = '';
       if (role === 'admin') {
-        // Admin tem acesso completo - redireciona para dashboard principal
-        redirectPath = '/dashboard';
-      } else if (role === 'agency') {
-        redirectPath = '/dashboard';
-      } else if (role === 'user') {
-        redirectPath = '/user/dashboard';
+        redirectPath = '/admin';
+      } else if (role === 'agency_owner') {
+        redirectPath = '/agency';
+      } else if (role === 'agency_manager') {
+        redirectPath = '/agency';
+      } else if (role === 'agency_employee') {
+        redirectPath = '/agency';
+      } else if (role === 'independent_producer') {
+        redirectPath = '/independent';
+      } else if (role === 'influencer') {
+        redirectPath = '/influencer';
+      } else if (role === 'freelancer') {
+        redirectPath = '/free';
+      } else if (role === 'free') {
+        redirectPath = '/free';
       } else if (role === 'client') {
-        redirectPath = `/client/${id}`;
-      } else if (role === 'personal') {
-        redirectPath = '/personal/dashboard';
+        redirectPath = '/client';
       } else {
         setError('Tipo de usuário inválido');
         return;
