@@ -36,12 +36,37 @@ export default function LoginPage() {
         return
       }
 
-      // Busca o perfil do usuário
-      const { data: profile, error: profileError } = await supabase
-        .from('user_profiles')
-        .select('role, id')
-        .eq('id', data.user.id)
-        .single()
+      // Busca o perfil do usuário - tenta direto primeiro, depois API com service role
+      let profile, profileError;
+      try {
+        const result = await supabase
+          .from('user_profiles')
+          .select('role, id')
+          .eq('id', data.user.id)
+          .single();
+        profile = result.data;
+        profileError = result.error;
+      } catch (error) {
+        console.log('Direct query failed, trying API route...');
+      }
+
+      // Se não conseguiu com Supabase direto, usa API route com service role
+      if (!profile && profileError) {
+        console.log('Using API route with service role...');
+        try {
+          const response = await fetch(`/api/get-profile?userId=${data.user.id}`);
+          const result = await response.json();
+          if (result.profile) {
+            profile = result.profile;
+            profileError = null;
+          } else {
+            profileError = result.error;
+          }
+        } catch (error) {
+          console.error('API route error:', error);
+          profileError = error;
+        }
+      }
 
       console.log('Login success:', { profile, user: data.user })
 
