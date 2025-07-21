@@ -42,9 +42,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         if (session?.user) {
           setSupabaseUser(session.user);
           
-          // Busca o perfil do usuário na tabela profiles
+          // Busca o perfil do usuário na tabela user_profiles
           const { data: profile, error } = await supabase
-            .from('profiles')
+            .from('user_profiles')
             .select('*')
             .eq('id', session.user.id)
             .single();
@@ -65,11 +65,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           } else {
             // Se não tem perfil, cria um básico
             const { data: newProfile } = await supabase
-              .from('profiles')
+              .from('user_profiles')
               .insert({
                 id: session.user.id,
                 email: session.user.email,
-                role: 'personal', // default role
+                full_name: session.user.email?.split('@')[0] || 'Usuário',
+                role: 'free_user', // default role
               })
               .select()
               .single();

@@ -276,7 +276,7 @@ function FreeDashboardContent() {
 
 export default function FreePage() {
   return (
-    <PermissionGuard allowedRoles={['admin', 'free']} showUnauthorized>
+    <PermissionGuard allowedRoles={['admin', 'free_user']} showUnauthorized>
       <FreeDashboardContent />
     </PermissionGuard>
   )

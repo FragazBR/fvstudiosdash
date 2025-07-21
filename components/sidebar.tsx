@@ -78,7 +78,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   const visiableMessages = showAllMessage ? messages : messages.slice(0, 3);
 
   // Verificar se o usuário pode acessar o módulo Agency
-  const canAccessAgency = user?.role && ['admin', 'agency_owner', 'agency_manager', 'agency_employee'].includes(user.role);
+  const canAccessAgency = user?.role && ['admin', 'agency_owner', 'agency_staff', 'agency_client'].includes(user.role);
 
   // Verificar se é admin para mostrar opções administrativas
   const isAdmin = user?.role === 'admin';

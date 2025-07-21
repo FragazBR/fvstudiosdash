@@ -90,7 +90,7 @@ export function usePermissionsV2(): UsePermissionsReturn {
   
   const userRole = user?.role || profile?.role || null
   const agencyRole = profile?.agency_role || null
-  const isAgencyMember = !!(profile?.parent_agency_id || profile?.role === 'agency')
+  const isAgencyMember = !!(profile?.parent_agency_id || ['agency_owner', 'agency_staff', 'agency_client'].includes(profile?.role))
   
   // Load user profile if user exists
   useEffect(() => {
@@ -111,14 +111,14 @@ export function usePermissionsV2(): UsePermissionsReturn {
   
   // Load agency information if user is part of an agency
   useEffect(() => {
-    if (profile?.parent_agency_id || profile?.role === 'agency') {
+    if (profile?.parent_agency_id || ['agency_owner', 'agency_staff', 'agency_client'].includes(profile?.role)) {
       setAgencyLoading(true)
       
       const loadAgency = async () => {
         try {
           let agencyData = null
           
-          if (profile.role === 'agency') {
+          if (profile.role === 'agency_owner') {
             // User is agency owner
             const { data, error } = await supabaseHelpers.getUserAgency(profile.id)
             if (error) throw error
@@ -145,17 +145,17 @@ export function usePermissionsV2(): UsePermissionsReturn {
   
   // Get permissions, features, and quotas based on role
   const permissions = useMemo(() => {
-    if (!userRole) return getUserPermissions('free')
+    if (!userRole) return getUserPermissions('free_user')
     return getUserPermissions(userRole)
   }, [userRole])
   
   const features = useMemo(() => {
-    if (!userRole) return getFeatureFlags('free')
+    if (!userRole) return getFeatureFlags('free_user')
     return getFeatureFlags(userRole)
   }, [userRole])
   
   const baseQuotas = useMemo(() => {
-    if (!userRole) return getRoleQuotas('free')
+    if (!userRole) return getRoleQuotas('free_user')
     return getRoleQuotas(userRole)
   }, [userRole])
   
@@ -231,13 +231,16 @@ export function usePermissionsV2(): UsePermissionsReturn {
     switch (userRole) {
       case 'admin':
         return '/admin'
-      case 'agency':
-      case 'independent':
-      case 'influencer':
-      case 'free':
-        return '/dashboard'
-      case 'client':
+      case 'agency_owner':
+      case 'agency_staff':
+        return '/agency'
+      case 'agency_client':
+      case 'independent_client':
         return '/client'
+      case 'independent_producer':
+      case 'influencer':
+      case 'free_user':
+        return '/dashboard'
       default:
         return '/dashboard'
     }
@@ -249,16 +252,16 @@ export function usePermissionsV2(): UsePermissionsReturn {
     switch (userRole) {
       case 'admin':
         return '/admin/dashboard'
-      case 'agency':
+      case 'agency_owner':
+      case 'agency_staff':
         return '/agency/dashboard'
-      case 'independent':
-        return '/dashboard'
-      case 'influencer':
-        return '/dashboard'
-      case 'free':
-        return '/dashboard'
-      case 'client':
+      case 'agency_client':
+      case 'independent_client':
         return '/client/dashboard'
+      case 'independent_producer':
+      case 'influencer':
+      case 'free_user':
+        return '/dashboard'
       default:
         return '/dashboard'
     }
@@ -272,12 +275,12 @@ export function usePermissionsV2(): UsePermissionsReturn {
     
     // Route-specific access control
     if (route.startsWith('/admin')) return userRole === 'admin'
-    if (route.startsWith('/agency')) return ['admin', 'agency'].includes(userRole)
-    if (route.startsWith('/client')) return ['admin', 'client'].includes(userRole)
+    if (route.startsWith('/agency')) return ['admin', 'agency_owner', 'agency_staff'].includes(userRole)
+    if (route.startsWith('/client')) return ['admin', 'agency_client', 'independent_client'].includes(userRole)
     
     // General dashboard routes accessible by most roles
     if (route.startsWith('/dashboard')) {
-      return ['admin', 'agency', 'independent', 'influencer', 'free'].includes(userRole)
+      return ['admin', 'agency_owner', 'agency_staff', 'independent_producer', 'influencer', 'free_user'].includes(userRole)
     }
     
     return true // Allow access to other routes by default
@@ -328,11 +331,11 @@ export function usePermissionsV2(): UsePermissionsReturn {
     // Role information
     userRole,
     isAdmin: userRole === 'admin',
-    isAgency: userRole === 'agency',
-    isIndependent: userRole === 'independent',
+    isAgency: ['agency_owner', 'agency_staff', 'agency_client'].includes(userRole || ''),
+    isIndependent: ['independent_producer', 'independent_client'].includes(userRole || ''),
     isInfluencer: userRole === 'influencer',
-    isFree: userRole === 'free',
-    isClient: userRole === 'client',
+    isFree: userRole === 'free_user',
+    isClient: ['agency_client', 'independent_client'].includes(userRole || ''),
     
     // Permission objects
     permissions,

@@ -234,7 +234,7 @@ function IndependentDashboardContent() {
 
 export default function IndependentPage() {
   return (
-    <PermissionGuard allowedRoles={['admin', 'independent']} showUnauthorized>
+    <PermissionGuard allowedRoles={['admin', 'independent_producer']} showUnauthorized>
       <IndependentDashboardContent />
     </PermissionGuard>
   )

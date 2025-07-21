@@ -7,7 +7,7 @@ function AgencyContent() {
 
 export default function AgencyPage() {
   return (
-    <PermissionGuard allowedRoles={['admin', 'agency']} showUnauthorized>
+    <PermissionGuard allowedRoles={['admin', 'agency_owner', 'agency_staff']} showUnauthorized>
       <AgencyContent />
     </PermissionGuard>
   )

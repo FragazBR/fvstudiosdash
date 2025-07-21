@@ -10,7 +10,7 @@ function DashboardContent() {
 
 export default function DashboardPage() {
   return (
-    <PermissionGuard allowedRoles={['admin', 'agency']} showUnauthorized>
+    <PermissionGuard allowedRoles={['admin', 'agency_owner', 'agency_staff', 'independent_producer', 'influencer', 'free_user']} showUnauthorized>
       <DashboardContent />
     </PermissionGuard>
   );
