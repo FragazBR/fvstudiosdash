@@ -47,24 +47,38 @@ export default function LoginPage() {
 
       if (profileError || !profile) {
         console.log('Perfil não encontrado, criando novo perfil...')
+        console.log('Profile error details:', profileError)
+        
+        // Para admin específico, cria perfil admin
+        const isAdminUser = data.user.id === '71f0cbbb-1963-430c-b445-78907e747574'
+        const defaultRole = isAdminUser ? 'admin' : 'free_user'
+        const defaultName = isAdminUser ? 'Admin FVStudios' : (data.user.email?.split('@')[0] || 'Usuário')
+        
         // Se não tem perfil, cria um básico
-        const { data: newProfile } = await supabase
+        const { data: newProfile, error: createError } = await supabase
           .from('user_profiles')
           .insert({
             id: data.user.id,
             email: data.user.email,
-            full_name: data.user.email?.split('@')[0] || 'Usuário',
-            role: 'free_user',
+            full_name: defaultName,
+            role: defaultRole,
             email_verified: true,
           })
           .select('role, id')
           .single();
+          
+        if (createError) {
+          console.error('Erro ao criar perfil:', createError)
+          setError('Erro ao criar perfil: ' + createError.message);
+          return;
+        }
 
         if (newProfile) {
           console.log('Novo perfil criado:', newProfile)
-          // Redireciona para dashboard gratuito
+          // Redireciona baseado no role criado
+          const redirectPath = newProfile.role === 'admin' ? '/admin' : '/dashboard'
           setTimeout(() => {
-            window.location.href = '/dashboard';
+            window.location.href = redirectPath;
           }, 100);
         } else {
           setError('Erro ao criar perfil do usuário');
