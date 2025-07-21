@@ -1,19 +1,18 @@
 // lib/permissions.ts
 // Sistema completo de permissões para FVStudios Dashboard
 
-export type UserRole = 'admin' | 'agency_owner' | 'agency_manager' | 'agency_employee' | 'independent_producer' | 'client' | 'freelancer' | 'influencer' | 'free'
+export type UserRole = 'admin' | 'agency_owner' | 'agency_staff' | 'agency_client' | 'independent_producer' | 'independent_client' | 'influencer' | 'free_user'
 
 // Labels amigáveis para os roles
 export const USER_ROLE_LABELS: Record<UserRole, string> = {
   admin: 'Administrador',
   agency_owner: 'Proprietário de Agência',
-  agency_manager: 'Gerente de Agência', 
-  agency_employee: 'Funcionário de Agência',
+  agency_staff: 'Colaborador de Agência',
+  agency_client: 'Cliente de Agência',
   independent_producer: 'Produtor Independente',
-  client: 'Cliente',
-  freelancer: 'Freelancer',
+  independent_client: 'Cliente de Produtor',
   influencer: 'Influencer',
-  free: 'Usuário Gratuito'
+  free_user: 'Usuário Gratuito'
 }
 
 // Interface de permissões
@@ -150,7 +149,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
     maxStorageGB: 100
   },
   
-  agency_manager: {
+  agency_staff: {
     canAccessAdminDashboard: false,
     canAccessAgencyDashboard: true,
     canAccessIndependentDashboard: false,
@@ -188,16 +187,16 @@ export const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
     maxStorageGB: 25
   },
   
-  agency_employee: {
+  agency_client: {
     canAccessAdminDashboard: false,
-    canAccessAgencyDashboard: true,
+    canAccessAgencyDashboard: false,
     canAccessIndependentDashboard: false,
     canAccessInfluencerDashboard: false,
     canAccessFreeDashboard: false,
-    canAccessClientDashboard: false,
+    canAccessClientDashboard: true,
     canManageAllClients: false,
     canManageOwnClients: false,
-    canViewClientReports: false,
+    canViewClientReports: true,
     canCreateClientAccounts: false,
     canAccessAIAgents: true,
     canAccessAdvancedAI: false,
@@ -206,10 +205,10 @@ export const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
     canManageTeam: false,
     canAssignTasks: false,
     canViewTeamMetrics: false,
-    canCreateProjects: true,
+    canCreateProjects: false,
     canManageAllProjects: false,
-    canManageOwnProjects: true,
-    canViewProjectAnalytics: false,
+    canManageOwnProjects: false,
+    canViewProjectAnalytics: true,
     canAccessSystemSettings: false,
     canManageUserRoles: false,
     canViewSystemLogs: false,
@@ -218,12 +217,12 @@ export const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
     canChatWithTeam: true,
     canSendNotifications: false,
     canGenerateAdvancedReports: false,
-    canGenerateBasicReports: false,
+    canGenerateBasicReports: true,
     canScheduleReports: false,
-    maxProjects: 10,
-    maxClients: 5,
-    maxAIRequests: 500,
-    maxStorageGB: 10
+    maxProjects: 0,
+    maxClients: 0,
+    maxAIRequests: 100,
+    maxStorageGB: 5
   },
   
   independent_producer: {
@@ -302,16 +301,16 @@ export const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
     maxStorageGB: 25
   },
   
-  freelancer: {
+  independent_client: {
     canAccessAdminDashboard: false,
     canAccessAgencyDashboard: false,
     canAccessIndependentDashboard: false,
     canAccessInfluencerDashboard: false,
-    canAccessFreeDashboard: true,
-    canAccessClientDashboard: false,
+    canAccessFreeDashboard: false,
+    canAccessClientDashboard: true,
     canManageAllClients: false,
     canManageOwnClients: false,
-    canViewClientReports: false,
+    canViewClientReports: true,
     canCreateClientAccounts: false,
     canAccessAIAgents: true,
     canAccessAdvancedAI: false,
@@ -320,27 +319,27 @@ export const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
     canManageTeam: false,
     canAssignTasks: false,
     canViewTeamMetrics: false,
-    canCreateProjects: true,
+    canCreateProjects: false,
     canManageAllProjects: false,
-    canManageOwnProjects: true,
-    canViewProjectAnalytics: false,
+    canManageOwnProjects: false,
+    canViewProjectAnalytics: true,
     canAccessSystemSettings: false,
     canManageUserRoles: false,
     canViewSystemLogs: false,
     canExportData: false,
     canChatWithClients: false,
-    canChatWithTeam: false,
+    canChatWithTeam: true,
     canSendNotifications: false,
     canGenerateAdvancedReports: false,
     canGenerateBasicReports: true,
     canScheduleReports: false,
-    maxProjects: 10,
-    maxClients: 2,
-    maxAIRequests: 500,
-    maxStorageGB: 10
+    maxProjects: 0,
+    maxClients: 0,
+    maxAIRequests: 100,
+    maxStorageGB: 5
   },
   
-  free: {
+  free_user: {
     canAccessAdminDashboard: false,
     canAccessAgencyDashboard: false,
     canAccessIndependentDashboard: false,
@@ -378,48 +377,11 @@ export const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
     maxStorageGB: 1
   },
   
-  client: {
-    canAccessAdminDashboard: false,
-    canAccessAgencyDashboard: false,
-    canAccessIndependentDashboard: false,
-    canAccessInfluencerDashboard: false,
-    canAccessFreeDashboard: false,
-    canAccessClientDashboard: true,
-    canManageAllClients: false,
-    canManageOwnClients: false,
-    canViewClientReports: true,
-    canCreateClientAccounts: false,
-    canAccessAIAgents: false,
-    canAccessAdvancedAI: false,
-    canAccessBasicAI: false,
-    canInviteCollaborators: false,
-    canManageTeam: false,
-    canAssignTasks: false,
-    canViewTeamMetrics: false,
-    canCreateProjects: false,
-    canManageAllProjects: false,
-    canManageOwnProjects: false,
-    canViewProjectAnalytics: true,
-    canAccessSystemSettings: false,
-    canManageUserRoles: false,
-    canViewSystemLogs: false,
-    canExportData: false,
-    canChatWithClients: false,
-    canChatWithTeam: false,
-    canSendNotifications: false,
-    canGenerateAdvancedReports: false,
-    canGenerateBasicReports: false,
-    canScheduleReports: false,
-    maxProjects: 0,
-    maxClients: 0,
-    maxAIRequests: 0,
-    maxStorageGB: 5
-  }
 }
 
 // Utility functions
 export function getUserPermissions(role: UserRole): UserPermissions {
-  return ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.free
+  return ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.free_user
 }
 
 export function hasPermission(role: UserRole, permission: keyof UserPermissions): boolean {
@@ -441,7 +403,7 @@ export function isAdmin(role: string | null): boolean {
 }
 
 export function isAgency(role: string | null): boolean {
-  return role === 'agency_owner' || role === 'agency_manager' || role === 'agency_employee'
+  return role === 'agency_owner' || role === 'agency_staff' || role === 'agency_client'
 }
 
 export function isIndependent(role: string | null): boolean {
@@ -453,15 +415,15 @@ export function isInfluencer(role: string | null): boolean {
 }
 
 export function isFree(role: string | null): boolean {
-  return role === 'free'
+  return role === 'free_user'
 }
 
 export function isClient(role: string | null): boolean {
-  return role === 'client'
+  return role === 'agency_client' || role === 'independent_client'
 }
 
 export function isPremiumUser(role: string | null): boolean {
-  return ['admin', 'agency_owner', 'agency_manager', 'independent_producer'].includes(role || '')
+  return ['admin', 'agency_owner', 'agency_staff', 'independent_producer'].includes(role || '')
 }
 
 export function canManageClients(role: string | null): boolean {
@@ -560,14 +522,14 @@ export function getRemainingQuota(role: UserRole, limitType: keyof UserPermissio
 // Upgrade suggestions
 export function getUpgradeOptions(role: UserRole): string[] {
   switch (role) {
-    case 'free':
-      return ['influencer', 'freelancer', 'independent_producer']
-    case 'freelancer':
-      return ['independent_producer', 'agency_owner']
+    case 'free_user':
+      return ['influencer', 'independent_producer']
     case 'influencer':
       return ['independent_producer', 'agency_owner']
-    case 'agency_employee':
-      return ['agency_manager']
+    case 'agency_client':
+      return ['agency_staff']
+    case 'independent_client':
+      return ['independent_producer']
     default:
       return []
   }

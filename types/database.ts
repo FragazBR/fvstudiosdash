@@ -1,7 +1,7 @@
 // types/database.ts
 // Tipos TypeScript para o novo sistema de permissões
 
-export type UserRole = 'admin' | 'agency' | 'independent' | 'influencer' | 'free' | 'client'
+export type UserRole = 'admin' | 'agency_owner' | 'agency_staff' | 'agency_client' | 'independent_producer' | 'independent_client' | 'influencer' | 'free_user'
 export type AgencyLevel = 'owner' | 'manager' | 'employee'
 export type ProjectRole = 'owner' | 'admin' | 'editor' | 'member' | 'viewer'
 export type UserStatus = 'active' | 'inactive' | 'suspended' | 'pending'
@@ -11,7 +11,7 @@ export type SubscriptionStatus = 'free' | 'trial' | 'active' | 'past_due' | 'can
 export interface Database {
   public: {
     Tables: {
-      profiles: {
+      user_profiles: {
         Row: {
           id: string
           email: string
@@ -531,7 +531,7 @@ export interface Database {
 }
 
 // Simplified types for use in components
-export type UserProfile = Database['public']['Tables']['profiles']['Row']
+export type UserProfile = Database['public']['Tables']['user_profiles']['Row']
 export type Agency = Database['public']['Tables']['agencies']['Row']
 export type Client = Database['public']['Tables']['clients']['Row']
 export type Project = Database['public']['Tables']['projects']['Row']

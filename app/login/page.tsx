@@ -54,7 +54,7 @@ export default function LoginPage() {
             id: data.user.id,
             email: data.user.email,
             full_name: data.user.email?.split('@')[0] || 'Usuário',
-            role: 'free',
+            role: 'free_user',
             email_verified: true,
           })
           .select('role, id')
@@ -64,7 +64,7 @@ export default function LoginPage() {
           console.log('Novo perfil criado:', newProfile)
           // Redireciona para dashboard gratuito
           setTimeout(() => {
-            window.location.replace('/free');
+            window.location.replace('/dashboard');
           }, 100);
         } else {
           setError('Erro ao criar perfil do usuário');
@@ -89,20 +89,18 @@ export default function LoginPage() {
         redirectPath = '/admin';
       } else if (role === 'agency_owner') {
         redirectPath = '/agency';
-      } else if (role === 'agency_manager') {
+      } else if (role === 'agency_staff') {
         redirectPath = '/agency';
-      } else if (role === 'agency_employee') {
-        redirectPath = '/agency';
+      } else if (role === 'agency_client') {
+        redirectPath = '/client';
       } else if (role === 'independent_producer') {
         redirectPath = '/independent';
+      } else if (role === 'independent_client') {
+        redirectPath = '/client';
       } else if (role === 'influencer') {
         redirectPath = '/influencer';
-      } else if (role === 'freelancer') {
-        redirectPath = '/free';
-      } else if (role === 'free') {
-        redirectPath = '/free';
-      } else if (role === 'client') {
-        redirectPath = '/client';
+      } else if (role === 'free_user') {
+        redirectPath = '/dashboard';
       } else {
         setError('Tipo de usuário inválido');
         return;
