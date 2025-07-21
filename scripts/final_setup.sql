@@ -76,9 +76,9 @@ CREATE TABLE IF NOT EXISTS public.user_profiles (
   avatar_url TEXT,
   
   -- Hierarquia
-  role VARCHAR(50) DEFAULT 'client',
+  role VARCHAR(50) DEFAULT 'free_user',
   agency_id UUID REFERENCES public.agencies(id) ON DELETE CASCADE,
-  producer_id UUID REFERENCES public.user_profiles(id) ON DELETE SET NULL,
+  parent_agency_id UUID REFERENCES public.agencies(id) ON DELETE CASCADE,
   
   -- Dados do Cliente/Usuário
   company VARCHAR(255),
@@ -589,7 +589,7 @@ BEGIN
   VALUES (
     NEW.id,
     NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
+    COALESCE(NEW.raw_user_meta_data->>'name', NEW.email),
     meta_role,
     meta_agency,
     meta_producer

@@ -20,29 +20,9 @@ export const supabaseHelpers = {
   // Get user profile with agency info
   async getUserProfile(userId: string) {
     const { data, error } = await supabase
-      .from('profiles')
+      .from('user_profiles')
       .select(`
-        *,
-        agency:parent_agency_id(
-          id,
-          name,
-          slug,
-          logo_url
-        ),
-      agency_member:agency_members!inner(
-          id,
-          role,
-          permissions,
-          status,
-          agency:agencies(
-            id,
-            name,
-            slug,
-            logo_url,
-            settings,
-            status
-          )
-        )
+        *
       `)
       .eq('id', userId)
       .single()
@@ -64,7 +44,7 @@ export const supabaseHelpers = {
           user:user_profiles(
             id,
             email,
-            full_name,
+            name,
             avatar_url,
             role,
             status
@@ -83,9 +63,9 @@ export const supabaseHelpers = {
       .from('projects')
       .select(`
         *,
-        owner:profiles!projects_owner_id_fkey(
+        owner:user_profiles!projects_owner_id_fkey(
           id,
-          full_name,
+          name,
           avatar_url
         ),
         client:clients(
@@ -104,7 +84,7 @@ export const supabaseHelpers = {
           permissions,
           user:user_profiles(
             id,
-            full_name,
+            name,
             avatar_url
           )
         )
@@ -122,9 +102,9 @@ export const supabaseHelpers = {
       .from('clients')
       .select(`
         *,
-        owner:profiles!clients_owner_id_fkey(
+        owner:user_profiles!clients_owner_id_fkey(
           id,
-          full_name,
+          name,
           avatar_url
         ),
         agency:agencies(
@@ -242,7 +222,7 @@ export const supabaseHelpers = {
     }
   ) {
     const { data, error } = await supabase
-      .from('profiles')
+      .from('user_profiles')
       .update({
         current_projects: updates.projects,
         current_clients: updates.clients,

@@ -80,22 +80,55 @@ Admin Global
 └── Cliente Independente (sem agência)
 ```
 
-### Roles Disponíveis
-- **`admin`**: Administrador global (vê e gerencia tudo)
-- **`agency_owner`**: Dono da agência (gerencia agência e clientes)
-- **`agency_staff`**: Funcionário da agência (acessa dados dos clientes)
-- **`client`**: Cliente final (vê apenas seus próprios dados)
+
+### 8 Roles Principais
+- **admin**: Acesso global ao sistema, configurações, planos e gerenciamento de todos os usuários.
+- **agency_owner**: Gerencia colaboradores, clientes, contratos e estrutura de produção.
+- **agency_staff**: Visualiza e interage com os projetos e clientes da sua própria agência.
+- **agency_client**: Cliente de agência, acesso somente aos seus próprios dados, APIs e visualização de projetos.
+- **independent_producer**: Produtor independente, acesso completo à estrutura de agência, mas para uso individual e clientes próprios.
+- **independent_client**: Cliente de produtor independente, acesso somente aos seus próprios dados, APIs e visualização de projetos.
+- **influencer**: Ferramentas individuais, sem visibilidade ou interação com outros usuários.
+- **free_user**: Acesso limitado a ferramentas e sem recursos premium (ex: IA, automações).
+
+### 🔄 Acesso Controlado (exemplos)
+
+| Módulo          | admin | agency_owner | agency_staff | agency_client | independent_producer | independent_client | influencer | free_user |
+|----------------|:-----:|:------------:|:------------:|:------------:|:--------------------:|:------------------:|:----------:|:---------:|
+| Dashboard       | ✅    | ✅           | ✅           | ✅           | ✅                   | ✅                 | ✅         | ✅        |
+| Projetos        | ✅    | ✅           | ✅           | 🔍           | ✅                   | 🔍                 | ❌         | ❌        |
+| Workstation     | ✅    | ✅           | ✅           | 🔍           | ✅                   | 🔍                 | ✅         | ❌        |
+| Tarefas         | ✅    | ✅           | ✅           | 🔍           | ✅                   | 🔍                 | ✅         | ❌        |
+| Calendário      | ✅    | ✅           | ✅           | 🔍           | ✅                   | 🔍                 | ✅         | ❌        |
+| Mensagens       | ✅    | ✅           | ✅           | ✅           | ✅                   | ✅                 | ❌         | ❌        |
+| IA Agents       | ✅    | ✅           | ✅           | ✅           | ✅                   | ✅                 | ✅         | ❌        |
+| Gerenciar Usuários | ✅ | ✅           | ❌           | ❌           | ✅                   | ❌                 | ❌         | ❌        |
+| Agência         | ✅    | ✅           | ❌           | ❌           | ❌                   | ❌                 | ❌         | ❌        |
+
+> 🔍 = acesso somente leitura
+
 
 ## 💰 Planos de Assinatura
 
-| Plano | Clientes | Projetos | APIs | Preço/Mês |
-|-------|----------|----------|------|-----------|
-| **Free** | 1 | 3 | Google Analytics | R$ 0 |
-| **Basic** | 5 | 20 | GA + Google Ads + Facebook | R$ 99 |
-| **Premium** | 25 | 100 | + LinkedIn + Automação | R$ 299 |
-| **Enterprise** | ∞ | ∞ | Todas + API Access | R$ 999 |
-| **Agency Basic** | 50 | 200 | Multi-client Dashboard | R$ 499 |
-| **Agency Pro** | 200 | 1000 | + White Label + Automação | R$ 1299 |
+| Plano | Clientes | Projetos | Campanhas | APIs | Preço/Mês |
+|-------|----------|----------|-----------|------|-----------|
+| **Free** | 1 | 3 | 3 | Google Analytics | R$ 0 |
+| **Basic** | 5 | 20 | 20 | GA, Google Ads, Facebook | R$ 99 |
+| **Premium** | 25 | 100 | 100 | + LinkedIn, Automação | R$ 299 |
+| **Enterprise** | ∞ | ∞ | ∞ | Todas + API Access | R$ 999 |
+| **Agency Basic** | 50 | 200 | 200 | Multi-client Dashboard | R$ 499 |
+| **Agency Pro** | 200 | 1000 | 1000 | + White Label + Automação | R$ 1299 |
+
+### 🛒 Adesão e Cadastro de Planos
+
+O cliente pode aderir a qualquer plano diretamente pelo site, escolhendo o plano desejado durante o cadastro. O sistema cria automaticamente o perfil do usuário e associa o plano selecionado, respeitando a hierarquia e os limites de cada plano. O fluxo é:
+
+1. Usuário acessa a página de cadastro e escolhe o plano.
+2. Cadastro cria o perfil em `user_profiles` com o role e plano selecionados.
+3. Limites e recursos são aplicados conforme a tabela de planos.
+4. O acesso e as permissões são definidos automaticamente pelo role e plano.
+
+Esse processo é válido para todos os tipos de usuário (agência, produtor independente, influencer, cliente final, etc.), garantindo que a adesão ao serviço e a ativação dos recursos estejam sempre alinhadas à hierarquia e aos serviços contratados.
 
 ## 🔒 Segurança
 

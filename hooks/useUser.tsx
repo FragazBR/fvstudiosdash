@@ -66,7 +66,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
               .insert({
                 id: session.user.id,
                 email: session.user.email,
-                full_name: session.user.email?.split('@')[0] || 'Usuário',
+                name: session.user.email?.split('@')[0] || 'Usuário',
                 role: 'free_user', // default role
               })
               .select()

@@ -4,7 +4,13 @@
 
 Sistema de gerenciamento avançado para agências de marketing digital, com arquitetura multi-tenant de isolamento completo de dados.
 
-### 🧱 Hierarquia de Usuários Detalhada
+
+
+## 🧱 Hierarquia de Usuários (Multi-Tenant)
+
+O sistema adota uma arquitetura multi-tenant com **isolamento rígido** entre clientes, agências, produtores independentes e usuários individuais.
+
+### 🧩 Fluxo Hierárquico
 
 ```
 Admin Global
@@ -23,16 +29,33 @@ Admin Global
 └── Usuário do Plano Gratuito
 ```
 
-### 🔐 Roles de Usuário
-1. `admin`: Acesso global ao sistema
-2. `agency_owner`: Gerencia colaboradores e clientes
-3. `agency_staff`: Interage com projetos da agência
-4. `client`: Acesso apenas aos próprios dados
-5. `independent_producer`: Estrutura de agência individual
-6. `influencer`: Ferramentas individuais
-7. `free_user`: Acesso limitado
+### 8 Roles Principais
+- **admin**: Acesso global ao sistema, configurações, planos e gerenciamento de todos os usuários.
+- **agency_owner**: Gerencia colaboradores, clientes, contratos e estrutura de produção.
+- **agency_staff**: Visualiza e interage com os projetos e clientes da sua própria agência.
+- **agency_client**: Cliente de agência, acesso somente aos seus próprios dados, APIs e visualização de projetos.
+- **independent_producer**: Produtor independente, acesso completo à estrutura de agência, mas para uso individual e clientes próprios.
+- **independent_client**: Cliente de produtor independente, acesso somente aos seus próprios dados, APIs e visualização de projetos.
+- **influencer**: Ferramentas individuais, sem visibilidade ou interação com outros usuários.
+- **free_user**: Acesso limitado a ferramentas e sem recursos premium (ex: IA, automações).
 
-## 🗄️ Banco de Dados Multi-Tenant
+### 🔄 Acesso Controlado (exemplos)
+
+| Módulo          | admin | agency_owner | agency_staff | agency_client | independent_producer | independent_client | influencer | free_user |
+|----------------|:-----:|:------------:|:------------:|:------------:|:--------------------:|:------------------:|:----------:|:---------:|
+| Dashboard       | ✅    | ✅           | ✅           | ✅           | ✅                   | ✅                 | ✅         | ✅        |
+| Projetos        | ✅    | ✅           | ✅           | 🔍           | ✅                   | 🔍                 | ❌         | ❌        |
+| Workstation     | ✅    | ✅           | ✅           | 🔍           | ✅                   | 🔍                 | ✅         | ❌        |
+| Tarefas         | ✅    | ✅           | ✅           | �           | ✅                   | 🔍                 | ✅         | ❌        |
+| Calendário      | ✅    | ✅           | ✅           | 🔍           | ✅                   | 🔍                 | ✅         | ❌        |
+| Mensagens       | ✅    | ✅           | ✅           | ✅           | ✅                   | ✅                 | ❌         | ❌        |
+| IA Agents       | ✅    | ✅           | ✅           | ✅           | ✅                   | ✅                 | ✅         | ❌        |
+| Gerenciar Usuários | ✅ | ✅           | ❌           | ❌           | ✅                   | ❌                 | ❌         | ❌        |
+| Agência         | ✅    | ✅           | ❌           | ❌           | ❌                   | ❌                 | ❌         | ❌        |
+
+> 🔍 = acesso somente leitura
+
+## �🗄️ Banco de Dados Multi-Tenant
 
 ### Tabelas Principais
 1. **profiles**: Perfis de usuário e roles
@@ -46,10 +69,26 @@ Admin Global
 9. **calendar_events**: Eventos do calendário
 
 ### 🔒 Segurança de Dados (RLS)
+
+## 🗄️ Banco de Dados Multi-Tenant
+
+### Tabelas Principais
+1. **user_profiles**: Perfis de usuário e roles
+2. **agencies**: Dados das agências
+3. **clients**: Informações dos clientes
+4. **projects**: Projetos e campanhas
+5. **tasks**: Tarefas do sistema
+6. **campaigns**: Campanhas de marketing
+7. **messages**: Sistema de mensagens
+8. **notifications**: Central de notificações
+9. **calendar_events**: Eventos do calendário
+
+### 🔒 Segurança de Dados (RLS)
 - Isolamento total por `agency_id`, `producer_id`, `client_id`
-- 20+ Políticas de Segurança implementadas
-- Supabase RLS ativo em todas entidades
+- Políticas de Segurança (RLS) implementadas em todas entidades sensíveis
+- Supabase RLS ativo
 - Tokens de sessão com escopo autorizado
+
 
 ## 💰 Planos de Assinatura
 
@@ -61,6 +100,15 @@ Admin Global
 | **Enterprise** | ∞ | ∞ | ∞ | Todas + API Access | R$ 999 |
 | **Agency Basic** | 50 | 200 | 200 | Multi-client Dashboard | R$ 499 |
 | **Agency Pro** | 200 | 1000 | 1000 | + White Label + Automação | R$ 1299 |
+
+
+### 🛒 Adesão e Cadastro de Planos
+
+O cadastro inicial de qualquer usuário é sempre realizado no plano **Free** (gratuito), com acesso limitado e role padrão (`free_user`).
+
+Após criar a conta, o usuário pode acessar a área de upgrade e escolher qualquer outro plano disponível, realizando o upgrade conforme sua necessidade e perfil (agência, produtor independente, influencer, cliente final, etc.).
+
+O sistema faz a atualização automática do perfil (`user_profiles`) e libera os recursos, limites e permissões do novo plano escolhido, respeitando a hierarquia e os serviços contratados.
 
 ## 🚀 Tecnologias Utilizadas
 

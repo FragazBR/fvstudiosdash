@@ -1,0 +1,6 @@
+{
+    "github.copilot.chat.agent.currentEditorContext.enabled": false,
+    "github.copilot.chat.agent.runTasks": false,
+    "github.copilot.chat.agent.autoFix": false,
+    "chat.agent.enabled": false
+}

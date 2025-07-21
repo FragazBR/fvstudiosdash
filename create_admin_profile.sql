@@ -5,9 +5,8 @@
 INSERT INTO public.user_profiles (
     id,
     email,
-    full_name,
+    name,
     role,
-    email_verified,
     created_at,
     updated_at
 ) VALUES (
@@ -15,19 +14,17 @@ INSERT INTO public.user_profiles (
     'admin@fvstudios.com',
     'Admin FVStudios',
     'admin',
-    true,
     NOW(),
     NOW()
 )
 ON CONFLICT (id) DO UPDATE SET
     email = EXCLUDED.email,
-    full_name = EXCLUDED.full_name,
+    name = EXCLUDED.name,
     role = EXCLUDED.role,
-    email_verified = EXCLUDED.email_verified,
     updated_at = NOW();
 
 -- 2. Verificar se o perfil foi criado
-SELECT id, email, full_name, role, created_at 
+SELECT id, email, name, role, created_at 
 FROM public.user_profiles 
 WHERE id = '71f0cbbb-1963-430c-b445-78907e747574';
 

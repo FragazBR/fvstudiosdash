@@ -15,7 +15,7 @@ export interface Database {
         Row: {
           id: string
           email: string
-          full_name: string | null
+          name: string
           avatar_url: string | null
           role: UserRole
           status: UserStatus
@@ -38,7 +38,7 @@ export interface Database {
         Insert: {
           id: string
           email: string
-          full_name?: string | null
+          name: string
           avatar_url?: string | null
           role?: UserRole
           status?: UserStatus
@@ -61,7 +61,7 @@ export interface Database {
         Update: {
           id?: string
           email?: string
-          full_name?: string | null
+          name?: string
           avatar_url?: string | null
           role?: UserRole
           status?: UserStatus
@@ -634,7 +634,7 @@ export interface PaginatedResponse<T = any> {
 // Form types
 export interface CreateUserData {
   email: string
-  full_name: string
+  name: string
   role: UserRole
   agency_id?: string
   permissions?: Record<string, any>

@@ -74,7 +74,7 @@ function AdminHomeContent() {
         password: 'TemporaryPass123!', // Senha temporária
         options: {
           data: {
-            full_name: clientForm.name,
+            name: clientForm.name,
             company: clientForm.company,
             phone: clientForm.phone
           }
