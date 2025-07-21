@@ -60,9 +60,11 @@ export default function LoginPage() {
           .insert({
             id: data.user.id,
             email: data.user.email,
-            full_name: defaultName,
+            name: defaultName,
             role: defaultRole,
-            email_verified: true,
+            company: isAdminUser ? 'FVStudios' : null,
+            subscription_plan: isAdminUser ? 'enterprise' : 'free',
+            subscription_status: 'active',
           })
           .select('role, id')
           .single();
