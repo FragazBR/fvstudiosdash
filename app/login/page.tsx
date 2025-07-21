@@ -64,7 +64,7 @@ export default function LoginPage() {
           console.log('Novo perfil criado:', newProfile)
           // Redireciona para dashboard gratuito
           setTimeout(() => {
-            window.location.replace('/dashboard');
+            window.location.href = '/dashboard';
           }, 100);
         } else {
           setError('Erro ao criar perfil do usuário');
@@ -110,7 +110,7 @@ export default function LoginPage() {
       
       // Força redirecionamento imediato
       setTimeout(() => {
-        window.location.replace(redirectPath);
+        window.location.href = redirectPath;
       }, 100);
       
     } catch (error) {

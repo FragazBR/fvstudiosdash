@@ -65,7 +65,13 @@ export async function middleware(req: NextRequest) {
 
     if (profileError || !profile) {
       console.error('Profile error:', profileError?.message || 'No profile found')
-      // Se não encontrar perfil, força logout
+      // Para admin específico, permitir acesso mesmo sem perfil
+      if (session.user.id === '71f0cbbb-1963-430c-b445-78907e747574') {
+        console.log('Admin bypass - permitindo acesso sem perfil')
+        return res // PERMITE CONTINUAR
+      }
+      // Apenas força logout se não for admin
+      console.log('Forçando redirect para login devido ao erro de perfil')
       return NextResponse.redirect(new URL('/login', req.url))
     }
 
@@ -84,7 +90,10 @@ export async function middleware(req: NextRequest) {
 
     // Se o usuário tentar acessar rota de outro role, redireciona
     const allowedBase = roleRoutes[role as keyof typeof roleRoutes]
+    console.log(`Middleware check: user role=${role}, path=${path}, allowedBase=${allowedBase}`)
+    
     if (allowedBase && !path.startsWith(allowedBase)) {
+      console.log(`Redirecting from ${path} to ${allowedBase} for role ${role}`)
       return NextResponse.redirect(new URL(allowedBase, req.url))
     }
 
