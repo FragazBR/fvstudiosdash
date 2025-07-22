@@ -5,7 +5,6 @@ import { useUser } from '@/hooks/useUser'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { PerformanceMetrics } from '@/components/PerformanceMetrics'
-import KanbanPage from '@/components/kanban-page'
 import CalendarPage from '@/components/calendar-page'
 
 export default function PersonalDashboardPage() {
