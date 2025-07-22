@@ -384,7 +384,7 @@ function ProjectCard({
                 "w-1 h-12 rounded-full",
                 project.status === "In Progress" && "bg-yellow-500",
                 project.status === "Completed" && "bg-green-500",
-                project.status === "Planning" && "bg-blue-500",
+                project.status === "Planning" && "bg-slate-500",
                 project.status === "On Hold" && "bg-gray-500"
               )}
             />
@@ -406,7 +406,7 @@ function ProjectCard({
               project.status === "Completed" &&
                 "bg-green-100 text-green-800 hover:bg-green-100",
               project.status === "Planning" &&
-                "bg-blue-100 text-blue-800 hover:bg-blue-100",
+                "bg-slate-100 text-slate-800 hover:bg-slate-100",
               project.status === "On Hold" &&
                 "bg-gray-100 text-gray-800 hover:bg-gray-100"
             )}
@@ -550,7 +550,7 @@ function ProjectRow({
             project.status === "Completed" &&
               "bg-green-100 text-green-800 hover:bg-green-100",
             project.status === "Planning" &&
-              "bg-blue-100 text-blue-800 hover:bg-blue-100",
+              "bg-slate-100 text-slate-800 hover:bg-slate-100",
             project.status === "On Hold" &&
               "bg-gray-100 text-gray-800 hover:bg-gray-100"
           )}

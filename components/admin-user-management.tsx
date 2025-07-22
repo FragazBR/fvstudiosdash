@@ -497,9 +497,9 @@ export default function AdminUserManagementPage() {
             </div>
           </div>
           
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-4">
-            <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">💡 Vantagens deste Sistema</h4>
-            <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+          <div className="bg-slate-50 dark:bg-slate-900/20 border border-slate-200 dark:border-slate-800 rounded-lg p-4 mt-4">
+            <h4 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">💡 Vantagens deste Sistema</h4>
+            <ul className="text-sm text-slate-800 dark:text-slate-200 space-y-1">
               <li>✅ <strong>Sem acesso ao Supabase necessário</strong> - Tudo pelo dashboard</li>
               <li>✅ <strong>Seguro</strong> - Links únicos com expiração</li>
               <li>✅ <strong>Auditoria completa</strong> - Logs de todas as ações</li>

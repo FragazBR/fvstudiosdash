@@ -24,7 +24,7 @@ interface ContactFormProps {
 
 // Sample tags for contacts
 const contactTags = [
-  { id: "team", name: "Team", color: "bg-blue-500" },
+  { id: "team", name: "Team", color: "bg-slate-500" },
   { id: "client", name: "Client", color: "bg-green-500" },
   { id: "vendor", name: "Vendor", color: "bg-yellow-500" },
   { id: "partner", name: "Partner", color: "bg-purple-500" },

@@ -38,7 +38,7 @@ export default function TaskboardTopbar({ onMenuButtonClick }: TaskboardTopbarPr
           </Button>
 
           {/* New Project Button */}
-          <Button size="sm" className="h-9 bg-blue-600 hover:bg-blue-700 text-white">
+          <Button size="sm" className="h-9 bg-slate-600 hover:bg-slate-700 text-white dark:bg-[#64f481] dark:hover:bg-[#4db866] dark:text-black">
             <Plus className="h-4 w-4 mr-2" />
             New Project
           </Button>

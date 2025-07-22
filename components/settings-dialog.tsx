@@ -132,7 +132,7 @@ export function SettingsDialog({ children }: SettingsDialogProps) {
                 <CardContent>
                   <div className="grid grid-cols-4 gap-3">
                     {[
-                      { name: "Azul", color: "bg-blue-500", value: "blue" },
+                      { name: "Slate", color: "bg-slate-500", value: "slate" },
                       { name: "Verde", color: "bg-green-500", value: "green" },
                       { name: "Roxo", color: "bg-purple-500", value: "purple" },
                       { name: "Rosa", color: "bg-pink-500", value: "pink" },

@@ -35,7 +35,7 @@ interface SidebarProps {
 }
 
 const projects = [
-  { name: "Website Redesign", completed: "progress", link: "/projects/1", color: "bg-blue-500" },
+  { name: "Website Redesign", completed: "progress", link: "/projects/1", color: "bg-slate-500" },
   { name: "Mobile App", completed: "planning", link: "/projects/2", color: "bg-green-500" },
   { name: "Brand Identity", completed: "completed", link: "/projects/3", color: "bg-purple-500" }
 ];
@@ -137,6 +137,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
             <NavItem href="/dashboard" icon={LayoutGrid}>Dashboard</NavItem>
             <NavItem href="/contas" icon={Users}>Contas</NavItem>
             <NavItem href="/projects" icon={FileText}>Projetos</NavItem>
+            <NavItem href="/my-tasks" icon={CheckSquare}>Tarefas</NavItem>
             <NavItem href="/workstation" icon={LayoutGrid}>Estação de Trabalho</NavItem>
             <NavItem href="/calendar" icon={Calendar}>Calendário</NavItem>
             <NavItem href="/messages" icon={ContactRound}>Mensagens</NavItem>
@@ -274,7 +275,7 @@ function ProjectItem({ name, href, color, status }: any) {
       <span
         className={cn(
           "ml-auto text-xs px-2 py-1 rounded-full font-medium",
-          status === "planning" && "bg-blue-500/20 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400",
+          status === "planning" && "bg-slate-500/20 text-slate-600 dark:bg-slate-500/20 dark:text-slate-400",
           status === "progress" && "bg-amber-500/20 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400",
           status === "completed" && "bg-slate-500/20 text-slate-700 dark:bg-[#64f481]/20 dark:text-[#64f481]"
         )}

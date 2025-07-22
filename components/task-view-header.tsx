@@ -18,17 +18,17 @@ interface TaskViewHeaderProps {
 
 export default function TaskViewHeader({ activeView, onViewChange }: TaskViewHeaderProps) {
   return (
-    <div className="bg-white border-b border-gray-100 py-3 px-4 sm:px-6 lg:px-8">
+    <div className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border-b border-gray-200 dark:border-[#272727] py-3 px-4 sm:px-6 lg:px-8">
       <div className="flex flex-wrap  justify-between gap-3">
-        <div className="flex flex-wrap gap-1 items-center bg-gray-100 rounded-lg p-1">
+        <div className="flex flex-wrap gap-1 items-center bg-gray-100 dark:bg-[#1f1f1f] rounded-lg p-1">
           <Button
             variant="ghost"
             size="sm"
             className={cn(
               "h-8 px-3 text-sm font-medium",
               activeView === "board"
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50",
+                ? "bg-white dark:bg-[#171717] text-gray-900 dark:text-gray-100 shadow-sm"
+                : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-200/50 dark:hover:bg-[#272727]/50",
             )}
             onClick={() => onViewChange("board")}
           >
@@ -41,8 +41,8 @@ export default function TaskViewHeader({ activeView, onViewChange }: TaskViewHea
             className={cn(
               "h-8 px-3 text-sm font-medium",
               activeView === "list"
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50",
+                ? "bg-white dark:bg-[#171717] text-gray-900 dark:text-gray-100 shadow-sm"
+                : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-200/50 dark:hover:bg-[#272727]/50",
             )}
             onClick={() => onViewChange("list")}
           >
@@ -55,8 +55,8 @@ export default function TaskViewHeader({ activeView, onViewChange }: TaskViewHea
             className={cn(
               "h-8 px-3 text-sm font-medium",
               activeView === "calendar"
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50",
+                ? "bg-white dark:bg-[#171717] text-gray-900 dark:text-gray-100 shadow-sm"
+                : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-200/50 dark:hover:bg-[#272727]/50",
             )}
             onClick={() => onViewChange("calendar")}
           >

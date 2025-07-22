@@ -133,11 +133,11 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div ref={modalRef} className="w-full max-w-2xl rounded-xl bg-white shadow-2xl md:p-3 max-h-[400px] md:max-h-[600px] overflow-y-auto" aria-modal="true" role="dialog">
+      <div ref={modalRef} className="w-full max-w-2xl rounded-xl bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727] shadow-2xl md:p-3 max-h-[400px] md:max-h-[600px] overflow-y-auto" aria-modal="true" role="dialog">
         {/* Search input */}
         <div className="p-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
             <Input
               ref={inputRef}
               type="text"
@@ -150,7 +150,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200">
+        <div className="border-b border-gray-200 dark:border-[#272727]">
           <div className="flex flex-wrap gap-3 px-4">
             <TabButton
               active={activeTab === "tasks"}
@@ -183,7 +183,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               {searchResults.tasks.map((task) => (
                 <div
                   key={`task-${task.id}`}
-                  className="flex items-center rounded-md p-3 hover:bg-gray-50 cursor-pointer"
+                  className="flex items-center rounded-md p-3 hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 cursor-pointer"
                 >
                   {task.icon === "briefcase" && (
                     <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-md bg-amber-100 text-amber-700">
@@ -191,7 +191,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     </div>
                   )}
                   {task.icon === "pen" && (
-                    <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-md bg-blue-100 text-blue-700">
+                    <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-md bg-slate-100 text-slate-700">
                       <span className="text-lg">✏️</span>
                     </div>
                   )}
@@ -201,9 +201,9 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     </div>
                   )}
                   <div>
-                    <div className="font-medium">{task.title}</div>
+                    <div className="font-medium text-gray-900 dark:text-gray-100">{task.title}</div>
                     <div className="mt-1 flex items-center">
-                      <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
+                      <span className="inline-flex items-center rounded-full bg-slate-50 dark:bg-slate-900/20 px-2 py-1 text-xs font-medium text-slate-700 dark:text-slate-400">
                         <span className="mr-1 text-xs">🎨</span> {task.project}
                       </span>
                     </div>
@@ -218,20 +218,20 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               {searchResults.projects.map((project) => (
                 <div
                   key={`project-${project.id}`}
-                  className="flex items-center rounded-md p-3 hover:bg-gray-50 cursor-pointer"
+                  className="flex items-center rounded-md p-3 hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 cursor-pointer"
                 >
-                  <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-md bg-blue-100 text-blue-700">
+                  <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-md bg-slate-100 dark:bg-slate-900/20 text-slate-700 dark:text-slate-400">
                     <FileText className="h-4 w-4" />
                   </div>
                   <div>
-                    <div className="font-medium">{project.title}</div>
+                    <div className="font-medium text-gray-900 dark:text-gray-100">{project.title}</div>
                     <div className="mt-1">
                       <span
                         className={cn(
                           "inline-block rounded-full px-2 py-1 text-xs font-medium",
-                          project.status === "planning" && "bg-blue-100 text-blue-800",
-                          project.status === "in-progress" && "bg-yellow-100 text-yellow-800",
-                          project.status === "completed" && "bg-green-100 text-green-800",
+                          project.status === "planning" && "bg-slate-100 text-slate-800 dark:bg-slate-900/20 dark:text-slate-400",
+                          project.status === "in-progress" && "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400",
+                          project.status === "completed" && "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400",
                         )}
                       >
                         {project.status === "in-progress"
@@ -250,7 +250,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               {searchResults.people.map((person) => (
                 <div
                   key={`person-${person.id}`}
-                  className="flex items-center rounded-md p-3 hover:bg-gray-50 cursor-pointer"
+                  className="flex items-center rounded-md p-3 hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 cursor-pointer"
                 >
                   <div className="mr-3 h-10 w-10 overflow-hidden rounded-full">
                     <img
@@ -260,8 +260,8 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     />
                   </div>
                   <div>
-                    <div className="font-medium">{person.name}</div>
-                    <div className="text-sm text-gray-500">{person.role}</div>
+                    <div className="font-medium text-gray-900 dark:text-gray-100">{person.name}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">{person.role}</div>
                   </div>
                 </div>
               ))}
@@ -270,12 +270,12 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="flex flex-wrap gap-2 items-center justify-between border-t border-gray-200 p-4">
+        <div className="flex flex-wrap gap-2 items-center justify-between border-t border-gray-200 dark:border-[#272727] p-4">
           <Button variant="outline" size="sm" onClick={onClose} className="flex items-center">
             <X className="mr-2 h-4 w-4" />
             Return
           </Button>
-          <Button variant="ghost" size="sm" className="flex items-center text-blue-600">
+          <Button variant="ghost" size="sm" className="flex items-center text-blue-600 dark:text-blue-400">
             To View All Results
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
@@ -299,8 +299,8 @@ function TabButton({ active, onClick, children, icon }: TabButtonProps) {
       className={cn(
         "flex items-center px-4 py-3 text-sm font-medium border-b-2 -mb-px",
         active
-          ? "border-blue-600 text-blue-600"
-          : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300",
+          ? "border-slate-600 dark:border-[#64f481] text-slate-600 dark:text-[#64f481]"
+          : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-[#272727]",
       )}
       onClick={onClick}
     >

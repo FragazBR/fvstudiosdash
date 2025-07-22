@@ -137,7 +137,7 @@ export function ClientManager() {
   const getSizeColor = (size: string) => {
     switch (size) {
       case 'small':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400';
+        return 'bg-slate-100 text-slate-800 dark:bg-slate-900/20 dark:text-slate-400';
       case 'medium':
         return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
       case 'large':

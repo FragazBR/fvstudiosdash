@@ -44,7 +44,7 @@ interface ContactDetailPageProps {
 
 // Sample tags for contacts
 const contactTags = [
-  { id: "team", name: "Team", color: "bg-blue-500" },
+  { id: "team", name: "Team", color: "bg-slate-500" },
   { id: "client", name: "Client", color: "bg-green-500" },
   { id: "vendor", name: "Vendor", color: "bg-yellow-500" },
   { id: "partner", name: "Partner", color: "bg-purple-500" },
@@ -213,7 +213,7 @@ export default function ContactDetailPage({ id }: ContactDetailPageProps) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading contact details...</p>
         </div>
       </div>

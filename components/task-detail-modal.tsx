@@ -322,9 +322,9 @@ export default function TaskDetailModal({
                   <div className="space-y-2">
                     <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
                       <div className="flex items-center space-x-2">
-                        <div className="bg-blue-100 p-2 rounded">
+                        <div className="bg-slate-100 p-2 rounded">
                           <svg
-                            className="h-5 w-5 text-blue-600"
+                            className="h-5 w-5 text-slate-600"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"

@@ -64,7 +64,7 @@ export default function ProjectDetailPage({ id }: ProjectDetailPageProps) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading project details...</p>
         </div>
       </div>
@@ -111,7 +111,7 @@ export default function ProjectDetailPage({ id }: ProjectDetailPageProps) {
                 <Star className="h-4 w-4 mr-2" />
                 {project.starred ? "Unstar" : "Star Project"}
               </Button>
-              <Button className="bg-blue-600 hover:bg-blue-700">
+              <Button className="bg-slate-600 hover:bg-slate-700 dark:bg-[#64f481] dark:hover:bg-[#4db866] dark:text-black">
                 <Settings className="h-4 w-4 mr-2" />
                 Edit Project
               </Button>
@@ -128,7 +128,7 @@ export default function ProjectDetailPage({ id }: ProjectDetailPageProps) {
                   "w-2 h-16 rounded-full",
                   project.status === "In Progress" && "bg-yellow-500",
                   project.status === "Completed" && "bg-green-500",
-                  project.status === "Planning" && "bg-blue-500",
+                  project.status === "Planning" && "bg-slate-500",
                   project.status === "On Hold" && "bg-gray-500"
                 )}
               />
@@ -151,7 +151,7 @@ export default function ProjectDetailPage({ id }: ProjectDetailPageProps) {
                       project.status === "Completed" &&
                         "bg-green-100 text-green-800 hover:bg-green-100",
                       project.status === "Planning" &&
-                        "bg-blue-100 text-blue-800 hover:bg-blue-100",
+                        "bg-slate-100 text-slate-800 hover:bg-slate-100",
                       project.status === "On Hold" &&
                         "bg-gray-100 text-gray-800 hover:bg-gray-100"
                     )}
@@ -393,7 +393,7 @@ export default function ProjectDetailPage({ id }: ProjectDetailPageProps) {
                   <CardContent>
                     <div className="space-y-4">
                       <div className="flex items-start space-x-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
                           <Calendar className="h-4 w-4 text-blue-600" />
                         </div>
                         <div>

@@ -191,8 +191,8 @@ export function NotificationsList({
             <div
               key={notification.id}
               className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
-                selectedNotificationId === notification.id ? "bg-blue-50" : ""
-              } ${!notification.read ? "bg-blue-50/30" : ""}`}
+                selectedNotificationId === notification.id ? "bg-slate-50" : ""
+              } ${!notification.read ? "bg-slate-50/30" : ""}`}
               onClick={() => onSelectNotification(notification)}
             >
               <div className="flex items-start">
@@ -216,7 +216,7 @@ export function NotificationsList({
                       {notification.title}
                     </p>
                     <div className="flex items-center ml-2">
-                      {!notification.read && <span className="h-2 w-2 bg-blue-600 rounded-full mr-2" />}
+                      {!notification.read && <span className="h-2 w-2 bg-slate-600 dark:bg-[#64f481] rounded-full mr-2" />}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}>

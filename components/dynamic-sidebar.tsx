@@ -195,8 +195,8 @@ export function DynamicSidebar({ open, setOpen }: DynamicSidebarProps) {
       case 'agency_staff':
         return { 
           label: USER_ROLE_LABELS[userRole], 
-          color: 'text-blue-600', 
-          bg: 'bg-blue-50 dark:bg-blue-900/20',
+          color: 'text-slate-600', 
+          bg: 'bg-slate-50 dark:bg-slate-900/20',
           icon: Building
         };
       case 'independent_producer':
@@ -259,7 +259,7 @@ export function DynamicSidebar({ open, setOpen }: DynamicSidebarProps) {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
           <Link href={userRole === 'admin' ? '/admin' : `/${userRole}`} className="flex items-center space-x-2">
-            <div className="h-8 w-8 bg-gradient-to-r from-green-600 to-blue-600 rounded-lg flex items-center justify-center">
+            <div className="h-8 w-8 bg-gradient-to-r from-green-600 to-slate-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold">FV</span>
             </div>
             <span className="text-xl font-bold">FVStudios</span>
@@ -359,7 +359,7 @@ export function DynamicSidebar({ open, setOpen }: DynamicSidebarProps) {
         {userRole === 'free_user' && (
           <div className="p-4 border-t border-gray-200 dark:border-gray-800">
             <Button 
-              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+              className="w-full bg-gradient-to-r from-purple-600 to-slate-600 hover:from-purple-700 hover:to-slate-700"
               onClick={() => window.location.href = '/upgrade'}
             >
               <Crown className="h-4 w-4 mr-2" />

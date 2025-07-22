@@ -114,7 +114,7 @@ export default function ProjectFullDetails({
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading project details...</p>
         </div>
       </div>
@@ -144,7 +144,7 @@ export default function ProjectFullDetails({
                     "w-2 h-16 rounded-full",
                     project.status === "In Progress" && "bg-yellow-500",
                     project.status === "Completed" && "bg-green-500",
-                    project.status === "Planning" && "bg-blue-500",
+                    project.status === "Planning" && "bg-slate-500",
                     project.status === "On Hold" && "bg-gray-500"
                   )}
                 />
@@ -182,7 +182,7 @@ export default function ProjectFullDetails({
                         project.status === "Completed" &&
                           "bg-green-100 text-green-800 hover:bg-green-100",
                         project.status === "Planning" &&
-                          "bg-blue-100 text-blue-800 hover:bg-blue-100",
+                          "bg-slate-100 text-slate-800 hover:bg-slate-100",
                         project.status === "On Hold" &&
                           "bg-gray-100 text-gray-800 hover:bg-gray-100"
                       )}
@@ -1156,7 +1156,7 @@ export default function ProjectFullDetails({
                           </Avatar>
                           <div className="flex-1">
                             <textarea
-                              className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 dark:focus:ring-[#64f481]"
                               placeholder="Write a reply..."
                               rows={3}
                             ></textarea>
@@ -1225,7 +1225,7 @@ export default function ProjectFullDetails({
                             <span>1 week ago</span>
                           </div>
                           <div className="flex items-center mt-2">
-                            <Badge className="mr-2 bg-blue-100 text-blue-800 hover:bg-blue-100">
+                            <Badge className="mr-2 bg-slate-100 text-slate-800 hover:bg-slate-100">
                               Resolved
                             </Badge>
                             <span className="text-xs text-gray-500">

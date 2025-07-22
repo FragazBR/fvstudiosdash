@@ -258,14 +258,14 @@ export default function TaskFullDetails({ taskId }: TaskFullDetailsProps) {
   // Priority badge color
   const priorityColor = {
     low: "bg-green-100 text-green-800 hover:bg-green-200",
-    medium: "bg-blue-100 text-blue-800 hover:bg-blue-200",
+    medium: "bg-slate-100 text-slate-800 hover:bg-slate-200",
     high: "bg-red-100 text-red-800 hover:bg-red-200",
   }[task.priority];
 
   // Status badge color
   const statusColor = {
     todo: "bg-gray-100 text-gray-800 hover:bg-gray-200",
-    "in-progress": "bg-blue-100 text-blue-800 hover:bg-blue-200",
+    "in-progress": "bg-slate-100 text-slate-800 hover:bg-slate-200",
     "in-review": "bg-purple-100 text-purple-800 hover:bg-purple-200",
     done: "bg-green-100 text-green-800 hover:bg-green-200",
   }[task.status];
@@ -531,7 +531,7 @@ export default function TaskFullDetails({ taskId }: TaskFullDetailsProps) {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md hover:bg-gray-100">
                     <div className="flex items-center space-x-3">
-                      <div className="bg-blue-100 p-2 rounded">
+                      <div className="bg-slate-100 p-2 rounded">
                         <svg
                           className="h-6 w-6 text-blue-600"
                           fill="none"
@@ -691,7 +691,7 @@ export default function TaskFullDetails({ taskId }: TaskFullDetailsProps) {
             <CardContent>
               <div className="space-y-3 text-sm">
                 <div className="flex items-start space-x-3">
-                  <div className="w-1 h-1 rounded-full bg-blue-500 mt-1.5"></div>
+                  <div className="w-1 h-1 rounded-full bg-slate-500 mt-1.5"></div>
                   <div>
                     <p>
                       <span className="font-medium">Sarah Johnson</span> created
@@ -703,7 +703,7 @@ export default function TaskFullDetails({ taskId }: TaskFullDetailsProps) {
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <div className="w-1 h-1 rounded-full bg-blue-500 mt-1.5"></div>
+                  <div className="w-1 h-1 rounded-full bg-slate-500 mt-1.5"></div>
                   <div>
                     <p>
                       <span className="font-medium">David Kim</span> added to
@@ -715,7 +715,7 @@ export default function TaskFullDetails({ taskId }: TaskFullDetailsProps) {
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <div className="w-1 h-1 rounded-full bg-blue-500 mt-1.5"></div>
+                  <div className="w-1 h-1 rounded-full bg-slate-500 mt-1.5"></div>
                   <div>
                     <p>
                       <span className="font-medium">Sarah Johnson</span> changed

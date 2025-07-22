@@ -48,14 +48,14 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
 
   // Priority badge color
   const priorityColor = {
-    low: "bg-green-100 text-green-800",
-    medium: "bg-blue-100 text-blue-800",
-    high: "bg-red-100 text-red-800",
+    low: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400",
+    medium: "bg-slate-100 text-slate-800 dark:bg-slate-900/20 dark:text-slate-400",
+    high: "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400",
   }[task.priority]
 
   return (
     <div
-      // ref={drag}
+      ref={drag}
       className={`bg-white/90 dark:bg-[#1f1f1f]/80 backdrop-blur-sm rounded-lg border border-gray-200 dark:border-[#272727] hover:border-gray-300 dark:hover:border-[#64f481]/30 shadow-sm hover:shadow-md transition-all cursor-grab ${
         isDragging ? "opacity-50" : "opacity-100"
       }`}
@@ -125,7 +125,7 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
         <div className="flex items-center justify-between">
           <div className="flex -space-x-2">
             {task.assignees.map((assignee) => (
-              <Avatar key={assignee.id} className="h-6 w-6 border-2 border-white">
+              <Avatar key={assignee.id} className="h-6 w-6 border-2 border-white dark:border-[#1f1f1f]">
                 <AvatarImage src={assignee.avatar || "/placeholder.svg"} alt={assignee.name} />
                 <AvatarFallback>{assignee.name.charAt(0)}</AvatarFallback>
               </Avatar>

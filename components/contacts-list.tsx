@@ -37,7 +37,7 @@ interface ContactsListProps {
 
 // Sample tags for contacts
 const contactTags = [
-  { id: "team", name: "Team", color: "bg-blue-500" },
+  { id: "team", name: "Team", color: "bg-slate-500" },
   { id: "client", name: "Client", color: "bg-green-500" },
   { id: "vendor", name: "Vendor", color: "bg-yellow-500" },
   { id: "partner", name: "Partner", color: "bg-purple-500" },
@@ -380,7 +380,7 @@ function ContactCard({
         <div className="flex border-t border-gray-100">
           <Link
             href={`/contacts/${contact.id}`}
-            className="flex-1 py-3 text-center text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+            className="flex-1 py-3 text-center text-sm font-medium text-slate-600 hover:bg-slate-50 dark:hover:bg-[#1e1e1e]/80 transition-colors"
           >
             View Details
           </Link>

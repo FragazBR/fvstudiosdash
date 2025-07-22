@@ -78,8 +78,8 @@ export default function TaskColumn({
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="p-1 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                <MoreVertical className="h-4 w-4 text-gray-500" />
+              <button className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-[#272727] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 dark:focus:ring-[#64f481]">
+                <MoreVertical className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                 <span className="sr-only">Task actions</span>
               </button>
             </DropdownMenuTrigger>
@@ -107,7 +107,7 @@ export default function TaskColumn({
         </div>
 
         {/* Add Task Button */}
-        <div className="p-3 border-t border-gray-200">
+        <div className="p-3 border-t border-gray-200 dark:border-[#272727]">
           <TaskCreationForm status={status} onTaskCreated={onTaskCreated} />
         </div>
       </div>
