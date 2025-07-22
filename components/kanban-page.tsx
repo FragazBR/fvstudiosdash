@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Sidebar from "./sidebar";
-import KanbanHeader from "./kanban-header";
+import Topbar from "./Shared/Topbar";
 import KanbanBoard from "./kanban-board";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -16,23 +16,18 @@ export default function KanbanPage({ personalMode }: KanbanPageProps) {
   const [filterPriority, setFilterPriority] = useState<string | null>(null);
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900">
+    <div className="bg-[#fafafa] dark:bg-[#121212] min-h-screen font-inter">
       {personalMode && (
         <div className="text-sm text-gray-500 mb-4">Modo pessoal: recursos limitados.</div>
       )}
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
       <div className="lg:w-[calc(100%-16rem)] lg:ml-64 flex flex-col overflow-hidden pt-16">
-        <KanbanHeader
+        <Topbar
+          name="Kanban"
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
-          filterProject={filterProject}
-          onFilterProjectChange={setFilterProject}
-          filterAssignee={filterAssignee}
-          onFilterAssigneeChange={setFilterAssignee}
-          filterPriority={filterPriority}
-          onFilterPriorityChange={setFilterPriority}
         />
-        <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900">
+        <main className="flex-1 overflow-y-auto p-3 lg:p-6">
           <KanbanBoard
             filterProject={filterProject}
             filterAssignee={filterAssignee}

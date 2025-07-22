@@ -298,7 +298,7 @@ export default function KanbanBoard({ filterProject, filterAssignee, filterPrior
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="p-6">
+      <div className="">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
           <KanbanColumn
             title="Backlog"

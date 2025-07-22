@@ -41,7 +41,7 @@ export default function KanbanCard({ task }: KanbanCardProps) {
       <DialogTrigger asChild>
         <div
           // ref={drag}
-          className={`bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-grab ${
+          className={`bg-white/90 dark:bg-[#1f1f1f]/80 backdrop-blur-sm rounded-lg border border-gray-200 dark:border-[#272727] shadow-sm hover:shadow-md dark:hover:shadow-lg hover:border-gray-300 dark:hover:border-[#64f481]/30 transition-all cursor-grab ${
             isDragging ? "opacity-50" : "opacity-100"
           }`}
           style={{ opacity: isDragging ? 0.5 : 1 }}
@@ -51,7 +51,7 @@ export default function KanbanCard({ task }: KanbanCardProps) {
             <div className="flex flex-wrap gap-2 items-center justify-between mb-2">
               <Badge
                 variant="outline"
-                className="text-xs font-medium text-gray-700 bg-gray-50"
+                className="text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-[#272727]"
               >
                 {task.projectName}
               </Badge>
@@ -61,12 +61,12 @@ export default function KanbanCard({ task }: KanbanCardProps) {
             </div>
 
             {/* Task Title */}
-            <h4 className="text-sm font-medium text-gray-900 mb-2">
+            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
               {task.title}
             </h4>
 
             {/* Task Metadata */}
-            <div className="flex flex-wrap gap-3 items-center text-xs text-gray-500 space-x-3 mb-3">
+            <div className="flex flex-wrap gap-3 items-center text-xs text-gray-500 dark:text-gray-400 space-x-3 mb-3">
               {/* Due Date */}
               <div className="flex items-center">
                 <Calendar className="h-3.5 w-3.5 mr-1" />
