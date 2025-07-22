@@ -7,11 +7,11 @@ import { useState } from "react";
 export default function MyTasksPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   return (
-    <div className="bg-gray-50">
+    <div className="bg-[#fafafa] dark:bg-[#121212] min-h-screen font-inter">
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
       <div className="lg:w-[calc(100%-16rem)] lg:ml-64 pt-16">
         <Topbar
-          name="My Tasks"
+          name="Tarefas"
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
         />

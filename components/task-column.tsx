@@ -64,15 +64,15 @@ export default function TaskColumn({
         ref={(node) => {
           if (node) drop(node);
         }}
-        className={`bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col h-[calc(100vh-13rem)] ${
-          isOver ? "ring-2 ring-blue-400 ring-opacity-50" : ""
+        className={`bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm rounded-lg border border-gray-200 dark:border-[#272727] flex flex-col h-[calc(100vh-13rem)] ${
+          isOver ? "ring-2 ring-green-400 dark:ring-[#64f481] ring-opacity-50" : ""
         }`}
       >
         {/* Column Header */}
-        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+        <div className="p-4 border-b border-gray-200 dark:border-[#272727] flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h3 className="font-medium text-gray-900">{title}</h3>
-            <span className="bg-gray-100 text-gray-600 text-xs font-medium px-2.5 py-0.5 rounded">
+            <h3 className="font-medium text-gray-900 dark:text-gray-100">{title}</h3>
+            <span className="bg-gray-100 dark:bg-[#1f1f1f] text-gray-600 dark:text-gray-400 text-xs font-medium px-2.5 py-0.5 rounded">
               {tasks.length}
             </span>
           </div>

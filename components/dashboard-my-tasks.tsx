@@ -10,9 +10,33 @@ import type { Task, TaskStatus } from "@/types/task"
 // Sample data
 const initialTasks: Task[] = [
   {
+    id: "task-0",
+    title: "Planejar novo sistema de notificações",
+    description: "Definir requisitos e arquitetura para sistema de notificações",
+    status: "backlog",
+    priority: "medium",
+    dueDate: "2023-07-01T00:00:00.000Z",
+    assignees: [
+      { id: "user-1", name: "Sarah Johnson", avatar: "/avatars/sarah-johnson.png" },
+    ],
+    project: "Sistema de Notificações",
+    attachments: 1,
+    comments: 2,
+    subtasks: {
+      completed: 0,
+      total: 4,
+      items: [
+        { title: "Levantar requisitos", completed: false },
+        { title: "Definir arquitetura", completed: false },
+        { title: "Criar documentação", completed: false },
+        { title: "Revisar com equipe", completed: false },
+      ],
+    },
+  },
+  {
     id: "task-1",
-    title: "Redesign landing page",
-    description: "Update the landing page with new branding",
+    title: "Redesenhar página inicial",
+    description: "Atualizar a página inicial com nova identidade visual",
     status: "todo",
     priority: "high",
     dueDate: "2023-06-15T00:00:00.000Z",
@@ -20,45 +44,45 @@ const initialTasks: Task[] = [
       { id: "user-1", name: "Sarah Johnson", avatar: "/avatars/sarah-johnson.png" },
       { id: "user-2", name: "David Kim", avatar: "/avatars/david-kim.png" },
     ],
-    project: "Website Redesign",
+    project: "Redesign do Website",
     attachments: 2,
     comments: 5,
     subtasks: {
       completed: 1,
       total: 3,
       items: [
-        { title: "Create wireframes", completed: true },
-        { title: "Design mockups", completed: false },
-        { title: "Get feedback", completed: false },
+        { title: "Criar wireframes", completed: true },
+        { title: "Desenvolver mockups", completed: false },
+        { title: "Obter feedback", completed: false },
       ],
     },
   },
   {
     id: "task-2",
-    title: "Fix navigation bug",
-    description: "The dropdown menu is not working on mobile",
+    title: "Corrigir bug de navegação",
+    description: "O menu dropdown não está funcionando no mobile",
     status: "in-progress",
     priority: "medium",
     dueDate: "2023-06-10T00:00:00.000Z",
     assignees: [{ id: "user-3", name: "Jessica Chen", avatar: "/avatars/jessica-chen.png" }],
-    project: "Bug Fixes",
+    project: "Correção de Bugs",
     attachments: 0,
     comments: 3,
     subtasks: {
       completed: 2,
       total: 4,
       items: [
-        { title: "Identify the issue", completed: true },
-        { title: "Fix the bug", completed: true },
-        { title: "Test on different devices", completed: false },
-        { title: "Deploy the fix", completed: false },
+        { title: "Identificar o problema", completed: true },
+        { title: "Corrigir o bug", completed: true },
+        { title: "Testar em diferentes dispositivos", completed: false },
+        { title: "Fazer deploy da correção", completed: false },
       ],
     },
   },
   {
     id: "task-3",
-    title: "Create user onboarding flow",
-    description: "Design and implement the user onboarding experience",
+    title: "Criar fluxo de onboarding",
+    description: "Projetar e implementar a experiência de onboarding do usuário",
     status: "in-review",
     priority: "high",
     dueDate: "2023-06-20T00:00:00.000Z",
@@ -66,38 +90,38 @@ const initialTasks: Task[] = [
       { id: "user-1", name: "Sarah Johnson", avatar: "/avatars/sarah-johnson.png" },
       { id: "user-4", name: "Alex Morgan", avatar: "/avatars/alex-morgan.png" },
     ],
-    project: "User Experience",
+    project: "Experiência do Usuário",
     attachments: 5,
     comments: 8,
     subtasks: {
       completed: 3,
       total: 5,
       items: [
-        { title: "Research best practices", completed: true },
-        { title: "Create wireframes", completed: true },
-        { title: "Design mockups", completed: true },
-        { title: "Implement frontend", completed: false },
-        { title: "Test with users", completed: false },
+        { title: "Pesquisar melhores práticas", completed: true },
+        { title: "Criar wireframes", completed: true },
+        { title: "Desenvolver mockups", completed: true },
+        { title: "Implementar frontend", completed: false },
+        { title: "Testar com usuários", completed: false },
       ],
     },
   },
   {
     id: "task-4",
-    title: "Update API documentation",
-    description: "Update the API documentation with new endpoints",
+    title: "Atualizar documentação da API",
+    description: "Atualizar a documentação da API com novos endpoints",
     status: "done",
     priority: "low",
     dueDate: "2023-06-05T00:00:00.000Z",
     assignees: [{ id: "user-5", name: "Ryan Park", avatar: "/avatars/ryan-park.png" }],
-    project: "Documentation",
+    project: "Documentação",
     attachments: 1,
     comments: 2,
     subtasks: {
       completed: 2,
       total: 2,
       items: [
-        { title: "Document new endpoints", completed: true },
-        { title: "Update examples", completed: true },
+        { title: "Documentar novos endpoints", completed: true },
+        { title: "Atualizar exemplos", completed: true },
       ],
     },
   },
@@ -132,9 +156,17 @@ export default function DashboardMyTasks() {
       <TaskViewHeader activeView={activeView} onViewChange={handleViewChange} />
       <div className="flex-1 p-3 lg:p-6">
         <DndProvider backend={HTML5Backend}>
-          <div className="grid grid-cols-1 md:grid-cols-2  xl:grid-cols-3 2xl:grid-cols-4 gap-6 h-full">
+          <div className="grid grid-cols-1 md:grid-cols-2  xl:grid-cols-3 2xl:grid-cols-5 gap-6 h-full">
             <TaskColumn
-              title="To Do"
+              title="Backlog"
+              status="backlog"
+              tasks={getTasksByStatus("backlog")}
+              onTaskMove={handleTaskMove}
+              onTaskCreated={handleTaskCreated}
+              onTaskUpdated={handleTaskUpdated}
+            />
+            <TaskColumn
+              title="A Fazer"
               status="todo"
               tasks={getTasksByStatus("todo")}
               onTaskMove={handleTaskMove}
@@ -142,7 +174,7 @@ export default function DashboardMyTasks() {
               onTaskUpdated={handleTaskUpdated}
             />
             <TaskColumn
-              title="In Progress"
+              title="Em Progresso"
               status="in-progress"
               tasks={getTasksByStatus("in-progress")}
               onTaskMove={handleTaskMove}
@@ -150,7 +182,7 @@ export default function DashboardMyTasks() {
               onTaskUpdated={handleTaskUpdated}
             />
             <TaskColumn
-              title="In Review"
+              title="Em Revisão"
               status="in-review"
               tasks={getTasksByStatus("in-review")}
               onTaskMove={handleTaskMove}
@@ -158,7 +190,7 @@ export default function DashboardMyTasks() {
               onTaskUpdated={handleTaskUpdated}
             />
             <TaskColumn
-              title="Done"
+              title="Concluído"
               status="done"
               tasks={getTasksByStatus("done")}
               onTaskMove={handleTaskMove}

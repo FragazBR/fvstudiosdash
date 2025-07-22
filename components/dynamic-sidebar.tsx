@@ -134,11 +134,11 @@ export function DynamicSidebar({ open, setOpen }: DynamicSidebarProps) {
       icon: Calendar
     });
 
-    // Kanban
+    // Tarefas
     if (userPermissions.canCreateProjects) {
       items.push({ 
-        href: "/kanban", 
-        label: "Kanban", 
+        href: "/my-tasks", 
+        label: "Tarefas", 
         icon: FolderKanban,
         isLocked: userRole === 'free_user'
       });
