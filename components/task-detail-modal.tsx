@@ -238,7 +238,7 @@ export default function TaskDetailModal({
                 {editedTask.assignees.map((assignee) => (
                   <div
                     key={assignee.id}
-                    className="flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1"
+                    className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-800 rounded-full px-3 py-1"
                   >
                     <Avatar className="h-6 w-6">
                       <AvatarImage
@@ -320,9 +320,9 @@ export default function TaskDetailModal({
               <div className="border rounded-md p-3">
                 {task.attachments > 0 ? (
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded">
                       <div className="flex items-center space-x-2">
-                        <div className="bg-slate-100 p-2 rounded">
+                        <div className="bg-slate-100 dark:bg-slate-700 p-2 rounded">
                           <svg
                             className="h-5 w-5 text-slate-600"
                             fill="none"
@@ -350,9 +350,9 @@ export default function TaskDetailModal({
                         Download
                       </Button>
                     </div>
-                    <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded">
                       <div className="flex items-center space-x-2">
-                        <div className="bg-green-100 p-2 rounded">
+                        <div className="bg-green-100 dark:bg-green-800 p-2 rounded">
                           <svg
                             className="h-5 w-5 text-green-600"
                             fill="none"

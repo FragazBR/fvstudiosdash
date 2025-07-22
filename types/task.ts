@@ -10,6 +10,7 @@ export interface Task {
   dueDate: string;
   attachments: number;
   comments: number;
+  progress?: number; // Percentual de progresso (0-100)
   subtasks: {
     completed: number;
     total: number;

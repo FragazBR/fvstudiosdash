@@ -37,8 +37,12 @@ interface TaskCardProps {
 export default function TaskCard({ task, onClick }: TaskCardProps) {
   const dragRef = useRef<HTMLDivElement>(null)
   
-  // Calculate progress based on completed subtasks
-  const progress = task.subtasks.total > 0 ? Math.round((task.subtasks.completed / task.subtasks.total) * 100) : 0
+  // Use task progress or calculate from subtasks as fallback
+  const progress = task.progress !== undefined 
+    ? task.progress 
+    : task.subtasks.total > 0 
+      ? Math.round((task.subtasks.completed / task.subtasks.total) * 100) 
+      : 0
 
   // Set up drag source
   const [{ isDragging }, drag] = useDrag({
@@ -77,7 +81,7 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{task.project}</span>
           <span className={`text-xs font-medium px-2.5 py-0.5 rounded ${priorityColor}`}>
-            {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+{task.priority === 'low' ? 'Baixa' : task.priority === 'medium' ? 'Média' : task.priority === 'high' ? 'Alta' : 'Urgente'}
           </span>
         </div>
 
@@ -87,7 +91,7 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
         {/* Progress Bar */}
         <div className="mb-3">
           <div className="flex justify-between items-center mb-1">
-            <span className="text-xs text-gray-500 dark:text-gray-400">Progress</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">Progresso</span>
             <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{progress}%</span>
           </div>
           <Progress value={progress} className="h-1.5" />
@@ -144,35 +148,35 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
             <DropdownMenuTrigger asChild>
               <button className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-[#1f1f1f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-[#64f481]">
                 <MoreVertical className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                <span className="sr-only">Task actions</span>
+                <span className="sr-only">Ações da tarefa</span>
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem className="cursor-pointer">
+            <DropdownMenuContent align="end" className="w-56 bg-white dark:bg-[#1f1f1f] border border-gray-200 dark:border-[#272727]">
+              <DropdownMenuItem className="cursor-pointer text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-[#272727]">
                 <Edit className="mr-2 h-4 w-4" />
-                <span>Edit Task</span>
+                <span>Editar Tarefa</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
+              <DropdownMenuItem className="cursor-pointer text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-[#272727]">
                 <CheckCircle className="mr-2 h-4 w-4" />
-                <span>Mark as Completed</span>
+                <span>Marcar como Concluída</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer">
+              <DropdownMenuItem className="cursor-pointer text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-[#272727]">
                 <Clock className="mr-2 h-4 w-4" />
-                <span>Change Due Date</span>
+                <span>Alterar Prazo</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
+              <DropdownMenuItem className="cursor-pointer text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-[#272727]">
                 <AlertCircle className="mr-2 h-4 w-4" />
-                <span>Change Priority</span>
+                <span>Alterar Prioridade</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer text-red-600">
+              <DropdownMenuItem className="cursor-pointer text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
                 <Archive className="mr-2 h-4 w-4" />
-                <span>Archive Task</span>
+                <span>Arquivar Tarefa</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer text-red-600">
+              <DropdownMenuItem className="cursor-pointer text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
                 <Trash className="mr-2 h-4 w-4" />
-                <span>Delete Task</span>
+                <span>Excluir Tarefa</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

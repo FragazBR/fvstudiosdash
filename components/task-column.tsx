@@ -80,18 +80,18 @@ export default function TaskColumn({
             <DropdownMenuTrigger asChild>
               <button className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-[#272727] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 dark:focus:ring-[#64f481]">
                 <MoreVertical className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                <span className="sr-only">Task actions</span>
+                <span className="sr-only">Ações da coluna</span>
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem className="cursor-pointer">
-                <span>Edit</span>
+            <DropdownMenuContent align="end" className="w-56 bg-white dark:bg-[#1f1f1f] border border-gray-200 dark:border-[#272727]">
+              <DropdownMenuItem className="cursor-pointer text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-[#272727]">
+                <span>Editar</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
-                <span>Move</span>
+              <DropdownMenuItem className="cursor-pointer text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-[#272727]">
+                <span>Mover</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
-                <span>Delete</span>
+              <DropdownMenuItem className="cursor-pointer text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
+                <span>Excluir</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

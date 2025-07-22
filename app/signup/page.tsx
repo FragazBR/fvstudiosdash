@@ -1,243 +1,503 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { supabaseBrowser } from '@/lib/supabaseBrowser'
-import { useTheme } from 'next-themes'
-import Image from 'next/image'
+import { useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Check, User, Star, Crown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { supabaseBrowser } from '@/lib/supabaseBrowser';
+import { toast } from 'sonner';
 
-export default function SignupPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [name, setName] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
-  const [hasSession, setHasSession] = useState(false)
-  const [mounted, setMounted] = useState(false)
-  const router = useRouter()
-  const supabase = supabaseBrowser()
-  const { resolvedTheme } = useTheme()
-
-  useEffect(() => {
-    setMounted(true)
-    checkSession()
-  }, [])
-
-  const checkSession = async () => {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (session) {
-      setHasSession(true)
-      setError('Você já está logado. Faça logout primeiro para criar uma nova conta.')
-    }
+const plans = [
+  {
+    id: 'free',
+    name: 'Free',
+    price: { monthly: 0, yearly: 0 },
+    description: 'Para iniciantes que querem experimentar',
+    icon: User,
+    features: [
+      '1 cliente',
+      '3 projetos',
+      'Google Analytics básico',
+      'Relatórios simples',
+      'Suporte via email'
+    ],
+    popular: false,
+    color: 'gray'
+  },
+  {
+    id: 'basic',
+    name: 'Basic',
+    price: { monthly: 9900, yearly: 99000 },
+    description: 'Ideal para profissionais independentes',
+    icon: User,
+    features: [
+      '5 clientes',
+      '20 projetos',
+      'Google Analytics + Facebook Ads',
+      'Relatórios avançados',
+      'Dashboard personalizado',
+      'Suporte prioritário'
+    ],
+    popular: false,
+    color: 'blue'
+  },
+  {
+    id: 'premium',
+    name: 'Premium',
+    price: { monthly: 29900, yearly: 299000 },
+    description: 'Para profissionais avançados',
+    icon: Star,
+    features: [
+      '25 clientes',
+      '100 projetos',
+      'LinkedIn + Automação',
+      'Relatórios white-label',
+      'API básica',
+      'Integrações avançadas',
+      'Suporte telefônico'
+    ],
+    popular: true,
+    color: 'purple'
+  },
+  {
+    id: 'enterprise',
+    name: 'Enterprise',
+    price: { monthly: 99900, yearly: 999000 },
+    description: 'Solução completa para especialistas',
+    icon: Crown,
+    features: [
+      'Clientes ilimitados',
+      'Projetos ilimitados',
+      'Todas as integrações',
+      'API completa',
+      'Automação avançada',
+      'Suporte dedicado',
+      'Onboarding personalizado'
+    ],
+    popular: false,
+    color: 'gold'
   }
+];
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    setHasSession(false)
-    setError('')
-  }
+function SignupContent() {
+  const searchParams = useSearchParams();
+  const planParam = searchParams.get('plan');
+  const billingParam = searchParams.get('billing');
 
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
+  const [selectedPlan, setSelectedPlan] = useState(planParam || 'free');
+  const [billingCycle, setBillingCycle] = useState(billingParam || 'monthly');
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    company: '',
+    website: '',
+    currentTools: '',
+    experience: ''
+  });
+  const [loading, setLoading] = useState(false);
+
+  const selectedPlanData = plans.find(plan => plan.id === selectedPlan);
+  const currentPrice = selectedPlanData?.price[billingCycle as 'monthly' | 'yearly'] || 0;
+  const yearlyDiscount = selectedPlanData?.price.monthly ? 
+    Math.round(((selectedPlanData?.price.monthly || 0) * 12 - (selectedPlanData?.price.yearly || 0)) / (selectedPlanData?.price.monthly || 1)) : 0;
+
+  const handleInputChange = (name: string, value: string) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
 
     try {
-      const { data, error: signupError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name: name,
-          }
-        }
-      })
+      // Se for plano gratuito, apenas criar conta
+      if (selectedPlan === 'free') {
+        const { data, error } = await supabaseBrowser().rpc('process_website_lead', {
+          p_name: formData.name,
+          p_email: formData.email,
+          p_company_name: formData.company,
+          p_phone: formData.phone,
+          p_website: formData.website,
+          p_current_tools: formData.currentTools,
+          p_estimated_clients: '1-5',
+          p_plan_interest: selectedPlan,
+          p_billing_cycle: billingCycle,
+          p_utm_source: 'individual-signup',
+          p_utm_medium: 'website',
+          p_utm_campaign: 'individual-conversion'
+        });
 
-      if (signupError) {
-        setError(signupError.message)
-        return
+        if (error) throw error;
+
+        toast.success('Conta criada com sucesso! Redirecionando...');
+        window.location.href = '/dashboard';
+        return;
       }
 
-      if (data.user) {
-        // Criar perfil do usuário
-        const { error: profileError } = await supabase
-          .from('user_profiles')
-          .insert({
-            id: data.user.id,
-            name: name,
-            email: email,
-            role: 'personal', // default role
-          })
+      // Para planos pagos, criar lead no Supabase
+      const { data, error } = await supabaseBrowser().rpc('process_website_lead', {
+        p_name: formData.name,
+        p_email: formData.email,
+        p_company_name: formData.company,
+        p_phone: formData.phone,
+        p_website: formData.website,
+        p_current_tools: formData.currentTools,
+        p_estimated_clients: '1-5',
+        p_plan_interest: selectedPlan,
+        p_billing_cycle: billingCycle,
+        p_utm_source: 'individual-signup',
+        p_utm_medium: 'website',
+        p_utm_campaign: 'individual-conversion'
+      });
 
-        if (profileError) {
-          console.error('Profile creation error:', profileError)
-          // Mesmo com erro no perfil, permite continuar
-        }
+      if (error) throw error;
 
-        setSuccess(true)
-        setTimeout(() => {
-          router.push('/login')
-        }, 2000)
+      toast.success('Cadastro realizado! Redirecionando para pagamento...');
+      
+      // Determinar o price_id do Stripe baseado no plano e ciclo
+      const getPriceId = (plan: string, cycle: string) => {
+        if (plan === 'basic' && cycle === 'monthly') return process.env.NEXT_PUBLIC_STRIPE_PRICE_BASIC_MONTHLY
+        if (plan === 'basic' && cycle === 'yearly') return process.env.NEXT_PUBLIC_STRIPE_PRICE_BASIC_YEARLY
+        if (plan === 'premium' && cycle === 'monthly') return process.env.NEXT_PUBLIC_STRIPE_PRICE_PREMIUM_MONTHLY
+        if (plan === 'premium' && cycle === 'yearly') return process.env.NEXT_PUBLIC_STRIPE_PRICE_PREMIUM_YEARLY
+        if (plan === 'enterprise' && cycle === 'monthly') return process.env.NEXT_PUBLIC_STRIPE_PRICE_ENTERPRISE_MONTHLY
+        if (plan === 'enterprise' && cycle === 'yearly') return process.env.NEXT_PUBLIC_STRIPE_PRICE_ENTERPRISE_YEARLY
+        return process.env.NEXT_PUBLIC_STRIPE_PRICE_BASIC_MONTHLY // fallback
       }
       
-    } catch (error) {
-      console.error('Signup error:', error)
-      setError('Erro interno do servidor')
-    } finally {
-      setLoading(false)
-    }
-  }
+      const priceId = getPriceId(selectedPlan, billingCycle)
+      
+      // Criar sessão de checkout Stripe
+      const checkoutResponse = await fetch('/api/create-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          priceId,
+          email: formData.email,
+          metadata: {
+            leadId: data.lead_id,
+            planName: selectedPlanData?.name,
+            billingCycle,
+            companyName: formData.company,
+          }
+        })
+      })
+      
+      const checkoutData = await checkoutResponse.json()
+      
+      if (checkoutData.url) {
+        window.location.href = checkoutData.url
+      } else {
+        throw new Error('Erro ao criar sessão de pagamento')
+      }
 
-  if (success) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#121212] px-4">
-        <div className="bg-white dark:bg-[#1e1e1e] p-8 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 w-full max-w-md text-center">
-          <div className="text-green-600 dark:text-green-400 mb-4">
-            <svg className="w-16 h-16 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Conta criada com sucesso!</h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">Verificque seu email para confirmar sua conta.</p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Redirecionando para login...</p>
-        </div>
-      </div>
-    )
+    } catch (error: any) {
+      console.error('Erro:', error);
+      toast.error('Erro ao processar cadastro. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getPlanColor = (color: string, selected: boolean) => {
+    if (selected) {
+      return 'ring-2 ring-blue-500 dark:ring-[#64f481] shadow-lg border-blue-200 dark:border-[#64f481]/30'
+    }
+    const colors = {
+      gray: 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600',
+      blue: 'border-blue-200 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-700',
+      purple: 'border-purple-200 dark:border-purple-800 hover:border-purple-300 dark:hover:border-purple-700',
+      gold: 'border-yellow-200 dark:border-yellow-800 hover:border-yellow-300 dark:hover:border-yellow-700'
+    }
+    return colors[color as keyof typeof colors] || 'border-gray-200 dark:border-gray-700'
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-[#121212] px-4">
-      {/* Logo fora da caixa */}
-      <div className="text-center mb-8">
-        {mounted && (
-          <>
-            <div className="relative w-16 h-16 mx-auto mb-4">
-              <Image
-                src={resolvedTheme === 'dark' ? "/logo-c-white.png" : "/logo-c.png"}
-                alt="FVSTUDIOS Logo"
-                fill
-                className="object-contain"
-                priority
-              />
-            </div>
-            <div className="relative w-44 h-12 mx-auto">
-              <Image
-                src={resolvedTheme === 'dark' ? "/Logotipo-FVstudios-Branco.png" : "/Logotipo-FVstudios-Preto.png"}
-                alt="FVSTUDIOS"
-                fill
-                className="object-contain"
-                priority
-              />
-            </div>
-          </>
-        )}
-        {!mounted && (
-          <>
-            <div className="w-16 h-16 mx-auto mb-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-            <div className="w-44 h-12 mx-auto bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-          </>
-        )}
-        <p className="text-gray-600 dark:text-gray-400 mt-2">Dashboard de Gerenciamento</p>
-      </div>
-      
-      {hasSession ? (
-        // Se tem sessão ativa, mostrar opção de logout
-        <div className="bg-white dark:bg-[#1e1e1e] p-8 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 hover:border-green-400 dark:hover:border-green-500 w-full max-w-md space-y-6 transition-all">
-          <div className="text-center mb-6">
-            <p className="text-gray-600 dark:text-gray-300">Você já está logado</p>
-          </div>
-          
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-700 dark:text-yellow-400 px-4 py-3 rounded-lg text-sm">
-            Para criar uma nova conta, você precisa fazer logout primeiro.
-          </div>
-          
-          <button
-            onClick={handleLogout}
-            className="w-full bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 text-white py-3 rounded-lg font-medium transition-all duration-200"
-          >
-            Fazer Logout
-          </button>
-          
-          <div className="text-center mt-4">
-            <button
-              type="button"
-              onClick={() => router.push('/login')}
-              className="text-gray-800 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:underline text-sm font-medium transition-colors"
-            >
-              Ir para Login
-            </button>
-          </div>
-        </div>
-      ) : (
-        // Formulário normal de signup
-        <form
-          onSubmit={handleSignup}
-          className="bg-white dark:bg-[#1e1e1e] p-8 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 hover:border-green-400 dark:hover:border-green-500 w-full max-w-md space-y-6 transition-all"
-        >
-          <div className="text-center mb-6">
-            <p className="text-gray-600 dark:text-gray-300">Criar uma nova conta</p>
-          </div>
-        
-        <input
-          type="text"
-          placeholder="Nome completo"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="w-full border border-gray-300 dark:border-gray-600 hover:border-green-400 dark:hover:border-green-500 bg-white dark:bg-[#2a2a2a] text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent transition-all"
-          required
-          disabled={loading}
-        />
-        
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full border border-gray-300 dark:border-gray-600 hover:border-green-400 dark:hover:border-green-500 bg-white dark:bg-[#2a2a2a] text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent transition-all"
-          required
-          disabled={loading}
-        />
-        
-        <input
-          type="password"
-          placeholder="Senha (mínimo 6 caracteres)"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full border border-gray-300 dark:border-gray-600 hover:border-green-400 dark:hover:border-green-500 bg-white dark:bg-[#2a2a2a] text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent transition-all"
-          required
-          minLength={6}
-          disabled={loading}
-        />
-        
-        {error && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
-            {error}
-          </div>
-        )}
-        
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-green-500 hover:bg-green-600 dark:bg-green-500 dark:hover:bg-green-600 text-white py-3 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
-        >
-          {loading ? 'Criando conta...' : 'Criar conta'}
-        </button>
-        
-        <div className="text-center mt-6">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Já tem uma conta?{' '}
-            <button
-              type="button"
-              onClick={() => router.push('/login')}
-              className="text-gray-800 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:underline font-medium transition-colors"
-            >
-              Fazer login
-            </button>
+    <div className="min-h-screen bg-gray-50/50 dark:bg-[#0a0a0a]">
+      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            Acelere seus resultados digitais
+          </h1>
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+            Escolha o plano ideal para profissionais independentes, freelancers e especialistas digitais.
           </p>
         </div>
-        </form>
-      )}
+
+        <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {/* Seleção de Planos */}
+          <div className="lg:col-span-2">
+            {/* Toggle Billing */}
+            <div className="flex justify-center mb-8">
+              <div className="bg-gray-100 dark:bg-[#1f1f1f] rounded-lg p-1 shadow-sm border border-gray-200 dark:border-[#272727]">
+                <div className="grid grid-cols-2 gap-1">
+                  {(['monthly', 'yearly'] as const).map((cycle) => (
+                    <button
+                      key={cycle}
+                      type="button"
+                      onClick={() => setBillingCycle(cycle)}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                        billingCycle === cycle
+                          ? 'bg-white dark:bg-[#171717] text-gray-900 dark:text-white shadow-sm'
+                          : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-[#272727]/50'
+                      }`}
+                    >
+                      {cycle === 'monthly' ? 'Mensal' : 'Anual'}
+                      {cycle === 'yearly' && (
+                        <Badge className="ml-2 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400">
+                          Economize {yearlyDiscount}%
+                        </Badge>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Plans Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              {plans.map((plan) => {
+                const Icon = plan.icon
+                const isSelected = selectedPlan === plan.id
+                
+                return (
+                  <Card 
+                    key={plan.id}
+                    className={cn(
+                      'relative cursor-pointer transition-all duration-200 bg-white/90 dark:bg-[#1f1f1f]/80 backdrop-blur-sm border hover:shadow-lg hover:-translate-y-1',
+                      getPlanColor(plan.color, isSelected)
+                    )}
+                    onClick={() => setSelectedPlan(plan.id)}
+                  >
+                    {plan.popular && (
+                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                        <Badge className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+                          ⭐ Mais Popular
+                        </Badge>
+                      </div>
+                    )}
+                    
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={cn(
+                            'p-2 rounded-lg',
+                            plan.color === 'gray' ? 'bg-gray-100 dark:bg-gray-900/30' :
+                            plan.color === 'blue' ? 'bg-blue-100 dark:bg-blue-900/30' :
+                            plan.color === 'purple' ? 'bg-purple-100 dark:bg-purple-900/30' :
+                            'bg-yellow-100 dark:bg-yellow-900/30'
+                          )}>
+                            <Icon className={cn(
+                              'h-5 w-5',
+                              plan.color === 'gray' ? 'text-gray-600 dark:text-gray-400' :
+                              plan.color === 'blue' ? 'text-blue-600 dark:text-blue-400' :
+                              plan.color === 'purple' ? 'text-purple-600 dark:text-purple-400' :
+                              'text-yellow-600 dark:text-yellow-400'
+                            )} />
+                          </div>
+                          <CardTitle className="text-xl text-gray-900 dark:text-white">{plan.name}</CardTitle>
+                        </div>
+                        <div className="text-right">
+                          {plan.price[billingCycle as 'monthly' | 'yearly'] === 0 ? (
+                            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                              Grátis
+                            </div>
+                          ) : (
+                            <>
+                              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                                R$ {(plan.price[billingCycle as 'monthly' | 'yearly'] / 100).toLocaleString('pt-BR')}
+                              </div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400">
+                                /{billingCycle === 'monthly' ? 'mês' : 'ano'}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <CardDescription className="text-gray-600 dark:text-gray-400">{plan.description}</CardDescription>
+                    </CardHeader>
+                    
+                    <CardContent>
+                      <ul className="space-y-2">
+                        {plan.features.map((feature, index) => (
+                          <li key={index} className="flex items-center text-sm text-gray-700 dark:text-gray-300">
+                            <Check className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Formulário */}
+          <div>
+            <Card className="bg-white/90 dark:bg-[#1f1f1f]/80 backdrop-blur-sm border border-gray-200 dark:border-[#272727] sticky top-8">
+              <CardHeader>
+                <CardTitle className="flex items-center text-gray-900 dark:text-white">
+                  <User className="w-5 h-5 mr-2" />
+                  Seus dados
+                </CardTitle>
+                <CardDescription className="text-gray-600 dark:text-gray-400">
+                  Preencha os dados para criar sua conta
+                </CardDescription>
+              </CardHeader>
+              
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <Label htmlFor="name" className="text-gray-700 dark:text-gray-300">Nome completo *</Label>
+                    <Input
+                      id="name"
+                      type="text"
+                      placeholder="João Silva"
+                      value={formData.name}
+                      onChange={(e) => handleInputChange('name', e.target.value)}
+                      className="bg-white dark:bg-[#171717] border-gray-300 dark:border-[#272727] text-gray-900 dark:text-white"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="email" className="text-gray-700 dark:text-gray-300">E-mail *</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="joao@email.com"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      className="bg-white dark:bg-[#171717] border-gray-300 dark:border-[#272727] text-gray-900 dark:text-white"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="phone" className="text-gray-700 dark:text-gray-300">Telefone *</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="(11) 99999-9999"
+                      value={formData.phone}
+                      onChange={(e) => handleInputChange('phone', e.target.value)}
+                      className="bg-white dark:bg-[#171717] border-gray-300 dark:border-[#272727] text-gray-900 dark:text-white"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="company" className="text-gray-700 dark:text-gray-300">Empresa/Freelancer</Label>
+                    <Input
+                      id="company"
+                      type="text"
+                      placeholder="Minha Empresa"
+                      value={formData.company}
+                      onChange={(e) => handleInputChange('company', e.target.value)}
+                      className="bg-white dark:bg-[#171717] border-gray-300 dark:border-[#272727] text-gray-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="website" className="text-gray-700 dark:text-gray-300">Website</Label>
+                    <Input
+                      id="website"
+                      type="url"
+                      placeholder="https://meusite.com"
+                      value={formData.website}
+                      onChange={(e) => handleInputChange('website', e.target.value)}
+                      className="bg-white dark:bg-[#171717] border-gray-300 dark:border-[#272727] text-gray-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="currentTools" className="text-gray-700 dark:text-gray-300">Ferramentas atuais</Label>
+                    <Select onValueChange={(value) => handleInputChange('currentTools', value)}>
+                      <SelectTrigger className="bg-white dark:bg-[#171717] border-gray-300 dark:border-[#272727] text-gray-900 dark:text-white">
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white dark:bg-[#1f1f1f] border-gray-200 dark:border-[#272727]">
+                        <SelectItem value="google-ads">Google Ads</SelectItem>
+                        <SelectItem value="facebook-ads">Facebook Ads</SelectItem>
+                        <SelectItem value="linkedin-ads">LinkedIn Ads</SelectItem>
+                        <SelectItem value="google-analytics">Google Analytics</SelectItem>
+                        <SelectItem value="other">Outras</SelectItem>
+                        <SelectItem value="none">Nenhuma</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="experience" className="text-gray-700 dark:text-gray-300">Nível de experiência</Label>
+                    <Select onValueChange={(value) => handleInputChange('experience', value)}>
+                      <SelectTrigger className="bg-white dark:bg-[#171717] border-gray-300 dark:border-[#272727] text-gray-900 dark:text-white">
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white dark:bg-[#1f1f1f] border-gray-200 dark:border-[#272727]">
+                        <SelectItem value="beginner">Iniciante</SelectItem>
+                        <SelectItem value="intermediate">Intermediário</SelectItem>
+                        <SelectItem value="advanced">Avançado</SelectItem>
+                        <SelectItem value="expert">Especialista</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Resumo do Plano */}
+                  <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <h4 className="font-medium text-blue-900 dark:text-blue-300 mb-2">
+                      Resumo do plano selecionado:
+                    </h4>
+                    <div className="text-sm text-blue-800 dark:text-blue-300">
+                      <div className="flex justify-between">
+                        <span>{selectedPlanData?.name}</span>
+                        <span className="font-medium">
+                          {currentPrice === 0 ? 'Grátis' : `R$ ${(currentPrice / 100).toLocaleString('pt-BR')}`}
+                        </span>
+                      </div>
+                      {currentPrice > 0 && (
+                        <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                          Cobrança {billingCycle === 'monthly' ? 'mensal' : 'anual'}
+                          {billingCycle === 'yearly' && ` • Economia de ${yearlyDiscount}%`}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white" 
+                    disabled={loading}
+                  >
+                    {loading ? 'Processando...' : selectedPlan === 'free' ? 'Criar Conta Grátis' : 'Continuar para Pagamento'}
+                  </Button>
+
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                    Ao continuar, você aceita nossos Termos de Serviço e Política de Privacidade
+                  </p>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
     </div>
-  )
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div>Carregando...</div>}>
+      <SignupContent />
+    </Suspense>
+  );
 }

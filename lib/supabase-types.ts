@@ -2,6 +2,17 @@
 // TIPOS TYPESCRIPT PARA O SISTEMA MULTI-CLIENTE
 // ==========================================
 
+// Interface para Perfil de Usuário
+export interface PerfilUsuario {
+  id: string;
+  name: string;
+  email: string;
+  avatar_url?: string;
+  role?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Client {
   id: string;
   name: string;
@@ -50,7 +61,7 @@ export interface Project {
   attachments_count: number;
   // Relacionamentos
   client?: Client;
-  project_manager?: any; // User profile
+  project_manager?: PerfilUsuario;
   tasks?: Task[];
 }
 
@@ -82,14 +93,14 @@ export interface Task {
   // Relacionamentos
   project?: Project;
   client?: Client;
-  assignee?: any; // User profile
-  created_by?: any; // User profile
-  subtasks?: Subtask[];
-  comments?: TaskComment[];
-  attachments?: Attachment[];
+  assignee?: PerfilUsuario;
+  created_by?: PerfilUsuario;
+  subtasks?: Subtarefa[];
+  comments?: ComentarioTarefa[];
+  attachments?: Anexo[];
 }
 
-export interface Subtask {
+export interface Subtarefa {
   id: string;
   task_id: string;
   title: string;
@@ -103,10 +114,10 @@ export interface Subtask {
   sort_order: number;
   // Relacionamentos
   task?: Task;
-  assignee?: any; // User profile
+  assignee?: PerfilUsuario;
 }
 
-export interface TaskComment {
+export interface ComentarioTarefa {
   id: string;
   task_id: string;
   user_id: string;
@@ -118,12 +129,12 @@ export interface TaskComment {
   parent_comment_id?: string;
   // Relacionamentos
   task?: Task;
-  user?: any; // User profile
-  parent_comment?: TaskComment;
-  replies?: TaskComment[];
+  user?: PerfilUsuario;
+  parent_comment?: ComentarioTarefa;
+  replies?: ComentarioTarefa[];
 }
 
-export interface Attachment {
+export interface Anexo {
   id: string;
   entity_type: 'task' | 'project' | 'client' | 'comment';
   entity_id: string;
@@ -136,7 +147,7 @@ export interface Attachment {
   description?: string;
   created_at: string;
   // Relacionamentos
-  uploaded_by?: any; // User profile
+  uploaded_by?: PerfilUsuario;
 }
 
 export interface TimeEntry {
@@ -158,7 +169,7 @@ export interface TimeEntry {
   updated_at: string;
   // Relacionamentos
   task?: Task;
-  user?: any; // User profile
+  user?: PerfilUsuario;
   project?: Project;
   client?: Client;
 }
@@ -179,7 +190,7 @@ export interface Notification {
   read_at?: string;
   archived_at?: string;
   // Relacionamentos
-  user?: any; // User profile
+  user?: PerfilUsuario;
 }
 
 export interface ProjectMember {
@@ -191,7 +202,7 @@ export interface ProjectMember {
   joined_at: string;
   // Relacionamentos
   project?: Project;
-  user?: any; // User profile
+  user?: PerfilUsuario;
 }
 
 export interface ClientSettings {

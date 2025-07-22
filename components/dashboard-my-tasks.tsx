@@ -16,6 +16,7 @@ const initialTasks: Task[] = [
     status: "backlog",
     priority: "medium",
     dueDate: "2023-07-01T00:00:00.000Z",
+    progress: 0,
     assignees: [
       { id: "user-1", name: "Sarah Johnson", avatar: "/avatars/sarah-johnson.png" },
     ],
@@ -40,6 +41,7 @@ const initialTasks: Task[] = [
     status: "todo",
     priority: "high",
     dueDate: "2023-06-15T00:00:00.000Z",
+    progress: 10,
     assignees: [
       { id: "user-1", name: "Sarah Johnson", avatar: "/avatars/sarah-johnson.png" },
       { id: "user-2", name: "David Kim", avatar: "/avatars/david-kim.png" },
@@ -64,6 +66,7 @@ const initialTasks: Task[] = [
     status: "in-progress",
     priority: "medium",
     dueDate: "2023-06-10T00:00:00.000Z",
+    progress: 50,
     assignees: [{ id: "user-3", name: "Jessica Chen", avatar: "/avatars/jessica-chen.png" }],
     project: "Correção de Bugs",
     attachments: 0,
@@ -86,6 +89,7 @@ const initialTasks: Task[] = [
     status: "in-review",
     priority: "high",
     dueDate: "2023-06-20T00:00:00.000Z",
+    progress: 85,
     assignees: [
       { id: "user-1", name: "Sarah Johnson", avatar: "/avatars/sarah-johnson.png" },
       { id: "user-4", name: "Alex Morgan", avatar: "/avatars/alex-morgan.png" },
@@ -112,6 +116,7 @@ const initialTasks: Task[] = [
     status: "done",
     priority: "low",
     dueDate: "2023-06-05T00:00:00.000Z",
+    progress: 100,
     assignees: [{ id: "user-5", name: "Ryan Park", avatar: "/avatars/ryan-park.png" }],
     project: "Documentação",
     attachments: 1,
@@ -131,12 +136,55 @@ export default function DashboardMyTasks() {
   const [tasks, setTasks] = useState<Task[]>(initialTasks)
   const [activeView, setActiveView] = useState<string>("board")
 
+  // Função para calcular progresso baseado no status
+  const getProgressByStatus = (status: TaskStatus): number => {
+    const statusProgress: Record<TaskStatus, number> = {
+      "backlog": 0,
+      "todo": 10,
+      "in-progress": 50,
+      "in-review": 85,
+      "done": 100
+    }
+    return statusProgress[status] || 0
+  }
+
   const getTasksByStatus = (status: TaskStatus) => {
     return tasks.filter((task) => task.status === status)
   }
 
   const handleTaskMove = (taskId: string, newStatus: TaskStatus) => {
-    setTasks((prevTasks) => prevTasks.map((task) => (task.id === taskId ? { ...task, status: newStatus } : task)))
+    setTasks((prevTasks) => prevTasks.map((task) => {
+      if (task.id === taskId) {
+        // Atualizar progresso automaticamente baseado no novo status
+        const newProgress = getProgressByStatus(newStatus)
+        
+        // Atualizar subtarefas se necessário
+        let updatedSubtasks = task.subtasks
+        if (newStatus === "done" && task.subtasks) {
+          // Se movido para "done", marcar todas as subtarefas como completadas
+          updatedSubtasks = {
+            ...task.subtasks,
+            completed: task.subtasks.total,
+            items: task.subtasks.items?.map(item => ({ ...item, completed: true })) || []
+          }
+        } else if (newStatus === "backlog" || newStatus === "todo") {
+          // Se movido para backlog/todo, resetar subtarefas se aplicável
+          updatedSubtasks = {
+            ...task.subtasks,
+            completed: 0,
+            items: task.subtasks.items?.map(item => ({ ...item, completed: false })) || []
+          }
+        }
+
+        return { 
+          ...task, 
+          status: newStatus,
+          progress: newProgress,
+          subtasks: updatedSubtasks
+        }
+      }
+      return task
+    }))
   }
 
   const handleTaskCreated = (newTask: Task) => {

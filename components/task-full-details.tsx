@@ -396,7 +396,7 @@ export default function TaskFullDetails({ taskId }: TaskFullDetailsProps) {
                 {task.subtasks.items?.map((subtask) => (
                   <div
                     key={subtask.id}
-                    className="flex items-start space-x-3 p-3 bg-gray-50 rounded-md hover:bg-gray-100"
+                    className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
                     <Checkbox
                       id={subtask.id}
@@ -529,9 +529,9 @@ export default function TaskFullDetails({ taskId }: TaskFullDetailsProps) {
             <TabsContent value="attachments" className="space-y-4">
               {task.attachments > 0 ? (
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md hover:bg-gray-100">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
                     <div className="flex items-center space-x-3">
-                      <div className="bg-slate-100 p-2 rounded">
+                      <div className="bg-slate-100 dark:bg-slate-700 p-2 rounded">
                         <svg
                           className="h-6 w-6 text-blue-600"
                           fill="none"
@@ -557,9 +557,9 @@ export default function TaskFullDetails({ taskId }: TaskFullDetailsProps) {
                       Download
                     </Button>
                   </div>
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md hover:bg-gray-100">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
                     <div className="flex items-center space-x-3">
-                      <div className="bg-green-100 p-2 rounded">
+                      <div className="bg-green-100 dark:bg-green-800 p-2 rounded">
                         <svg
                           className="h-6 w-6 text-green-600"
                           fill="none"
@@ -650,7 +650,7 @@ export default function TaskFullDetails({ taskId }: TaskFullDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <div className="p-3 bg-gray-50 rounded-md hover:bg-gray-100 cursor-pointer">
+                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-medium text-gray-500">
                       Website Redesign
@@ -663,7 +663,7 @@ export default function TaskFullDetails({ taskId }: TaskFullDetailsProps) {
                     Create wireframes for homepage
                   </p>
                 </div>
-                <div className="p-3 bg-gray-50 rounded-md hover:bg-gray-100 cursor-pointer">
+                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-medium text-gray-500">
                       Website Redesign

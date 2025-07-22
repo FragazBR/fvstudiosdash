@@ -33,7 +33,7 @@ export default function TaskViewHeader({ activeView, onViewChange }: TaskViewHea
             onClick={() => onViewChange("board")}
           >
             <LayoutGrid className="h-4 w-4 mr-2" />
-            Board
+            Quadro
           </Button>
           <Button
             variant="ghost"
@@ -47,7 +47,7 @@ export default function TaskViewHeader({ activeView, onViewChange }: TaskViewHea
             onClick={() => onViewChange("list")}
           >
             <List className="h-4 w-4 mr-2" />
-            List
+            Lista
           </Button>
           <Button
             variant="ghost"
@@ -61,20 +61,20 @@ export default function TaskViewHeader({ activeView, onViewChange }: TaskViewHea
             onClick={() => onViewChange("calendar")}
           >
             <Calendar className="h-4 w-4 mr-2" />
-            Calendar
+            Calendário
           </Button>
         </div>    
         <div className="flex flex-wrap items-center gap-2 md:gap-3">
           {/* Filter Button */}
           <Button variant="outline" size="sm" className="h-8">
             <Filter className="h-4 w-4 mr-2" />
-            Filter
+            Filtrar
           </Button>
 
           {/* Sort Button */}
           <Button variant="outline" size="sm" className="h-8">
             <ArrowDownUp className="h-4 w-4 mr-2" />
-            Sort
+            Ordenar
           </Button>
 
           {/* Group By Dropdown */}
@@ -82,27 +82,27 @@ export default function TaskViewHeader({ activeView, onViewChange }: TaskViewHea
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="h-8">
                 <Layers className="h-4 w-4 mr-2" />
-                Group By
+                Agrupar Por
                 <ChevronDown className="h-4 w-4 ml-2" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel>Group Tasks By</DropdownMenuLabel>
+            <DropdownMenuContent align="end" className="w-48 bg-white dark:bg-[#1f1f1f] border border-gray-200 dark:border-[#272727]">
+              <DropdownMenuLabel>Agrupar Tarefas Por</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
                 <span>Status</span>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <span>Priority</span>
+                <span>Prioridade</span>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <span>Assignee</span>
+                <span>Responsável</span>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <span>Project</span>
+                <span>Projeto</span>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <span>Due Date</span>
+                <span>Prazo</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
