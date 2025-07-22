@@ -26,108 +26,62 @@ interface SimpleCalendarViewProps {
   filterAssignee: string | null;
 }
 
-// Sample events data
-const initialEvents: CalendarEvent[] = [
-  {
-    id: "event-1",
-    title: "Revisão do Design System",
-    start: new Date(new Date().getFullYear(), new Date().getMonth(), 10, 10, 0),
-    end: new Date(new Date().getFullYear(), new Date().getMonth(), 10, 12, 0),
-    allDay: false,
-    project: "figma",
-    projectName: "Figma Design System",
-    location: "Sala de Reunião A",
-    description:
-      "Revisar os componentes mais recentes do design system e discutir melhorias.",
-    assignees: [
-      { id: "user-1", name: "Alex Morgan", avatar: "/avatars/alex-morgan.png" },
-      {
-        id: "user-2",
-        name: "Jessica Chen",
-        avatar: "/avatars/jessica-chen.png",
-      },
-    ],
-    color: "#4f46e5",
-  },
-  {
-    id: "event-2",
-    title: "Planejamento de Sprint - App Mobile",
-    start: new Date(new Date().getFullYear(), new Date().getMonth(), 15, 14, 0),
-    end: new Date(new Date().getFullYear(), new Date().getMonth(), 15, 16, 0),
-    allDay: false,
-    project: "mobile",
-    projectName: "Mobile App Development",
-    location: "Reunião Virtual",
-    description: "Planejar a próxima sprint para a equipe de desenvolvimento mobile.",
-    assignees: [
-      { id: "user-3", name: "Ryan Park", avatar: "/avatars/ryan-park.png" },
-      {
-        id: "user-4",
-        name: "Sarah Johnson",
-        avatar: "/avatars/sarah-johnson.png",
-      },
-    ],
-    color: "#0ea5e9",
-  },
-  {
-    id: "event-3",
-    title: "Lançamento do Website",
-    start: new Date(new Date().getFullYear(), new Date().getMonth(), 20),
-    end: new Date(new Date().getFullYear(), new Date().getMonth(), 20),
-    allDay: true,
-    project: "static",
-    projectName: "StaticMania",
-    location: "",
-    description: "Lançamento oficial do website redesenhado.",
-    assignees: [
-      { id: "user-1", name: "Alex Morgan", avatar: "/avatars/alex-morgan.png" },
-      { id: "user-5", name: "David Kim", avatar: "/avatars/david-kim.png" },
-    ],
-    color: "#10b981",
-  },
-  {
-    id: "event-4",
-    title: "Reunião com Cliente",
-    start: new Date(new Date().getFullYear(), new Date().getMonth(), 12, 9, 0),
-    end: new Date(new Date().getFullYear(), new Date().getMonth(), 12, 10, 30),
-    allDay: false,
-    project: "ecommerce",
-    projectName: "E-commerce Platform",
-    location: "Escritório do Cliente",
-    description: "Discutir requisitos do projeto e cronograma com o cliente.",
-    assignees: [
-      { id: "user-3", name: "Ryan Park", avatar: "/avatars/ryan-park.png" },
-    ],
-    color: "#f59e0b",
-  },
-  {
-    id: "event-5",
-    title: "Integração de Equipe",
-    start: new Date(new Date().getFullYear(), new Date().getMonth(), 25),
-    end: new Date(new Date().getFullYear(), new Date().getMonth(), 26),
-    allDay: true,
-    project: "react",
-    projectName: "Keep React",
-    location: "Parque da Cidade",
-    description: "Atividades de integração de equipe e evento social.",
-    assignees: [
-      { id: "user-1", name: "Alex Morgan", avatar: "/avatars/alex-morgan.png" },
-      {
-        id: "user-2",
-        name: "Jessica Chen",
-        avatar: "/avatars/jessica-chen.png",
-      },
-      { id: "user-3", name: "Ryan Park", avatar: "/avatars/ryan-park.png" },
-      {
-        id: "user-4",
-        name: "Sarah Johnson",
-        avatar: "/avatars/sarah-johnson.png",
-      },
-      { id: "user-5", name: "David Kim", avatar: "/avatars/david-kim.png" },
-    ],
-    color: "#ec4899",
-  },
-];
+interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  status: 'todo' | 'in_progress' | 'review' | 'completed' | 'cancelled';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  due_date?: string;
+  start_date?: string;
+  project?: {
+    id: string;
+    name: string;
+    client?: {
+      id: string;
+      name: string;
+      company?: string;
+    };
+  };
+  assigned_to?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
+// Função para converter tarefa em evento de calendário
+const taskToCalendarEvent = (task: Task): CalendarEvent => {
+  const getStatusColor = (status: string, priority: string) => {
+    if (status === 'completed') return '#10b981'
+    if (status === 'cancelled') return '#ef4444'
+    if (priority === 'urgent') return '#dc2626'
+    if (priority === 'high') return '#ea580c'
+    if (priority === 'medium') return '#d97706'
+    return '#6b7280'
+  }
+
+  const startDate = task.start_date ? new Date(task.start_date) : (task.due_date ? new Date(task.due_date) : new Date())
+  const endDate = task.due_date ? new Date(task.due_date) : startDate
+
+  return {
+    id: task.id,
+    title: task.title,
+    start: startDate,
+    end: endDate,
+    allDay: !task.start_date, // Se não tem hora de início, é um evento de dia inteiro
+    project: task.project?.id || '',
+    projectName: task.project?.name || 'Sem projeto',
+    location: task.project?.client?.company || task.project?.client?.name || '',
+    description: task.description || '',
+    assignees: task.assigned_to ? [{
+      id: task.assigned_to.id,
+      name: task.assigned_to.name,
+      avatar: ''
+    }] : [],
+    color: getStatusColor(task.status, task.priority),
+  }
+}
 
 export default function SimpleCalendarView({
   view,
@@ -136,16 +90,38 @@ export default function SimpleCalendarView({
 }: SimpleCalendarViewProps) {
   const { toast } = useToast();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [events, setEvents] = useState<CalendarEvent[]>(initialEvents);
-  const [filteredEvents, setFilteredEvents] =
-    useState<CalendarEvent[]>(initialEvents);
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
-    null
-  );
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [filteredEvents, setFilteredEvents] = useState<CalendarEvent[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isNewEventFormOpen, setIsNewEventFormOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Buscar tarefas da API e converter em eventos
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/tasks');
+        if (response.ok) {
+          const data = await response.json();
+          const tasks = data.tasks || [];
+          
+          // Converter tarefas em eventos de calendário
+          const calendarEvents = tasks.map((task: Task) => taskToCalendarEvent(task));
+          setEvents(calendarEvents);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar tarefas:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTasks();
+  }, []);
 
   // Apply filters
   useEffect(() => {
@@ -203,44 +179,38 @@ export default function SimpleCalendarView({
 
   // Handle date click
   const handleDateClick = (date: Date) => {
-    setSelectedDate(date);
-    setIsNewEventFormOpen(true);
+    // Desabilitado para dados reais da API
+    toast({
+      title: "Funcionalidade indisponível",
+      description: "Para criar tarefas, use a página de projetos ou tarefas.",
+    });
   };
 
   // Handle event creation
   const handleEventCreated = (newEvent: CalendarEvent) => {
-    setEvents((prevEvents) => [...prevEvents, newEvent]);
+    // Desabilitado para dados reais da API
     toast({
-      title: "Event created",
-      description: `"${newEvent.title}" has been added to your calendar.`,
+      title: "Funcionalidade indisponível",
+      description: "Para criar tarefas, use a página de projetos ou tarefas.",
     });
   };
 
   // Handle event update
   const handleEventUpdated = (updatedEvent: CalendarEvent) => {
-    setEvents((prevEvents) =>
-      prevEvents.map((event) =>
-        event.id === updatedEvent.id ? updatedEvent : event
-      )
-    );
+    // Desabilitado para dados reais da API
     toast({
-      title: "Event updated",
-      description: `"${updatedEvent.title}" has been updated.`,
+      title: "Funcionalidade indisponível",
+      description: "Para editar tarefas, use a página de projetos ou tarefas.",
     });
   };
 
   // Handle event deletion
   const handleEventDeleted = (eventId: string) => {
-    const eventToDelete = events.find((e) => e.id === eventId);
-    if (eventToDelete) {
-      setEvents((prevEvents) =>
-        prevEvents.filter((event) => event.id !== eventId)
-      );
-      toast({
-        title: "Event deleted",
-        description: `"${eventToDelete.title}" has been removed from your calendar.`,
-      });
-    }
+    // Desabilitado para dados reais da API
+    toast({
+      title: "Funcionalidade indisponível",
+      description: "Para excluir tarefas, use a página de projetos ou tarefas.",
+    });
   };
 
   // Render month view
@@ -356,26 +326,36 @@ export default function SimpleCalendarView({
     <div className="">
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <Button variant="outline" size="icon" onClick={goToPreviousMonth}>
+          <Button variant="outline" size="icon" onClick={goToPreviousMonth} disabled={loading}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
             {format(currentDate, "MMMM yyyy", { locale: ptBR })}
           </h2>
-          <Button variant="outline" size="icon" onClick={goToNextMonth}>
+          <Button variant="outline" size="icon" onClick={goToNextMonth} disabled={loading}>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
         <div>
           <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
-            {filteredEvents.length} events
+            {loading ? 'Carregando...' : `${filteredEvents.length} tarefas`}
           </Badge>
         </div>
       </div>
 
-      {view === "month" && renderMonthView()}
-      {view === "week" && renderWeekView()}
-      {view === "day" && renderDayView()}
+      {loading ? (
+        <div className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727] rounded-lg p-4">
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        </div>
+      ) : (
+        <>
+          {view === "month" && renderMonthView()}
+          {view === "week" && renderWeekView()}
+          {view === "day" && renderDayView()}
+        </>
+      )}
 
       {/* Event Detail Dialog */}
       {selectedEvent && (

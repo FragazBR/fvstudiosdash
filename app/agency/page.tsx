@@ -1,13 +1,13 @@
 import { PermissionGuard } from '@/components/permission-guard'
-import { AgencyManagementPage } from '@/components/agency-management-page'
+import { AgencyDashboard } from '@/components/agency-dashboard'
 
 function AgencyContent() {
-  return <AgencyManagementPage />
+  return <AgencyDashboard />
 }
 
 export default function AgencyPage() {
   return (
-    <PermissionGuard allowedRoles={['admin', 'agency_owner', 'agency_staff']} showUnauthorized>
+    <PermissionGuard allowedRoles={['admin', 'agency_owner', 'independent_producer']} showUnauthorized>
       <AgencyContent />
     </PermissionGuard>
   )

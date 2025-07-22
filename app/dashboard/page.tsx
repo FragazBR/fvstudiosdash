@@ -2,15 +2,15 @@
 'use client'
 
 import { PermissionGuard } from '@/components/permission-guard'
-import { AgencyDashboard } from "@/components/agency-dashboard";
+import Dashboard from "@/components/dashboard";
 
 function DashboardContent() {
-  return <AgencyDashboard />;
+  return <Dashboard />;
 }
 
 export default function DashboardPage() {
   return (
-    <PermissionGuard allowedRoles={['admin', 'agency_owner', 'agency_staff', 'independent_producer', 'influencer', 'free_user']} showUnauthorized>
+    <PermissionGuard allowedRoles={['admin', 'agency_owner', 'agency_staff', 'independent_producer', 'influencer', 'free_user', 'agency_client']} showUnauthorized>
       <DashboardContent />
     </PermissionGuard>
   );

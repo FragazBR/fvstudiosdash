@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { PermissionGuard } from '@/components/permission-guard'
 import Topbar from '@/components/Shared/Topbar'
 import { Sidebar } from '@/components/sidebar'
@@ -9,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   Users,
   Search,
@@ -25,92 +27,97 @@ import {
   Mail,
   MapPin,
   TrendingUp,
-  Activity
+  Activity,
+  Plus
 } from 'lucide-react'
 
-// Mock data dos clientes/contas
-const mockContas = [
-  {
-    id: 1,
-    nome: 'Empresa ABC Ltda',
-    avatar: '',
-    email: 'contato@empresaabc.com',
-    telefone: '(11) 98765-4321',
-    cidade: 'São Paulo - SP',
-    status: 'Ativo',
-    projetos: 3,
-    projetosAtivos: 2,
-    valorTotal: 'R$ 45.000',
-    proximaEntrega: '2025-01-25',
-    ultimaInteracao: '2 horas atrás',
-    responsavel: 'Ana Silva',
-    etapaAtual: 'Em Execução',
-    processos: [
-      { nome: 'Website Redesign', etapa: 'Desenvolvimento', status: 'Em Execução' },
-      { nome: 'Campanha Digital', etapa: 'Aprovação', status: 'Concluído' },
-      { nome: 'Brand Identity', etapa: 'Planejamento', status: 'Planejamento' }
-    ]
-  },
-  {
-    id: 2,
-    nome: 'Startup XYZ',
-    avatar: '',
-    email: 'hello@startupxyz.com',
-    telefone: '(11) 94567-8901',
-    cidade: 'Rio de Janeiro - RJ',
-    status: 'Ativo',
-    projetos: 2,
-    projetosAtivos: 1,
-    valorTotal: 'R$ 28.500',
-    proximaEntrega: '2025-01-30',
-    ultimaInteracao: '1 dia atrás',
-    responsavel: 'Carlos Santos',
-    etapaAtual: 'Desenvolvimento',
-    processos: [
-      { nome: 'Mobile App', etapa: 'Execução das Produções', status: 'Em Execução' },
-      { nome: 'Landing Page', etapa: 'Aprovação', status: 'Concluído' }
-    ]
-  },
-  {
-    id: 3,
-    nome: 'Loja Online 123',
-    avatar: '',
-    email: 'comercial@loja123.com.br',
-    telefone: '(11) 91234-5678',
-    cidade: 'Belo Horizonte - MG',
-    status: 'Pendente',
-    projetos: 1,
-    projetosAtivos: 0,
-    valorTotal: 'R$ 15.000',
-    proximaEntrega: '2025-02-15',
-    ultimaInteracao: '3 dias atrás',
-    responsavel: 'Maria Costa',
-    etapaAtual: 'Atrasado',
-    processos: [
-      { nome: 'E-commerce', etapa: 'Análise e Diagnóstico', status: 'Atrasado' }
-    ]
-  }
-]
+interface Contact {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  company?: string;
+  position?: string;
+  type: 'lead' | 'client' | 'prospect';
+  status: 'active' | 'inactive' | 'pending';
+  created_at: string;
+  last_interaction?: string;
+  projects?: any[];
+  total_project_value?: number;
+  active_projects?: number;
+}
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case 'Planejamento': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
-    case 'Em Execução': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
-    case 'Concluído': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-    case 'Atrasado': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+    case 'active': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+    case 'inactive': return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
+    case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+    default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
+  }
+}
+
+const getTypeColor = (type: string) => {
+  switch (type) {
+    case 'client': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+    case 'lead': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400'
+    case 'prospect': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400'
     default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
   }
 }
 
 function ContasContent() {
+  const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedConta, setSelectedConta] = useState<any>(null)
+  const [contacts, setContacts] = useState<Contact[]>([])
+  const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState({
+    totalContacts: 0,
+    activeClients: 0,
+    activeProjects: 0,
+    totalRevenue: 0
+  })
 
-  const filteredContas = mockContas.filter(conta =>
-    conta.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    conta.email.toLowerCase().includes(searchTerm.toLowerCase())
+  useEffect(() => {
+    fetchContacts()
+  }, [])
+
+  const fetchContacts = async () => {
+    try {
+      const response = await fetch('/api/contacts')
+      if (response.ok) {
+        const data = await response.json()
+        setContacts(data.contacts || [])
+        
+        // Calcular estatísticas
+        const totalContacts = data.contacts?.length || 0
+        const activeClients = data.contacts?.filter((c: Contact) => c.status === 'active' && c.type === 'client').length || 0
+        const activeProjects = data.contacts?.reduce((sum: number, c: Contact) => sum + (c.active_projects || 0), 0) || 0
+        const totalRevenue = data.contacts?.reduce((sum: number, c: Contact) => sum + (c.total_project_value || 0), 0) || 0
+        
+        setStats({
+          totalContacts,
+          activeClients, 
+          activeProjects,
+          totalRevenue
+        })
+      }
+    } catch (error) {
+      console.error('Error fetching contacts:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const filteredContacts = contacts.filter(contact =>
+    contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contact.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contact.company?.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  const handleViewProjects = (contactId: string) => {
+    router.push(`/projects?client=${contactId}`)
+  }
 
   return (
     <div className="bg-gray-50 dark:bg-[#121212] min-h-screen font-inter">
@@ -159,7 +166,11 @@ function ContasContent() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total de Contas</p>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">3</p>
+                      {loading ? (
+                        <Skeleton className="h-8 w-12" />
+                      ) : (
+                        <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.totalContacts}</p>
+                      )}
                     </div>
                     <Building2 className="h-8 w-8 text-blue-500" />
                   </div>
@@ -170,8 +181,12 @@ function ContasContent() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Contas Ativas</p>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">2</p>
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Clientes Ativos</p>
+                      {loading ? (
+                        <Skeleton className="h-8 w-12" />
+                      ) : (
+                        <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.activeClients}</p>
+                      )}
                     </div>
                     <Activity className="h-8 w-8 text-green-500" />
                   </div>
@@ -183,7 +198,11 @@ function ContasContent() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Projetos Ativos</p>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">3</p>
+                      {loading ? (
+                        <Skeleton className="h-8 w-12" />
+                      ) : (
+                        <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.activeProjects}</p>
+                      )}
                     </div>
                     <FolderKanban className="h-8 w-8 text-yellow-500" />
                   </div>
@@ -195,7 +214,17 @@ function ContasContent() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Receita Total</p>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">R$ 88.5K</p>
+                      {loading ? (
+                        <Skeleton className="h-8 w-16" />
+                      ) : (
+                        <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                          {new Intl.NumberFormat('pt-BR', { 
+                            style: 'currency', 
+                            currency: 'BRL',
+                            minimumFractionDigits: 0 
+                          }).format(stats.totalRevenue)}
+                        </p>
+                      )}
                     </div>
                     <TrendingUp className="h-8 w-8 text-purple-500" />
                   </div>
@@ -203,105 +232,158 @@ function ContasContent() {
               </Card>
             </div>
 
-            {/* Contas Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredContas.map((conta) => (
-                <Card key={conta.id} className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 hover:shadow-lg transition-all duration-200 cursor-pointer">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
+            {/* Loading skeleton */}
+            {loading ? (
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                {[...Array(6)].map((_, i) => (
+                  <Card key={i} className="bg-white/90 dark:bg-[#171717]/60">
+                    <CardHeader>
                       <div className="flex items-center gap-3">
-                        <Avatar className="h-12 w-12">
-                          <AvatarImage src={conta.avatar} />
-                          <AvatarFallback className="bg-green-100 text-green-700">
-                            {conta.nome.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <CardTitle className="text-lg text-gray-900 dark:text-gray-100">
-                            {conta.nome}
-                          </CardTitle>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            {conta.responsavel}
-                          </p>
+                        <Skeleton className="h-12 w-12 rounded-full" />
+                        <div className="space-y-2">
+                          <Skeleton className="h-5 w-32" />
+                          <Skeleton className="h-4 w-24" />
                         </div>
                       </div>
-                      <Button variant="ghost" size="icon">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardHeader>
-
-                  <CardContent>
-                    <div className="space-y-4">
-                      {/* Status */}
-                      <div className="flex items-center justify-between">
-                        <Badge className={getStatusColor(conta.etapaAtual)}>
-                          {conta.etapaAtual}
-                        </Badge>
-                        <span className="text-sm text-gray-500">{conta.ultimaInteracao}</span>
-                      </div>
-
-                      {/* Informações de contato */}
-                      <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                        <div className="flex items-center gap-2">
-                          <Mail className="h-4 w-4" />
-                          <span>{conta.email}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Phone className="h-4 w-4" />
-                          <span>{conta.telefone}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4" />
-                          <span>{conta.cidade}</span>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <Skeleton className="h-6 w-20" />
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-full" />
+                          <Skeleton className="h-4 w-full" />
+                          <Skeleton className="h-4 w-3/4" />
                         </div>
                       </div>
-
-                      {/* Métricas */}
-                      <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                        <div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">Projetos</p>
-                          <p className="font-semibold text-gray-900 dark:text-gray-100">
-                            {conta.projetosAtivos}/{conta.projetos}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">Valor</p>
-                          <p className="font-semibold text-gray-900 dark:text-gray-100">
-                            {conta.valorTotal}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Ações */}
-                      <div className="flex gap-2 pt-4">
-                        <Button size="sm" className="flex-1">
-                          <Eye className="h-4 w-4 mr-2" />
-                          Ver Detalhes
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <FolderKanban className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <Calendar className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <MessageSquare className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {filteredContas.length === 0 && (
-              <div className="text-center py-12">
-                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 dark:text-gray-400">
-                  Nenhuma conta encontrada
-                </p>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
+            ) : (
+              <>
+                {/* Contas Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {filteredContacts.map((contact) => (
+                    <Card key={contact.id} className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 hover:shadow-lg transition-all duration-200 cursor-pointer">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-12 w-12">
+                              <AvatarFallback className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                {contact.name.charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <CardTitle className="text-lg text-gray-900 dark:text-gray-100">
+                                {contact.name}
+                              </CardTitle>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {contact.position || contact.company || 'Cliente'}
+                              </p>
+                            </div>
+                          </div>
+                          <Button variant="ghost" size="icon">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </CardHeader>
+
+                      <CardContent>
+                        <div className="space-y-4">
+                          {/* Status & Type */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex gap-2">
+                              <Badge className={getStatusColor(contact.status)}>
+                                {contact.status}
+                              </Badge>
+                              <Badge className={getTypeColor(contact.type)}>
+                                {contact.type}
+                              </Badge>
+                            </div>
+                            <span className="text-sm text-gray-500">
+                              {contact.last_interaction 
+                                ? `${Math.floor((Date.now() - new Date(contact.last_interaction).getTime()) / (1000 * 60 * 60 * 24))}d atrás`
+                                : 'Sem interação'
+                              }
+                            </span>
+                          </div>
+
+                          {/* Informações de contato */}
+                          <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                            <div className="flex items-center gap-2">
+                              <Mail className="h-4 w-4" />
+                              <span className="truncate">{contact.email}</span>
+                            </div>
+                            {contact.phone && (
+                              <div className="flex items-center gap-2">
+                                <Phone className="h-4 w-4" />
+                                <span>{contact.phone}</span>
+                              </div>
+                            )}
+                            {contact.company && (
+                              <div className="flex items-center gap-2">
+                                <Building2 className="h-4 w-4" />
+                                <span className="truncate">{contact.company}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Métricas */}
+                          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <div>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">Projetos</p>
+                              <p className="font-semibold text-gray-900 dark:text-gray-100">
+                                {contact.active_projects || 0}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">Valor</p>
+                              <p className="font-semibold text-gray-900 dark:text-gray-100">
+                                {contact.total_project_value 
+                                  ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 }).format(contact.total_project_value)
+                                  : 'R$ 0'
+                                }
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Ações */}
+                          <div className="flex gap-2 pt-4">
+                            <Button 
+                              size="sm" 
+                              className="flex-1"
+                              onClick={() => handleViewProjects(contact.id)}
+                            >
+                              <FolderKanban className="h-4 w-4 mr-2" />
+                              Ver Projetos
+                            </Button>
+                            <Button variant="outline" size="sm">
+                              <Calendar className="h-4 w-4" />
+                            </Button>
+                            <Button variant="outline" size="sm">
+                              <MessageSquare className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                {/* Empty state */}
+                {!loading && filteredContacts.length === 0 && (
+                  <div className="text-center py-12">
+                    <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600 dark:text-gray-400 mb-4">
+                      {contacts.length === 0 ? 'Nenhuma conta cadastrada ainda' : 'Nenhuma conta encontrada'}
+                    </p>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Adicionar Primeira Conta
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </main>
@@ -312,7 +394,7 @@ function ContasContent() {
 
 export default function ContasPage() {
   return (
-    <PermissionGuard allowedRoles={['admin', 'agency_owner', 'agency_staff']} showUnauthorized>
+    <PermissionGuard allowedRoles={['admin', 'agency_owner', 'agency_staff', 'independent_producer']} showUnauthorized>
       <ContasContent />
     </PermissionGuard>
   )

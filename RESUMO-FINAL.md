@@ -267,22 +267,80 @@ O sistema faz a atualização automática do perfil (`user_profiles`) e libera o
 - ✅ Documentação técnica
 - ✅ Guias de instalação
 
+## 🔄 Atualizações Mais Recentes (2025)
+
+### ✅ Sistema de Navegação Integrado
+- **Reorganizada estrutura completa** de navegação baseada em dados reais do banco
+- **Contas**: Restrita para usuários com clientes (agency/independent) - gerenciamento de clientes
+- **Projetos**: Cards agrupados por cliente com navegação inteligente para tarefas específicas
+- **Tarefas**: Timeline universal com prioridade por data de entrega (para todos os planos)
+- **Calendar**: Integrado com dados reais do sistema de tarefas
+- **Dashboards**: Reorganizados por roles (agency-dashboard vs dashboard básico)
+
+### ✅ Sidebar Inteligente com Dados Reais
+- **Seção Urgente**: Tarefas atrasadas e próximas do prazo (3 dias) com contador vermelho
+- **Avisos do Sistema**: Notificações específicas da organização (manutenção, segurança, atualizações)
+- **Projetos Recentes**: Dados reais da API com status e informações do cliente
+- **Notificações**: Sistema integrado com tipos específicos e tempo relativo
+
+### ✅ Production Control Center (Workstation)
+- **Transformada em centro de comando operacional** para monitoramento do workflow de produção
+- **11 Etapas de Workflow Implementadas**:
+  1. Atendimento (1-2 dias)
+  2. Análise e Diagnóstico (3-5 dias) 
+  3. Planejamento de Execução (3-7 dias)
+  4. Desenvolvimento de Processos (2-4 dias)
+  5. Agendamento de Produções (1-3 dias)
+  6. Execução das Produções (5-15 dias)
+  7. Criação e Edição (7-20 dias)
+  8. Aprovação (2-7 dias)
+  9. Ajustes Finais (1-3 dias)
+  10. Tráfego/Gestão de Campanhas (30-90 dias)
+  11. Relatórios e Métricas (2-5 dias)
+
+### 📊 Métricas de Produção em Tempo Real
+- **Dashboard Operacional**: Total de projetos, ativos, no prazo, atrasados
+- **Indicadores de Saúde**: Healthy | At Risk | Urgent | Delayed
+- **Progress Tracking**: Progresso granular por etapa do workflow
+- **Utilização da Equipe**: Baseada em tarefas completadas vs totais
+
+### 🎯 Sistema de Filtros Avançados
+- Filtro por **Status** do projeto (Ativo, Pausado, Concluído)
+- Filtro por **Etapa do Workflow** (todas as 11 etapas)
+- Filtro por **Prioridade** (Baixa, Média, Alta, Urgente)
+- **Busca inteligente** por nome do projeto ou cliente
+
+### 🗄️ Estrutura de Banco para Workflow System
+- **Novas Tabelas Recomendadas**:
+  - `workflow_stages`: Configuração das 11 etapas
+  - `project_workflow_stages`: Tracking de progresso por projeto
+  - `workflow_stage_transitions`: Histórico de mudanças de etapa
+- **Extensões Planejadas**:
+  - `projects`: `current_workflow_stage`, `workflow_started_at`  
+  - `tasks`: `workflow_stage`, `stage_deliverable_type`
+
+### 🔧 Integração Completa com APIs Existentes
+- **Conexão Real**: Dados vindos das APIs `/api/projects`, `/api/tasks`, `/api/notifications`
+- **Fallback Inteligente**: Sistema funciona com dados reais ou mock para demonstração
+- **Performance**: Loading states, skeleton screens e estados vazios informativos
+- **Autenticação**: JWT tokens do Supabase para todas as requisições
+
 ## 🔄 Próximos Passos
 
-### 1. Implementação Frontend
-- Conectar componentes React ao banco
-- Implementar autenticação com Supabase
-- Criar rotas protegidas por role
+### 1. Database Schema Implementation
+- Implementar migrations para as novas tabelas de workflow
+- Criar endpoints específicos para workflow tracking
+- Integrar sistema de transições automáticas
 
-### 2. Testes e Validação
-- Executar scripts em ambiente limpo
-- Testar isolamento multi-tenant
-- Validar permissões por role
+### 2. Advanced Features
+- Sistema de aprovações por etapa
+- Notificações automáticas de mudança de etapa
+- Relatórios de performance por etapa do workflow
 
-### 3. Deploy e Configuração
-- Configurar variáveis de ambiente
-- Deploy na Vercel
-- Configurar domínio personalizado
+### 3. Team Collaboration
+- Chat integrado por projeto/etapa
+- Comentários por deliverable
+- Sistema de mentions e assignments
 
 ## 📊 Métricas do Projeto
 
