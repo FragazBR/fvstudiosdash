@@ -229,6 +229,11 @@ Execute no Supabase SQL Editor:
 
 -- 3. Sistema de vendas
 \i scripts/sales_system.sql
+
+-- 4. Sistema departamental (NOVO - Janeiro 2025)
+-- PENDENTE: Adicionar colunas department_id e specialization_id na tabela user_profiles
+-- ALTER TABLE user_profiles ADD COLUMN department_id text;
+-- ALTER TABLE user_profiles ADD COLUMN specialization_id text;
 ```
 
 ### 4. **Configurar Stripe**
@@ -318,12 +323,16 @@ fvstudiosdash/
 ├── components/            # Componentes UI
 │   ├── ui/               # Shadcn components
 │   ├── agency-dashboard.tsx # Dashboard agências
-│   └── stat-card.tsx     # Cards de estatísticas
+│   ├── stat-card.tsx     # Cards de estatísticas
+│   ├── department-selector.tsx # Seletor de departamentos/especializações
+│   └── task-department-filter.tsx # Filtros departamentais para tarefas
 ├── lib/                   # Utilitários
 │   ├── supabaseBrowser.ts # Supabase client
 │   └── utils.ts          # Helper functions
 ├── scripts/               # Scripts SQL
 ├── types/                 # TypeScript definitions
+│   ├── departments.ts    # Sistema departamental e especializações
+│   └── workflow.ts       # Workflow e stages do projeto
 └── supabase/              # Configurações DB
 ```
 
@@ -784,6 +793,25 @@ MIT License - veja [LICENSE](LICENSE) para detalhes.
 - 🎨 **Advanced Filtering** - Filtros por status, etapa do workflow, prioridade e busca inteligente
 - 🔗 **Database Schema Extension** - Estrutura planejada para workflow tracking completo
 - ⚡ **Performance Optimized** - Loading states, fallbacks e integração com APIs reais
+
+#### ✅ **SISTEMA DEPARTAMENTAL DE ESPECIALIZAÇÃO (Janeiro 2025) - 🎯 CONTROLE POR FUNÇÃO**
+- 🏢 **6 Departamentos Estruturados** - Sistema completo de organização por setores:
+  - **Atendimento & Relacionamento** - Account managers, Customer Success, SDR/BDR
+  - **Estratégia & Planejamento** - Estrategistas, Analistas de dados, Pesquisadores
+  - **Criativo & Conteúdo** - Designers, Video makers, Copywriters, Content creators
+  - **Performance & Tráfego** - Gestores de tráfego, Analistas de performance, Media buyers
+  - **Desenvolvimento & Tecnologia** - Desenvolvedores, Analistas técnicos, Especialistas SEO
+  - **Operações & Processos** - Gerentes de projeto, Quality assurance, Coordenadores
+- 🎯 **18+ Especializações Mapeadas** - Cada função mapeada para etapas específicas do workflow
+- 🔐 **Sistema de Permissões Granular** - 5 níveis de acesso (VIEW_OWN → VIEW_ALL)
+- 🎨 **Filtragem Inteligente por Função** - Filtros departamentais na página My Tasks:
+  - **Video makers** veem apenas tarefas de produção de vídeo
+  - **Atendimento** vê apenas tarefas de relacionamento com cliente
+  - **Gestores de tráfego** veem apenas tarefas de campanhas
+  - **Agency owners** têm visibilidade total com filtros opcionais
+- 📊 **Interface Visual Departamental** - Indicadores visuais de departamento e especialização
+- 🔗 **API Estendida** - Tasks API inclui informações departamentais do responsável
+- ⚡ **Integração Completa** - Sistema integrado à página My Tasks com filtros expansíveis
 
 ### 🤖 **Próxima Fase: IA FOUNDATION (Q1 2025)**
 **Status: READY TO START 🚀**
