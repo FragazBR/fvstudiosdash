@@ -780,7 +780,7 @@ function ProjectDetailModal({ project, onClose }: { project: any; onClose: () =>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {project.team.map((member) => (
+                  {project.team.map((member: any) => (
                     <div key={member.id} className="flex items-center gap-3">
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={member.avatar} />
@@ -804,7 +804,7 @@ function ProjectDetailModal({ project, onClose }: { project: any; onClose: () =>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {project.timeline.milestones.map((milestone) => (
+                  {project.timeline.milestones.map((milestone: any) => (
                     <div key={milestone.id} className="flex items-center gap-3">
                       <div className={`h-3 w-3 rounded-full ${
                         milestone.completed ? 'bg-green-500' : 'bg-gray-300'

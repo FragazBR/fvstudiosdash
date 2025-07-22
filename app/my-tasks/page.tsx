@@ -9,6 +9,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
+import { TaskDepartmentFilter, useTaskDepartmentFilter } from '@/components/task-department-filter'
+import { useUser } from '@/hooks/useUser'
+import { DepartmentInfo } from '@/components/department-selector'
+import { type TaskFilter, DepartmentPermission } from '@/types/departments'
 import {
   Calendar,
   Clock,
@@ -51,6 +55,8 @@ interface Task {
     id: string;
     name: string;
     email: string;
+    department_id?: string;
+    specialization_id?: string;
   };
   creator?: {
     id: string;
@@ -89,10 +95,12 @@ const getStatusIcon = (status: string) => {
 }
 
 function MyTasksContent() {
+  const { user } = useUser()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState<string>('')
   const [filterPriority, setFilterPriority] = useState<string>('')
+  const [departmentFilter, setDepartmentFilter] = useState<TaskFilter>({})
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({
@@ -101,6 +109,11 @@ function MyTasksContent() {
     inProgressTasks: 0,
     overdueTasks: 0
   })
+  
+  // Check user permissions for departmental filtering
+  const canViewAllTasks = user?.department_permissions?.includes(DepartmentPermission.VIEW_ALL) || false
+  const canViewDepartmentTasks = user?.department_permissions?.includes(DepartmentPermission.VIEW_DEPARTMENT) || false
+  const showDepartmentFilters = canViewAllTasks || canViewDepartmentTasks
 
   useEffect(() => {
     fetchAllTasks()
@@ -160,7 +173,8 @@ function MyTasksContent() {
     }
   }
 
-  const filteredTasks = tasks.filter(task => {
+  // Apply basic filters first
+  const basicFilteredTasks = tasks.filter(task => {
     const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          task.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          task.project?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -170,6 +184,22 @@ function MyTasksContent() {
     const matchesPriority = filterPriority === '' || task.priority === filterPriority
     
     return matchesSearch && matchesStatus && matchesPriority
+  })
+  
+  // Apply department-based filtering with permissions
+  const filteredTasks = useTaskDepartmentFilter(basicFilteredTasks, departmentFilter, user?.id).filter(task => {
+    // Additional permission-based filtering
+    if (!showDepartmentFilters) {
+      // If user can't see department tasks, only show their own tasks
+      return task.assigned_to?.id === user?.id
+    }
+    
+    if (!canViewAllTasks && canViewDepartmentTasks && user?.department_id) {
+      // If user can only see department tasks, filter by their department
+      return !task.assigned_to?.department_id || task.assigned_to.department_id === user.department_id
+    }
+    
+    return true // agency_owners can see everything
   })
 
   const isOverdue = (task: Task) => {
@@ -285,8 +315,8 @@ function MyTasksContent() {
               </div>
             </div>
 
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-8">
+            {/* Basic Filters */}
+            <div className="flex flex-col sm:flex-row gap-4 mb-6">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
@@ -319,6 +349,25 @@ function MyTasksContent() {
                 <option value="low">Baixa</option>
               </select>
             </div>
+
+            {/* Department Filters - Only show if user has permissions */}
+            {showDepartmentFilters && (
+              <div className="mb-8">
+                <TaskDepartmentFilter
+                  currentFilter={departmentFilter}
+                  onFilterChange={setDepartmentFilter}
+                  availableAssignees={tasks
+                    .map(task => task.assigned_to)
+                    .filter((assignee): assignee is NonNullable<typeof assignee> => assignee !== null && assignee !== undefined)
+                    .map(assignee => ({
+                      id: assignee.id,
+                      name: assignee.name,
+                      department_id: assignee.department_id,
+                      specialization_id: assignee.specialization_id
+                    }))}
+                />
+              </div>
+            )}
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -456,9 +505,17 @@ function MyTasksContent() {
                                         )}
                                         
                                         {task.assigned_to && (
-                                          <div className="flex items-center gap-1">
+                                          <div className="flex items-center gap-2">
                                             <User className="h-4 w-4" />
                                             <span>{task.assigned_to.name}</span>
+                                            {(task.assigned_to.department_id || task.assigned_to.specialization_id) && (
+                                              <div className="ml-2">
+                                                <DepartmentInfo
+                                                  departmentId={task.assigned_to.department_id}
+                                                  specializationId={task.assigned_to.specialization_id}
+                                                />
+                                              </div>
+                                            )}
                                           </div>
                                         )}
                                         

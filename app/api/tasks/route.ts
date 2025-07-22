@@ -21,8 +21,8 @@ export async function GET(request: NextRequest) {
       .from('tasks')
       .select(`
         *,
-        project:project_id(id, name, status),
-        assigned_to:assigned_to(id, name, email, avatar_url),
+        project:project_id(id, name, status, client:client_id(id, name, company)),
+        assigned_to:assigned_to(id, name, email, avatar_url, department_id, specialization_id),
         creator:created_by(id, name)
       `)
       .order('position', { ascending: true })
@@ -113,8 +113,8 @@ export async function POST(request: NextRequest) {
       })
       .select(`
         *,
-        project:project_id(id, name),
-        assigned_to:assigned_to(id, name, email),
+        project:project_id(id, name, client:client_id(id, name, company)),
+        assigned_to:assigned_to(id, name, email, avatar_url, department_id, specialization_id),
         creator:created_by(id, name)
       `)
       .single();

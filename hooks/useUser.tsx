@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { supabaseBrowser } from "@/lib/supabaseBrowser";
 import type { User } from "@supabase/supabase-js";
+import { DepartmentPermission } from "@/types/departments";
 
 interface UserProfile {
   id: string;
@@ -9,8 +10,16 @@ interface UserProfile {
   email?: string;
   role?: string;
   agency_id?: string;
+  department_id?: string;
+  specialization_id?: string;
+  skills?: string[];
   phone?: string;
   avatar_url?: string;
+  // Permissões departamentais
+  department_permissions?: DepartmentPermission[];
+  can_assign_tasks?: boolean;
+  can_view_team_metrics?: boolean;
+  can_manage_team?: boolean;
 }
 
 interface UserContextType {
@@ -56,8 +65,16 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
               email: profile.email || session.user.email || undefined,
               role: profile.role || undefined,
               agency_id: profile.agency_id || undefined,
+              department_id: profile.department_id || undefined,
+              specialization_id: profile.specialization_id || undefined,
+              skills: profile.skills ? JSON.parse(profile.skills) : undefined,
               phone: profile.phone || undefined,
               avatar_url: profile.avatar_url || undefined,
+              // Definir permissões baseadas no role
+              department_permissions: getDepartmentPermissions(profile.role, profile.specialization_id),
+              can_assign_tasks: ['agency_owner', 'agency_staff'].includes(profile.role),
+              can_view_team_metrics: ['agency_owner', 'agency_staff'].includes(profile.role),
+              can_manage_team: profile.role === 'agency_owner',
             });
           } else {
             // Se não tem perfil, cria um básico
@@ -120,6 +137,34 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       {children}
     </UserContext.Provider>
   );
+}
+
+// Função para determinar permissões baseadas no role e especialização
+function getDepartmentPermissions(role?: string, specializationId?: string): DepartmentPermission[] {
+  if (!role) return [];
+  
+  switch (role) {
+    case 'agency_owner':
+      return [
+        DepartmentPermission.VIEW_ALL,
+        DepartmentPermission.MANAGE_ALL,
+        DepartmentPermission.MANAGE_DEPARTMENT,
+        DepartmentPermission.VIEW_DEPARTMENT,
+        DepartmentPermission.VIEW_OWN
+      ];
+    case 'agency_staff':
+      // Se tem especialização, pode ver tarefas do departamento
+      if (specializationId) {
+        return [
+          DepartmentPermission.VIEW_DEPARTMENT,
+          DepartmentPermission.VIEW_OWN
+        ];
+      }
+      // Senão, só pode ver as próprias
+      return [DepartmentPermission.VIEW_OWN];
+    default:
+      return [DepartmentPermission.VIEW_OWN];
+  }
 }
 
 export function useUser() {
