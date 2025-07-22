@@ -18,10 +18,10 @@ export default function CalendarWrapper(props: CalendarWrapperProps) {
 
   if (!isMounted) {
     return (
-      <div className="p-6">
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+      <div className="">
+        <div className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727] rounded-lg">
           <div className="flex items-center justify-center h-[500px]">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 dark:border-[#64f481]"></div>
           </div>
         </div>
       </div>

@@ -248,12 +248,12 @@ export default function SimpleCalendarView({
     const firstDayOfMonth = startOfMonth(currentDate).getDay();
 
     return (
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+      <div className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727] rounded-lg p-4">
         <div className="grid grid-cols-7 gap-2 mb-4">
           {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
             <div
               key={day}
-              className="text-center font-medium text-gray-500 text-sm py-2"
+              className="text-center font-medium text-gray-500 dark:text-gray-400 text-sm py-2"
             >
               {day}
             </div>
@@ -264,7 +264,7 @@ export default function SimpleCalendarView({
           {Array.from({ length: firstDayOfMonth }).map((_, index) => (
             <div
               key={`empty-${index}`}
-              className="sm:h-16 lg:h-24 p-1 border border-gray-100 rounded-md bg-gray-50"
+              className="sm:h-16 lg:h-24 p-1 border border-gray-100 dark:border-[#1f1f1f] rounded-md bg-gray-50 dark:bg-[#0f0f0f]"
             ></div>
           ))}
 
@@ -276,17 +276,17 @@ export default function SimpleCalendarView({
             return (
               <div
                 key={day.toString()}
-                className={`sm:h-16 lg:h-24 p-1 border rounded-md overflow-hidden ${
+                className={`sm:h-16 lg:h-24 p-1 border rounded-md overflow-hidden cursor-pointer hover:bg-gray-50 dark:hover:bg-[#1f1f1f] transition-colors ${
                   isCurrentMonth
-                    ? "border-gray-200 bg-white"
-                    : "border-gray-100 bg-gray-50"
+                    ? "border-gray-200 dark:border-[#272727] bg-white dark:bg-[#171717]"
+                    : "border-gray-100 dark:border-[#1f1f1f] bg-gray-50 dark:bg-[#0f0f0f]"
                 }`}
                 onClick={() => handleDateClick(day)}
               >
                 <div className="text-right mb-1">
                   <span
                     className={`text-sm font-medium ${
-                      isCurrentMonth ? "text-gray-900" : "text-gray-400"
+                      isCurrentMonth ? "text-gray-900 dark:text-gray-100" : "text-gray-400 dark:text-gray-600"
                     }`}
                   >
                     {format(day, "d")}
@@ -326,10 +326,10 @@ export default function SimpleCalendarView({
   // Render week view (simplified)
   const renderWeekView = () => {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+      <div className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727] rounded-lg p-4">
         <div className="text-center py-8">
-          <p className="text-gray-500">Week view is coming soon.</p>
-          <p className="text-gray-500 text-sm mt-2">
+          <p className="text-gray-500 dark:text-gray-400">Week view is coming soon.</p>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">
             Please use the month view for now.
           </p>
         </div>
@@ -340,10 +340,10 @@ export default function SimpleCalendarView({
   // Render day view (simplified)
   const renderDayView = () => {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+      <div className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727] rounded-lg p-4">
         <div className="text-center py-8">
-          <p className="text-gray-500">Day view is coming soon.</p>
-          <p className="text-gray-500 text-sm mt-2">
+          <p className="text-gray-500 dark:text-gray-400">Day view is coming soon.</p>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">
             Please use the month view for now.
           </p>
         </div>
@@ -352,13 +352,13 @@ export default function SimpleCalendarView({
   };
 
   return (
-    <div className="p-6">
-      <div className="mb-4 flex items-center justify-between">
+    <div className="">
+      <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="icon" onClick={goToPreviousMonth}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <h2 className="text-lg font-medium">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
             {format(currentDate, "MMMM yyyy")}
           </h2>
           <Button variant="outline" size="icon" onClick={goToNextMonth}>

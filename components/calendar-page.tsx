@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Sidebar from "./sidebar";
-import CalendarHeader from "./calendar-header";
+import Topbar from "./Shared/Topbar";
 import CalendarWrapper from "./calendar-wrapper";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -17,23 +17,18 @@ export default function CalendarPage({ personalMode }: CalendarPageProps) {
   const [filterAssignee, setFilterAssignee] = useState<string | null>(null);
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900">
+    <div className="bg-[#fafafa] dark:bg-[#121212] min-h-screen font-inter">
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
 
       <div className="lg:w-[calc(100%-16rem)] lg:ml-64 flex flex-col overflow-hidden pt-16">
-        <CalendarHeader
-          setSidebarOpen={setSidebarOpen}
+        <Topbar
+          name="Calendário"
           sidebarOpen={sidebarOpen}
-          view={view}
-          onViewChange={setView}
-          filterProject={filterProject}
-          onFilterProjectChange={setFilterProject}
-          filterAssignee={filterAssignee}
-          onFilterAssigneeChange={setFilterAssignee}
+          setSidebarOpen={setSidebarOpen}
         />
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900">
+        <main className="flex-1 overflow-y-auto p-3 lg:p-6">
           <CalendarWrapper
             view={view}
             filterProject={filterProject}
