@@ -11,6 +11,7 @@ import {
   addMonths,
   subMonths,
 } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,15 +30,15 @@ interface SimpleCalendarViewProps {
 const initialEvents: CalendarEvent[] = [
   {
     id: "event-1",
-    title: "Design System Review",
+    title: "Revisão do Design System",
     start: new Date(new Date().getFullYear(), new Date().getMonth(), 10, 10, 0),
     end: new Date(new Date().getFullYear(), new Date().getMonth(), 10, 12, 0),
     allDay: false,
     project: "figma",
     projectName: "Figma Design System",
-    location: "Meeting Room A",
+    location: "Sala de Reunião A",
     description:
-      "Review the latest design system components and discuss improvements.",
+      "Revisar os componentes mais recentes do design system e discutir melhorias.",
     assignees: [
       { id: "user-1", name: "Alex Morgan", avatar: "/avatars/alex-morgan.png" },
       {
@@ -50,14 +51,14 @@ const initialEvents: CalendarEvent[] = [
   },
   {
     id: "event-2",
-    title: "Mobile App Sprint Planning",
+    title: "Planejamento de Sprint - App Mobile",
     start: new Date(new Date().getFullYear(), new Date().getMonth(), 15, 14, 0),
     end: new Date(new Date().getFullYear(), new Date().getMonth(), 15, 16, 0),
     allDay: false,
     project: "mobile",
     projectName: "Mobile App Development",
-    location: "Virtual Meeting",
-    description: "Plan the next sprint for the mobile app development team.",
+    location: "Reunião Virtual",
+    description: "Planejar a próxima sprint para a equipe de desenvolvimento mobile.",
     assignees: [
       { id: "user-3", name: "Ryan Park", avatar: "/avatars/ryan-park.png" },
       {
@@ -70,14 +71,14 @@ const initialEvents: CalendarEvent[] = [
   },
   {
     id: "event-3",
-    title: "Website Launch",
+    title: "Lançamento do Website",
     start: new Date(new Date().getFullYear(), new Date().getMonth(), 20),
     end: new Date(new Date().getFullYear(), new Date().getMonth(), 20),
     allDay: true,
     project: "static",
     projectName: "StaticMania",
     location: "",
-    description: "Official launch of the redesigned website.",
+    description: "Lançamento oficial do website redesenhado.",
     assignees: [
       { id: "user-1", name: "Alex Morgan", avatar: "/avatars/alex-morgan.png" },
       { id: "user-5", name: "David Kim", avatar: "/avatars/david-kim.png" },
@@ -86,14 +87,14 @@ const initialEvents: CalendarEvent[] = [
   },
   {
     id: "event-4",
-    title: "Client Meeting",
+    title: "Reunião com Cliente",
     start: new Date(new Date().getFullYear(), new Date().getMonth(), 12, 9, 0),
     end: new Date(new Date().getFullYear(), new Date().getMonth(), 12, 10, 30),
     allDay: false,
     project: "ecommerce",
     projectName: "E-commerce Platform",
-    location: "Client Office",
-    description: "Discuss project requirements and timeline with the client.",
+    location: "Escritório do Cliente",
+    description: "Discutir requisitos do projeto e cronograma com o cliente.",
     assignees: [
       { id: "user-3", name: "Ryan Park", avatar: "/avatars/ryan-park.png" },
     ],
@@ -101,14 +102,14 @@ const initialEvents: CalendarEvent[] = [
   },
   {
     id: "event-5",
-    title: "Team Building",
+    title: "Integração de Equipe",
     start: new Date(new Date().getFullYear(), new Date().getMonth(), 25),
     end: new Date(new Date().getFullYear(), new Date().getMonth(), 26),
     allDay: true,
     project: "react",
     projectName: "Keep React",
-    location: "City Park",
-    description: "Team building activities and social event.",
+    location: "Parque da Cidade",
+    description: "Atividades de integração de equipe e evento social.",
     assignees: [
       { id: "user-1", name: "Alex Morgan", avatar: "/avatars/alex-morgan.png" },
       {
@@ -250,7 +251,7 @@ export default function SimpleCalendarView({
     return (
       <div className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727] rounded-lg p-4">
         <div className="grid grid-cols-7 gap-2 mb-4">
-          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+          {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((day) => (
             <div
               key={day}
               className="text-center font-medium text-gray-500 dark:text-gray-400 text-sm py-2"
@@ -328,9 +329,9 @@ export default function SimpleCalendarView({
     return (
       <div className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727] rounded-lg p-4">
         <div className="text-center py-8">
-          <p className="text-gray-500 dark:text-gray-400">Week view is coming soon.</p>
+          <p className="text-gray-500 dark:text-gray-400">Visualização semanal em breve.</p>
           <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">
-            Please use the month view for now.
+            Por favor, use a visualização mensal por enquanto.
           </p>
         </div>
       </div>
@@ -342,9 +343,9 @@ export default function SimpleCalendarView({
     return (
       <div className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727] rounded-lg p-4">
         <div className="text-center py-8">
-          <p className="text-gray-500 dark:text-gray-400">Day view is coming soon.</p>
+          <p className="text-gray-500 dark:text-gray-400">Visualização diária em breve.</p>
           <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">
-            Please use the month view for now.
+            Por favor, use a visualização mensal por enquanto.
           </p>
         </div>
       </div>
@@ -359,7 +360,7 @@ export default function SimpleCalendarView({
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-            {format(currentDate, "MMMM yyyy")}
+            {format(currentDate, "MMMM yyyy", { locale: ptBR })}
           </h2>
           <Button variant="outline" size="icon" onClick={goToNextMonth}>
             <ChevronRight className="h-4 w-4" />
