@@ -16,7 +16,7 @@ export default async function Calendar() {
     .eq("id", user.id)
     .single()
 
-  if (!profile || !profile.role || !["agency", "client"].includes(profile.role)) {
+  if (!profile || !profile.role || !["admin", "agency_owner", "agency_staff", "agency_client", "independent_producer", "independent_client", "influencer"].includes(profile.role)) {
     redirect("/unauthorized")
   }
 
