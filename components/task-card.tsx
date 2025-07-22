@@ -56,7 +56,7 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
   return (
     <div
       // ref={drag}
-      className={`bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-grab ${
+      className={`bg-white/90 dark:bg-[#1f1f1f]/80 backdrop-blur-sm rounded-lg border border-gray-200 dark:border-[#272727] hover:border-gray-300 dark:hover:border-[#64f481]/30 shadow-sm hover:shadow-md transition-all cursor-grab ${
         isDragging ? "opacity-50" : "opacity-100"
       }`}
       style={{ opacity: isDragging ? 0.5 : 1 }}
@@ -68,26 +68,26 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
       <div className="p-4">
         {/* Project & Priority */}
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-medium text-gray-500">{task.project}</span>
+          <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{task.project}</span>
           <span className={`text-xs font-medium px-2.5 py-0.5 rounded ${priorityColor}`}>
             {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
           </span>
         </div>
 
         {/* Task Title */}
-        <h4 className="text-sm font-medium text-gray-900 mb-2">{task.title}</h4>
+        <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">{task.title}</h4>
 
         {/* Progress Bar */}
         <div className="mb-3">
           <div className="flex justify-between items-center mb-1">
-            <span className="text-xs text-gray-500">Progress</span>
-            <span className="text-xs font-medium text-gray-700">{progress}%</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">Progress</span>
+            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{progress}%</span>
           </div>
           <Progress value={progress} className="h-1.5" />
         </div>
 
         {/* Task Metadata */}
-        <div className="flex items-center text-xs text-gray-500 space-x-3 mb-3">
+        <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-3 mb-3">
           {/* Due Date */}
           <div className="flex items-center">
             <Calendar className="h-3.5 w-3.5 mr-1" />
@@ -135,8 +135,8 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
           {/* Task Actions Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="p-1 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                <MoreVertical className="h-4 w-4 text-gray-500" />
+              <button className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-[#1f1f1f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-[#64f481]">
+                <MoreVertical className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                 <span className="sr-only">Task actions</span>
               </button>
             </DropdownMenuTrigger>

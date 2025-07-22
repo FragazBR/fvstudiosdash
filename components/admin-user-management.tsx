@@ -13,6 +13,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { UserPlus, Users, Mail, Clock, Copy, Trash2, Shield, Building2, User } from 'lucide-react';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { toast } from 'sonner';
+import Sidebar from './sidebar';
+import Topbar from './Shared/Topbar';
 
 interface Agency {
   id: string;
@@ -46,6 +48,7 @@ export default function AdminUserManagementPage() {
   const [pendingInvitations, setPendingInvitations] = useState<PendingInvitation[]>([]);
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const supabase = supabaseBrowser();
 
   const [formData, setFormData] = useState<CreateUserForm>({
@@ -211,13 +214,24 @@ export default function AdminUserManagementPage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Gestão de Usuários</h1>
-          <p className="text-gray-600">Crie e gerencie usuários do sistema via convites</p>
-        </div>
+    <div className="bg-[#fafafa] dark:bg-[#121212] min-h-screen font-inter">
+      <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
+      
+      <div className="lg:w-[calc(100%-16rem)] lg:ml-64 flex pt-16">
+        <Topbar
+          name="Gestão de Usuários"
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+        />
+        
+        <main className="p-3 lg:p-6 w-full">
+          <div className="space-y-6">
+            {/* Header */}
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Gestão de Usuários</h1>
+                <p className="text-gray-600 dark:text-gray-400">Crie e gerencie usuários do sistema via convites</p>
+              </div>
         
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
@@ -344,21 +358,21 @@ export default function AdminUserManagementPage() {
             </form>
           </DialogContent>
         </Dialog>
-      </div>
+            </div>
 
-      {/* Convites Pendentes */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Mail className="w-5 h-5 mr-2" />
-            Convites Pendentes ({pendingInvitations.length})
-          </CardTitle>
-          <CardDescription>
-            Usuários que foram convidados mas ainda não aceitaram o convite
-          </CardDescription>
-        </CardHeader>
+            {/* Convites Pendentes */}
+            <Card className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727]">
+              <CardHeader>
+                <CardTitle className="flex items-center text-gray-900 dark:text-white">
+                  <Mail className="w-5 h-5 mr-2" />
+                  Convites Pendentes ({pendingInvitations.length})
+                </CardTitle>
+                <CardDescription className="text-gray-600 dark:text-gray-400">
+                  Usuários que foram convidados mas ainda não aceitaram o convite
+                </CardDescription>
+              </CardHeader>
         
-        <CardContent>
+              <CardContent>
           {pendingInvitations.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <Mail className="w-12 h-12 mx-auto mb-4 opacity-50" />
@@ -440,60 +454,63 @@ export default function AdminUserManagementPage() {
               </TableBody>
             </Table>
           )}
-        </CardContent>
-      </Card>
+              </CardContent>
+            </Card>
 
-      {/* Como Funciona */}
-      <Card>
-        <CardHeader>
-          <CardTitle>ℹ️ Como Funciona o Sistema de Convites</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+            {/* Como Funciona */}
+            <Card className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727]">
+              <CardHeader>
+                <CardTitle className="text-gray-900 dark:text-white">ℹ️ Como Funciona o Sistema de Convites</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <h4 className="font-semibold mb-2">🔗 1. Criar Convite</h4>
-              <p className="text-sm text-gray-600">
+              <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">🔗 1. Criar Convite</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 Preencha os dados do usuário e clique em "Criar Convite". 
                 Um link único será gerado e copiado para sua área de transferência.
               </p>
             </div>
             
             <div>
-              <h4 className="font-semibold mb-2">📧 2. Enviar Link</h4>
-              <p className="text-sm text-gray-600">
+              <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">📧 2. Enviar Link</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 Envie o link do convite para o usuário por email, WhatsApp ou outro meio.
                 O link expira em 7 dias.
               </p>
             </div>
             
             <div>
-              <h4 className="font-semibold mb-2">✅ 3. Aceitar Convite</h4>
-              <p className="text-sm text-gray-600">
+              <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">✅ 3. Aceitar Convite</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 O usuário clica no link, define sua senha e sua conta é criada automaticamente 
                 no Supabase Auth.
               </p>
             </div>
             
             <div>
-              <h4 className="font-semibold mb-2">🚀 4. Acesso Liberado</h4>
-              <p className="text-sm text-gray-600">
+              <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">🚀 4. Acesso Liberado</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 O usuário já pode fazer login normalmente com email/senha.
                 Suas permissões são definidas pelo role escolhido.
               </p>
             </div>
           </div>
           
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
-            <h4 className="font-semibold text-blue-900 mb-2">💡 Vantagens deste Sistema</h4>
-            <ul className="text-sm text-blue-800 space-y-1">
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-4">
+            <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">💡 Vantagens deste Sistema</h4>
+            <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
               <li>✅ <strong>Sem acesso ao Supabase necessário</strong> - Tudo pelo dashboard</li>
               <li>✅ <strong>Seguro</strong> - Links únicos com expiração</li>
               <li>✅ <strong>Auditoria completa</strong> - Logs de todas as ações</li>
               <li>✅ <strong>Automático</strong> - Usuário é criado no Supabase Auth automaticamente</li>
             </ul>
           </div>
-        </CardContent>
-      </Card>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

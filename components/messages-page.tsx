@@ -183,7 +183,7 @@ export function MessagesPage() {
   }
 
   return (
-    <div className="bg-gray-50 dark:bg-[#121212]">
+    <div className="bg-[#fafafa] dark:bg-[#121212] min-h-screen font-inter">
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
 
       {/* Main Content */}
@@ -193,13 +193,13 @@ export function MessagesPage() {
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
         />
-        <div className="flex h-screen bg-gray-50 dark:bg-gray-900 w-full">
+        <div className="flex h-screen bg-[#fafafa] dark:bg-[#121212] w-full">
           {/* Conversations Sidebar */}
-          <div className="w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+          <div className="w-80 bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border-r border-gray-200 dark:border-[#272727] flex flex-col">
         {/* Header */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="p-4 border-b border-gray-200 dark:border-[#272727]">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-xl font-semibold">Messages</h1>
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Mensagens</h1>
             <div className="flex items-center gap-2">
               <Button 
                 variant="ghost" 
@@ -314,7 +314,7 @@ export function MessagesPage() {
       {selectedConversation ? (
         <div className="flex-1 flex flex-col">
           {/* Chat Header */}
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+          <div className="p-4 border-b border-gray-200 dark:border-[#272727] bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {currentConversation?.type === 'group' ? (
@@ -330,7 +330,7 @@ export function MessagesPage() {
                   </Avatar>
                 )}
                 <div>
-                  <h2 className="font-medium">
+                  <h2 className="font-medium text-gray-900 dark:text-white">
                     {currentConversation?.type === 'group' 
                       ? `Grupo ${currentConversation.projectId ? '- Projeto' : ''}`
                       : getUserInfo(currentConversation?.participants[1] || '')?.name
@@ -363,7 +363,7 @@ export function MessagesPage() {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#fafafa] dark:bg-[#121212]">
             {conversationMessages.map((message) => {
               const sender = getUserInfo(message.senderId)
               const isOwn = message.senderId === 'user-1'
@@ -403,7 +403,7 @@ export function MessagesPage() {
           </div>
 
           {/* Message Input */}
-          <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+          <div className="p-4 border-t border-gray-200 dark:border-[#272727] bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm">
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm">
                 <Paperclip className="h-4 w-4" />
@@ -449,9 +449,9 @@ export function MessagesPage() {
 
       {/* AI Agents Panel */}
       {showAIPanel && (
-        <div className="w-80 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 p-4">
+        <div className="w-80 bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border-l border-gray-200 dark:border-[#272727] p-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold">IA Agents</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-white">IA Agents</h3>
             <Button variant="ghost" size="sm" onClick={() => setShowAIPanel(false)}>
               ×
             </Button>

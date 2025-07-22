@@ -133,7 +133,7 @@ function AdminHomeContent() {
   };
 
   return (
-    <div className="bg-gray-50 dark:bg-[#121212]">
+    <div className="bg-[#fafafa] dark:bg-[#121212] min-h-screen font-inter">
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
       
       <div className="lg:pl-64">
@@ -306,7 +306,7 @@ function AdminHomeContent() {
                 quickStats.map((stat, index) => {
                   const Icon = stat.icon;
                   return (
-                    <Card key={index} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
+                    <Card key={index} className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727] hover:border-gray-300 dark:hover:border-[#64f481]/30 transition-colors">
                       <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                           <div>
@@ -334,7 +334,7 @@ function AdminHomeContent() {
             {/* Admin Actions */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Quick Actions */}
-              <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
+              <Card className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727]">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
                     <Activity className="h-4 w-4 mr-2 text-gray-600 dark:text-gray-400" />
@@ -386,7 +386,7 @@ function AdminHomeContent() {
               </Card>
 
               {/* Gestão de Clientes */}
-              <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
+              <Card className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727]">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
                     <Users className="h-4 w-4 mr-2 text-gray-600 dark:text-gray-400" />
@@ -454,7 +454,7 @@ function AdminHomeContent() {
               </Card>
 
               {/* System Status */}
-              <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
+              <Card className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727]">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">Status do Sistema</CardTitle>
                   <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
