@@ -249,7 +249,7 @@ export default function SimpleCalendarView({
     const firstDayOfMonth = startOfMonth(currentDate).getDay();
 
     return (
-      <div className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727] rounded-lg p-4">
+      <div className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 rounded-lg p-4 transition-all duration-200">
         <div className="grid grid-cols-7 gap-2 mb-4">
           {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((day) => (
             <div
@@ -265,7 +265,7 @@ export default function SimpleCalendarView({
           {Array.from({ length: firstDayOfMonth }).map((_, index) => (
             <div
               key={`empty-${index}`}
-              className="sm:h-16 lg:h-24 p-1 border border-gray-100 dark:border-[#1f1f1f] rounded-md bg-gray-50 dark:bg-[#0f0f0f]"
+              className="sm:h-16 lg:h-24 p-1 border border-gray-200 dark:border-[#272727] rounded-md bg-gray-50 dark:bg-[#0f0f0f]/60 hover:bg-gray-100 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200"
             ></div>
           ))}
 
@@ -277,10 +277,10 @@ export default function SimpleCalendarView({
             return (
               <div
                 key={day.toString()}
-                className={`sm:h-16 lg:h-24 p-1 border rounded-md overflow-hidden cursor-pointer hover:bg-gray-50 dark:hover:bg-[#1f1f1f] transition-colors ${
+                className={`sm:h-16 lg:h-24 p-1 border rounded-md overflow-hidden cursor-pointer hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200 ${
                   isCurrentMonth
-                    ? "border-gray-200 dark:border-[#272727] bg-white dark:bg-[#171717]"
-                    : "border-gray-100 dark:border-[#1f1f1f] bg-gray-50 dark:bg-[#0f0f0f]"
+                    ? "border-gray-200 dark:border-[#272727] bg-white/90 dark:bg-[#171717]/60"
+                    : "border-gray-200 dark:border-[#272727] bg-gray-50 dark:bg-[#0f0f0f]/60"
                 }`}
                 onClick={() => handleDateClick(day)}
               >
@@ -327,7 +327,7 @@ export default function SimpleCalendarView({
   // Render week view (simplified)
   const renderWeekView = () => {
     return (
-      <div className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727] rounded-lg p-4">
+      <div className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 rounded-lg p-4 transition-all duration-200">
         <div className="text-center py-8">
           <p className="text-gray-500 dark:text-gray-400">Visualização semanal em breve.</p>
           <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">
@@ -341,7 +341,7 @@ export default function SimpleCalendarView({
   // Render day view (simplified)
   const renderDayView = () => {
     return (
-      <div className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727] rounded-lg p-4">
+      <div className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 rounded-lg p-4 transition-all duration-200">
         <div className="text-center py-8">
           <p className="text-gray-500 dark:text-gray-400">Visualização diária em breve.</p>
           <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">

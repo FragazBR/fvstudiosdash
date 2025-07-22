@@ -253,15 +253,15 @@ export function MessagesPage() {
             return (
               <div
                 key={conversation.id}
-                className={`p-4 border-b border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 ${
-                  isSelected ? 'bg-blue-50 dark:bg-blue-900/20 border-r-2 border-blue-500' : ''
+                className={`p-4 border-b border-gray-100 dark:border-[#272727] cursor-pointer hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 ${
+                  isSelected ? 'bg-slate-50 dark:bg-slate-900/20 border-r-2 border-slate-500 dark:border-[#64f481]' : ''
                 }`}
                 onClick={() => setSelectedConversation(conversation.id)}
               >
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     {conversation.type === 'group' ? (
-                      <div className="h-12 w-12 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center">
+                      <div className="h-12 w-12 bg-gray-200 dark:bg-[#1f1f1f] rounded-full flex items-center justify-center">
                         <Users className="h-6 w-6 text-gray-600 dark:text-gray-300" />
                       </div>
                     ) : (
@@ -273,7 +273,7 @@ export function MessagesPage() {
                       </Avatar>
                     )}
                     {conversation.type === 'direct' && getUserInfo(conversation.participants[1])?.online && (
-                      <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-white" />
+                      <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-white dark:border-[#171717]" />
                     )}
                   </div>
 
@@ -318,7 +318,7 @@ export function MessagesPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {currentConversation?.type === 'group' ? (
-                  <div className="h-10 w-10 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center">
+                  <div className="h-10 w-10 bg-gray-200 dark:bg-[#1f1f1f] rounded-full flex items-center justify-center">
                     <Users className="h-5 w-5 text-gray-600 dark:text-gray-300" />
                   </div>
                 ) : (
@@ -383,7 +383,7 @@ export function MessagesPage() {
                       className={`px-3 py-2 rounded-lg ${
                         isOwn 
                           ? 'bg-[#64f481] text-black' 
-                          : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600'
+                          : 'bg-white dark:bg-[#1f1f1f] border border-gray-200 dark:border-[#272727]'
                       }`}
                     >
                       <p className="text-sm">{message.content}</p>
@@ -436,7 +436,7 @@ export function MessagesPage() {
       ) : (
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <div className="h-16 w-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="h-16 w-16 bg-gray-100 dark:bg-[#1f1f1f] rounded-full flex items-center justify-center mx-auto mb-4">
               <Send className="h-8 w-8 text-gray-400" />
             </div>
             <h3 className="text-lg font-medium mb-2">Selecione uma conversa</h3>

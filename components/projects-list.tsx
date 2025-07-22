@@ -280,11 +280,11 @@ export default function ProjectsList({
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-white/90 dark:bg-[#171717]/60 border border-gray-200 dark:border-[#272727] rounded-lg overflow-hidden">
           <div className="overflow-x-auto ">
             <table className="w-full whitespace-nowrap">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
+                <tr className="bg-gray-50 dark:bg-[#1e1e1e]/80 border-b border-gray-200 dark:border-[#272727]">
                   <th className="text-left py-3 px-4 font-medium text-gray-500">
                     Project
                   </th>
@@ -375,7 +375,7 @@ function ProjectCard({
   onArchive,
 }: ProjectCardProps) {
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-md">
+    <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 overflow-hidden transition-all hover:shadow-md duration-200">
       <CardHeader className="pb-2">
         <div className="flex flex-wrap gap-2 justify-between items-start">
           <div className="flex items-start space-x-2">
@@ -518,7 +518,7 @@ function ProjectRow({
   onArchive,
 }: ProjectRowProps) {
   return (
-    <tr className="border-b border-gray-200 hover:bg-gray-50">
+    <tr className="border-b border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-colors duration-200">
       <td className="py-3 px-4">
         <div className="flex items-center">
           <div

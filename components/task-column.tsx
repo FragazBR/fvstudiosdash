@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useDrop } from "react-dnd";
+// import { useDrop } from "react-dnd";
 import TaskCard from "./task-card";
 import TaskCreationForm from "./task-creation-form";
 import TaskDetailModal from "./task-detail-modal";
@@ -34,16 +34,17 @@ export default function TaskColumn({
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
-  // Set up drop target
-  const [{ isOver }, drop] = useDrop({
-    accept: "task",
-    drop: (item: { id: string }) => {
-      onTaskMove(item.id, status);
-    },
-    collect: (monitor) => ({
-      isOver: !!monitor.isOver(),
-    }),
-  });
+  // Set up drop target - DISABLED
+  // const [{ isOver }, drop] = useDrop({
+  //   accept: "task",
+  //   drop: (item: { id: string }) => {
+  //     onTaskMove(item.id, status);
+  //   },
+  //   collect: (monitor) => ({
+  //     isOver: !!monitor.isOver(),
+  //   }),
+  // });
+  const isOver = false;
 
   const handleEditTask = (task: Task) => {
     setSelectedTask(task);
@@ -61,9 +62,9 @@ export default function TaskColumn({
   return (
     <>
       <div
-        ref={(node) => {
-          if (node) drop(node);
-        }}
+        // ref={(node) => {
+        //   if (node) drop(node);
+        // }}
         className={`bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm rounded-lg border border-gray-200 dark:border-[#272727] flex flex-col h-[calc(100vh-13rem)] ${
           isOver ? "ring-2 ring-green-400 dark:ring-[#64f481] ring-opacity-50" : ""
         }`}

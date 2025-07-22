@@ -154,7 +154,7 @@ function ContasContent() {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-              <Card>
+              <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -166,7 +166,7 @@ function ContasContent() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -178,7 +178,7 @@ function ContasContent() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -190,7 +190,7 @@ function ContasContent() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -206,7 +206,7 @@ function ContasContent() {
             {/* Contas Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {filteredContas.map((conta) => (
-                <Card key={conta.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+                <Card key={conta.id} className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 hover:shadow-lg transition-all duration-200 cursor-pointer">
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">

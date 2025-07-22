@@ -50,6 +50,9 @@ import {
   DialogTrigger,
 } from "./ui/dialog";
 import DashboardMyTasks from "./dashboard-my-tasks";
+import { DonutChart } from "./donut-chart";
+import { BarChart } from "./bar-chart";
+import { AreaChart } from "./area-chart";
 
 interface Project {
   id: number;

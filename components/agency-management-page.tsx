@@ -542,7 +542,7 @@ export function AgencyManagementPage() {
         <TabsContent value="overview" className="space-y-6">
           {/* Financial Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card>
+            <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -560,7 +560,7 @@ export function AgencyManagementPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -578,7 +578,7 @@ export function AgencyManagementPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -596,7 +596,7 @@ export function AgencyManagementPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -617,7 +617,7 @@ export function AgencyManagementPage() {
 
           {/* Performance Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card>
+            <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Target className="h-5 w-5" />
@@ -649,7 +649,7 @@ export function AgencyManagementPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <AlertCircle className="h-5 w-5" />
@@ -681,7 +681,7 @@ export function AgencyManagementPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <BarChart3 className="h-5 w-5" />
@@ -736,7 +736,7 @@ export function AgencyManagementPage() {
           {/* Contracts List */}
           <div className="space-y-4">
             {filteredContracts.map((contract) => (
-              <Card key={contract.id} className="cursor-pointer hover:shadow-md transition-shadow"
+              <Card key={contract.id} className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 cursor-pointer hover:shadow-md transition-all duration-200"
                     onClick={() => setSelectedContract(contract)}>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -805,7 +805,7 @@ export function AgencyManagementPage() {
         <TabsContent value="profitability" className="space-y-6">
           <div className="grid grid-cols-1 gap-4">
             {mockProfitability.map((client) => (
-              <Card key={client.clientId}>
+              <Card key={client.clientId} className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
@@ -892,7 +892,7 @@ export function AgencyManagementPage() {
 
           <div className="space-y-6">
             {mockClientGrowth.map((client, index) => (
-              <Card key={index} className="p-6">
+              <Card key={index} className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 p-6 transition-all duration-200">
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h3 className="text-xl font-bold">{client.clientName}</h3>
@@ -1070,7 +1070,7 @@ export function AgencyManagementPage() {
             </div>
           </div>
 
-          <Card className="p-6">
+          <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 p-6 transition-all duration-200">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-xl font-bold">Performance da Agência - 2024</h3>
@@ -1225,7 +1225,7 @@ export function AgencyManagementPage() {
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {mockAgencyGrowth.quarterlyProgress.map((quarter, index) => (
-                  <Card key={index} className="p-4">
+                  <Card key={index} className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 p-4 transition-all duration-200">
                     <div className="flex items-center justify-between mb-2">
                       <h5 className="font-medium">{quarter.quarter}</h5>
                       <Badge variant={index === 0 ? 'secondary' : index === 1 ? 'default' : 'outline'}>
@@ -1297,7 +1297,7 @@ export function AgencyManagementPage() {
         {/* Forecast Tab */}
         <TabsContent value="forecast" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
+            <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
               <CardHeader>
                 <CardTitle>Projeção de Receita</CardTitle>
               </CardHeader>
@@ -1319,7 +1319,7 @@ export function AgencyManagementPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
               <CardHeader>
                 <CardTitle>Pipeline de Renovações</CardTitle>
               </CardHeader>
@@ -1345,7 +1345,7 @@ export function AgencyManagementPage() {
 
         {/* Planning Tab */}
         <TabsContent value="planning" className="space-y-6">
-          <Card>
+          <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
             <CardHeader>
               <CardTitle>Planejamento Estratégico</CardTitle>
               <CardDescription>
@@ -1386,7 +1386,7 @@ function ContractDetailModal({ contract, onClose }: { contract: ClientContract; 
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
+      <div className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727] rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold">{contract.clientName}</h2>
           <Button variant="ghost" onClick={onClose}>×</Button>

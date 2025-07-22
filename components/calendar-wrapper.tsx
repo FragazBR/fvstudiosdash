@@ -19,7 +19,7 @@ export default function CalendarWrapper(props: CalendarWrapperProps) {
   if (!isMounted) {
     return (
       <div className="">
-        <div className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727] rounded-lg">
+        <div className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 rounded-lg transition-all duration-200">
           <div className="flex items-center justify-center h-[500px]">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 dark:border-[#64f481]"></div>
           </div>

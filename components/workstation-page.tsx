@@ -224,7 +224,7 @@ export function WorkstationPage() {
         {filteredProjects.map((project) => (
           <Card 
             key={project.id} 
-            className="cursor-pointer hover:shadow-lg transition-shadow"
+            className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 cursor-pointer hover:shadow-lg transition-all duration-200"
             onClick={() => setSelectedProject(project)}
           >
             <CardHeader>
@@ -323,7 +323,7 @@ function ProjectDetailModal({ project, onClose }: { project: Project; onClose: (
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727] rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
@@ -346,7 +346,7 @@ function ProjectDetailModal({ project, onClose }: { project: Project; onClose: (
                 const isNext = index === currentStageIndex + 1
 
                 return (
-                  <Card key={stage.id} className={`${isActive ? 'ring-2 ring-[#64f481]' : ''}`}>
+                  <Card key={stage.id} className={`bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200 ${isActive ? 'ring-2 ring-[#64f481]' : ''}`}>
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3 mb-2">
                         <div className={`h-3 w-3 rounded-full ${
@@ -380,7 +380,7 @@ function ProjectDetailModal({ project, onClose }: { project: Project; onClose: (
               {mockAIAgents.filter(agent => 
                 agent.workflowStage === project.currentStage
               ).map((agent) => (
-                <Card key={agent.id}>
+                <Card key={agent.id} className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3 mb-2">
                       <Bot className="h-5 w-5 text-[#64f481]" />
@@ -405,7 +405,7 @@ function ProjectDetailModal({ project, onClose }: { project: Project; onClose: (
 
           {/* Team & Timeline */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
+            <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
               <CardHeader>
                 <CardTitle className="text-lg">Equipe</CardTitle>
               </CardHeader>
@@ -429,7 +429,7 @@ function ProjectDetailModal({ project, onClose }: { project: Project; onClose: (
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
               <CardHeader>
                 <CardTitle className="text-lg">Cronograma</CardTitle>
               </CardHeader>
