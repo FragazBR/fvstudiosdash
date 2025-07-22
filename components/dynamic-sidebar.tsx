@@ -60,14 +60,15 @@ export function DynamicSidebar({ open, setOpen }: DynamicSidebarProps) {
           color: "text-red-600"
         });
         break;
-      case 'agency':
+      case 'agency_owner':
+      case 'agency_staff':
         items.push({ 
           href: "/agency", 
           label: "Dashboard", 
           icon: Building
         });
         break;
-      case 'independent':
+      case 'independent_producer':
         items.push({ 
           href: "/independent", 
           label: "Painel", 
@@ -81,14 +82,15 @@ export function DynamicSidebar({ open, setOpen }: DynamicSidebarProps) {
           icon: Camera
         });
         break;
-      case 'free':
+      case 'free_user':
         items.push({ 
           href: "/free", 
           label: "Dashboard", 
           icon: Home
         });
         break;
-      case 'client':
+      case 'agency_client':
+      case 'independent_client':
         items.push({ 
           href: "/client", 
           label: "Painel", 
@@ -138,7 +140,7 @@ export function DynamicSidebar({ open, setOpen }: DynamicSidebarProps) {
         href: "/kanban", 
         label: "Kanban", 
         icon: FolderKanban,
-        isLocked: userRole === 'free'
+        isLocked: userRole === 'free_user'
       });
     }
 
@@ -189,14 +191,15 @@ export function DynamicSidebar({ open, setOpen }: DynamicSidebarProps) {
           bg: 'bg-red-50 dark:bg-red-900/20',
           icon: Shield
         };
-      case 'agency':
+      case 'agency_owner':
+      case 'agency_staff':
         return { 
           label: USER_ROLE_LABELS[userRole], 
           color: 'text-blue-600', 
           bg: 'bg-blue-50 dark:bg-blue-900/20',
           icon: Building
         };
-      case 'independent':
+      case 'independent_producer':
         return { 
           label: USER_ROLE_LABELS[userRole], 
           color: 'text-green-600', 
@@ -210,14 +213,15 @@ export function DynamicSidebar({ open, setOpen }: DynamicSidebarProps) {
           bg: 'bg-purple-50 dark:bg-purple-900/20',
           icon: Camera
         };
-      case 'free':
+      case 'free_user':
         return { 
           label: USER_ROLE_LABELS[userRole], 
           color: 'text-gray-600', 
           bg: 'bg-gray-50 dark:bg-gray-900/20',
           icon: Home
         };
-      case 'client':
+      case 'agency_client':
+      case 'independent_client':
         return { 
           label: USER_ROLE_LABELS[userRole], 
           color: 'text-indigo-600', 
@@ -280,7 +284,7 @@ export function DynamicSidebar({ open, setOpen }: DynamicSidebarProps) {
               <p className="text-sm font-medium truncate">{user.name || user.email}</p>
               <p className={cn("text-xs", roleInfo.color)}>{roleInfo.label}</p>
             </div>
-            {userRole === 'free' && (
+            {userRole === 'free_user' && (
               <Crown className="h-4 w-4 text-yellow-500" />
             )}
           </div>
@@ -352,7 +356,7 @@ export function DynamicSidebar({ open, setOpen }: DynamicSidebarProps) {
         </nav>
 
         {/* Upgrade Button para usuários gratuitos */}
-        {userRole === 'free' && (
+        {userRole === 'free_user' && (
           <div className="p-4 border-t border-gray-200 dark:border-gray-800">
             <Button 
               className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"

@@ -30,7 +30,7 @@ import { cn } from "@/lib/utils";
 import { WORKFLOW_STAGES, type WorkflowStage, type Project } from "@/types/workflow";
 
 // Mock data para demonstração
-const mockProject: Project = {
+const mockProject: any = {
   id: "1",
   name: "Campanha Digital - TechCorp",
   client: {

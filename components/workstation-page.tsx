@@ -29,7 +29,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 // Mock data para demonstração
-const mockProjects: Project[] = [
+const mockProjects: any[] = [
   {
     id: '1',
     name: 'Campanha Nike - Summer Collection',
@@ -268,11 +268,11 @@ export function WorkstationPage() {
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-gray-400" />
                   <div className="flex -space-x-2">
-                    {project.team.slice(0, 3).map((member) => (
+                    {project.team.slice(0, 3).map((member: any) => (
                       <Avatar key={member.id} className="h-6 w-6 border-2 border-white">
                         <AvatarImage src={member.avatar} />
                         <AvatarFallback className="text-xs">
-                          {member.name.split(' ').map(n => n[0]).join('')}
+                          {member.name.split(' ').map((n: any) => n[0]).join('')}
                         </AvatarFallback>
                       </Avatar>
                     ))}
@@ -416,7 +416,7 @@ function ProjectDetailModal({ project, onClose }: { project: Project; onClose: (
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={member.avatar} />
                         <AvatarFallback>
-                          {member.name.split(' ').map(n => n[0]).join('')}
+                          {member.name.split(' ').map((n: any) => n[0]).join('')}
                         </AvatarFallback>
                       </Avatar>
                       <div>

@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { useUser } from '@/hooks/useUser'
-import { isAgencyOwnerOrAdmin, getRoleDisplayName } from '@/lib/permissions'
+import { isAgencyOwnerOrAdmin, USER_ROLE_LABELS } from '@/lib/permissions'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Shield, AlertTriangle, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -26,7 +26,7 @@ export function AgencyPermissionGuard({ children, fallback }: PermissionGuardPro
   }
 
   // Verifica se o usuário pode acessar o módulo Agency
-  const canAccess = isAgencyOwnerOrAdmin(user?.role)
+  const canAccess = isAgencyOwnerOrAdmin(user?.role || null)
 
   if (!canAccess) {
     if (fallback) {
@@ -79,7 +79,7 @@ export function AgencyPermissionGuard({ children, fallback }: PermissionGuardPro
                 </div>
                 <div className="flex justify-between">
                   <span>Função:</span>
-                  <span className="font-medium">{getRoleDisplayName(user?.role)}</span>
+                  <span className="font-medium">{USER_ROLE_LABELS[user?.role as keyof typeof USER_ROLE_LABELS] || user?.role}</span>
                 </div>
               </div>
             </div>
@@ -111,8 +111,8 @@ export function usePermissions() {
   const { user } = useUser()
   
   return {
-    canAccessAgency: isAgencyOwnerOrAdmin(user?.role),
+    canAccessAgency: isAgencyOwnerOrAdmin(user?.role || null),
     userRole: user?.role,
-    roleDisplayName: getRoleDisplayName(user?.role)
+    roleDisplayName: USER_ROLE_LABELS[user?.role as keyof typeof USER_ROLE_LABELS] || user?.role
   }
 }

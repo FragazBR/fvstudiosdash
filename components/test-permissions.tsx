@@ -45,10 +45,10 @@ export function TestPermissions() {
   const userPermissions = getUserPermissions(userRole);
   
   // Teste das funções de compatibilidade
-  const isOwnerOrAdmin = isAgencyOwnerOrAdmin(user.role);
+  const isOwnerOrAdmin = isAgencyOwnerOrAdmin(user?.role || null);
   const canAccessAdmin = canAccess(userRole, ['admin']);
-  const canAccessAgency = canAccess(userRole, ['admin', 'agency']);
-  const canAccessMultiple = canAccess(userRole, ['admin', 'agency', 'independent']);
+  const canAccessAgency = canAccess(userRole, ['admin', 'agency_owner', 'agency_staff']);
+  const canAccessMultiple = canAccess(userRole, ['admin', 'agency_owner', 'agency_staff', 'independent_producer']);
 
   const permissionTests = [
     {
@@ -176,21 +176,21 @@ export function TestPermissions() {
             </div>
           </PermissionGuard>
 
-          <PermissionGuard allowedRoles={['admin', 'agency']}>
+          <PermissionGuard allowedRoles={['admin', 'agency_owner', 'agency_staff']}>
             <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <div className="font-medium text-blue-800">Área Agency+</div>
               <div className="text-sm text-blue-600">Admin e Agency podem ver</div>
             </div>
           </PermissionGuard>
 
-          <PermissionGuard allowedRoles={['admin', 'agency', 'independent']}>
+          <PermissionGuard allowedRoles={['admin', 'agency_owner', 'agency_staff', 'independent_producer']}>
             <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
               <div className="font-medium text-green-800">Área Profissional</div>
               <div className="text-sm text-green-600">Usuários profissionais</div>
             </div>
           </PermissionGuard>
 
-          <PermissionGuard allowedRoles={['admin', 'agency', 'independent', 'influencer', 'free']}>
+          <PermissionGuard allowedRoles={['admin', 'agency_owner', 'agency_staff', 'independent_producer', 'influencer', 'free_user']}>
             <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
               <div className="font-medium text-gray-800">Área Geral</div>
               <div className="text-sm text-gray-600">Todos os usuários logados</div>
@@ -199,7 +199,7 @@ export function TestPermissions() {
 
           {/* Exemplo com componente bloqueado para free */}
           <PermissionGuard 
-            allowedRoles={['admin', 'agency', 'independent', 'influencer']}
+            allowedRoles={['admin', 'agency_owner', 'agency_staff', 'independent_producer', 'influencer']}
             showUnauthorized={true}
           >
             <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">

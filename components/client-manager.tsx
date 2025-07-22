@@ -29,10 +29,8 @@ import {
   MoreHorizontal
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Client } from "@/types/workflow";
-
-// Mock data para demonstração
-const mockClients: Client[] = [
+// Mock data para demonstração  
+const mockClients: any[] = [
   {
     id: "client-1",
     name: "TechCorp Solutions",
@@ -108,7 +106,7 @@ interface ClientFormData {
 }
 
 export function ClientManager() {
-  const [clients, setClients] = useState<Client[]>(mockClients);
+  const [clients, setClients] = useState<any[]>(mockClients);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedIndustry, setSelectedIndustry] = useState<string>("all");
   const [selectedSize, setSelectedSize] = useState<string>("all");
@@ -164,7 +162,7 @@ export function ClientManager() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const newClient: Client = {
+    const newClient: any = {
       id: `client-${Date.now()}`,
       name: formData.name,
       contact: {
@@ -477,7 +475,7 @@ export function ClientManager() {
                   Objetivos
                 </div>
                 <div className="flex flex-wrap gap-1 ml-6">
-                  {client.goals.slice(0, 2).map((goal, index) => (
+                  {client.goals.slice(0, 2).map((goal: any, index: number) => (
                     <Badge key={index} variant="outline" className="text-xs">
                       {goal}
                     </Badge>

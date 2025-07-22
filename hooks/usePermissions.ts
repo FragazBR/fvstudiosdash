@@ -119,16 +119,18 @@ export function usePermissions() {
     getRoleBadge: () => {
       const badges = {
         admin: { label: 'FVStudios', color: 'bg-red-100 text-red-800', icon: '🛡️' },
-        agency: { label: 'Agência', color: 'bg-blue-100 text-blue-800', icon: '🏢' },
-        independent: { label: 'Independente', color: 'bg-green-100 text-green-800', icon: '🎯' },
+        agency_owner: { label: 'Proprietário', color: 'bg-blue-100 text-blue-800', icon: '🏢' },
+        agency_staff: { label: 'Colaborador', color: 'bg-blue-50 text-blue-700', icon: '👔' },
+        agency_client: { label: 'Cliente Agência', color: 'bg-indigo-100 text-indigo-800', icon: '👤' },
+        independent_producer: { label: 'Independente', color: 'bg-green-100 text-green-800', icon: '🎯' },
+        independent_client: { label: 'Cliente Independente', color: 'bg-emerald-100 text-emerald-800', icon: '🤝' },
         influencer: { label: 'Criador', color: 'bg-purple-100 text-purple-800', icon: '🎬' },
-        free: { label: 'Gratuito', color: 'bg-gray-100 text-gray-800', icon: '🆓' },
-        client: { label: 'Cliente', color: 'bg-indigo-100 text-indigo-800', icon: '👤' }
+        free_user: { label: 'Gratuito', color: 'bg-gray-100 text-gray-800', icon: '🆓' }
       }
-      return badges[userRole] || badges.free
+      return badges[userRole] || badges.free_user
     },
     
-    shouldShowUpgrade: () => ['free', 'influencer'].includes(userRole),
+    shouldShowUpgrade: () => ['free_user', 'influencer'].includes(userRole),
     
     getNavigation: () => {
       // Retorna itens de navegação baseados nas permissões
@@ -190,23 +192,23 @@ export function useRoleCheck() {
   const userRole = user?.role
 
   return {
-    isAdmin: () => isAdmin(userRole),
-    isAgency: () => isAgency(userRole),
-    isIndependent: () => isIndependent(userRole),
-    isInfluencer: () => isInfluencer(userRole),
-    isFree: () => isFree(userRole),
-    isClient: () => isClient(userRole),
+    isAdmin: () => isAdmin(userRole || null),
+    isAgency: () => isAgency(userRole || null),
+    isIndependent: () => isIndependent(userRole || null),
+    isInfluencer: () => isInfluencer(userRole || null),
+    isFree: () => isFree(userRole || null),
+    isClient: () => isClient(userRole || null),
     
     // Manter compatibilidade
-    isAgencyOwnerOrAdmin: () => isAgencyOwnerOrAdmin(userRole),
+    isAgencyOwnerOrAdmin: () => isAgencyOwnerOrAdmin(userRole || null),
     
     // Grupos
-    isPremium: () => isPremiumUser(userRole),
+    isPremium: () => isPremiumUser(userRole || null),
     
     // Capacidades
-    canUseAI: () => canUseAI(userRole),
-    canManageTeam: () => canManageTeam(userRole),
-    canManageClients: () => canManageClients(userRole),
+    canUseAI: () => canUseAI(userRole || null),
+    canManageTeam: () => canManageTeam(userRole || null),
+    canManageClients: () => canManageClients(userRole || null),
   }
 }
 
