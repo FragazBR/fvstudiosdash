@@ -14,7 +14,7 @@ export default async function Kanban() {
     .eq("id", user.id)
     .single()
 
-  if (!profile || !profile.role || profile.role !== "agency") {
+  if (!profile || !profile.role || !["admin", "agency_owner", "agency_staff", "independent_producer", "influencer"].includes(profile.role)) {
     redirect("/unauthorized")
   }
 
