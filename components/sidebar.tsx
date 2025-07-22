@@ -267,11 +267,14 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   // Verificar se o usuário pode acessar o módulo Agency (donos de agência, produtores independentes e admin)
   const canAccessAgency = user?.role && ['admin', 'agency_owner', 'independent_producer'].includes(user.role);
 
+  // Verificar se o usuário pode acessar o módulo Agency Manager
+  const canAccessAgencyManager = user?.role === 'agency_manager';
+
   // Verificar se é admin para mostrar opções administrativas
   const isAdmin = user?.role === 'admin';
 
-  // Verificar se pode ver a aba Contas (donos de agência, colaboradores e produtores independentes)
-  const canAccessAccounts = user?.role && ['admin', 'agency_owner', 'agency_staff', 'independent_producer'].includes(user.role);
+  // Verificar se pode ver a aba Contas (donos de agência, gerentes, colaboradores e produtores independentes)
+  const canAccessAccounts = user?.role && ['admin', 'agency_owner', 'agency_manager', 'agency_staff', 'independent_producer'].includes(user.role);
 
   return (
     <>
@@ -336,6 +339,9 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
             <NavItem href="/ai-agents" icon={Bot}>IA Agents</NavItem>
             {canAccessAgency && (
               <NavItem href="/agency" icon={Building2}>Agência</NavItem>
+            )}
+            {canAccessAgencyManager && (
+              <NavItem href="/agency-manager" icon={Users}>Gestão da Agência</NavItem>
             )}
             {isAdmin && (
               <NavItem href="/admin/users" icon={UserCog}>Gerenciar Usuários</NavItem>

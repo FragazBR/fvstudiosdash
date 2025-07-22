@@ -80,6 +80,7 @@ export async function middleware(req: NextRequest) {
     const roleRoutes = {
       admin: '/admin',
       agency_owner: '/agency',
+      agency_manager: '/agency-manager',
       agency_staff: '/agency',
       agency_client: '/client',
       independent_producer: '/independent',

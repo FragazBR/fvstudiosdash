@@ -120,6 +120,7 @@ export function usePermissions() {
       const badges = {
         admin: { label: 'FVStudios', color: 'bg-red-100 text-red-800', icon: '🛡️' },
         agency_owner: { label: 'Proprietário', color: 'bg-blue-100 text-blue-800', icon: '🏢' },
+        agency_manager: { label: 'Gerente', color: 'bg-cyan-100 text-cyan-800', icon: '👨‍💼' },
         agency_staff: { label: 'Colaborador', color: 'bg-blue-50 text-blue-700', icon: '👔' },
         agency_client: { label: 'Cliente Agência', color: 'bg-indigo-100 text-indigo-800', icon: '👤' },
         independent_producer: { label: 'Independente', color: 'bg-green-100 text-green-800', icon: '🎯' },
@@ -141,7 +142,11 @@ export function usePermissions() {
       }
       
       if (permissions.isAgency) {
-        navItems.push({ href: '/agency', label: 'Agência', icon: 'Building2' })
+        if (userRole === 'agency_manager') {
+          navItems.push({ href: '/agency-manager', label: 'Gestão da Agência', icon: 'Users' })
+        } else {
+          navItems.push({ href: '/agency', label: 'Agência', icon: 'Building2' })
+        }
       }
       
       if (permissions.isIndependent) {

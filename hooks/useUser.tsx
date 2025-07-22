@@ -72,9 +72,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
               avatar_url: profile.avatar_url || undefined,
               // Definir permissões baseadas no role
               department_permissions: getDepartmentPermissions(profile.role, profile.specialization_id),
-              can_assign_tasks: ['agency_owner', 'agency_staff'].includes(profile.role),
-              can_view_team_metrics: ['agency_owner', 'agency_staff'].includes(profile.role),
-              can_manage_team: profile.role === 'agency_owner',
+              can_assign_tasks: ['agency_owner', 'agency_manager', 'agency_staff'].includes(profile.role),
+              can_view_team_metrics: ['agency_owner', 'agency_manager', 'agency_staff'].includes(profile.role),
+              can_manage_team: ['agency_owner', 'agency_manager'].includes(profile.role),
             });
           } else {
             // Se não tem perfil, cria um básico
@@ -148,6 +148,14 @@ function getDepartmentPermissions(role?: string, specializationId?: string): Dep
       return [
         DepartmentPermission.VIEW_ALL,
         DepartmentPermission.MANAGE_ALL,
+        DepartmentPermission.MANAGE_DEPARTMENT,
+        DepartmentPermission.VIEW_DEPARTMENT,
+        DepartmentPermission.VIEW_OWN
+      ];
+    case 'agency_manager':
+      // Gerentes podem ver todos os departamentos e gerenciar equipes, mas não têm acesso total
+      return [
+        DepartmentPermission.VIEW_ALL,
         DepartmentPermission.MANAGE_DEPARTMENT,
         DepartmentPermission.VIEW_DEPARTMENT,
         DepartmentPermission.VIEW_OWN

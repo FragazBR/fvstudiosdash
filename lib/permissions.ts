@@ -1,12 +1,13 @@
 // lib/permissions.ts
 // Sistema completo de permissões para FVStudios Dashboard
 
-export type UserRole = 'admin' | 'agency_owner' | 'agency_staff' | 'agency_client' | 'independent_producer' | 'independent_client' | 'influencer' | 'free_user'
+export type UserRole = 'admin' | 'agency_owner' | 'agency_manager' | 'agency_staff' | 'agency_client' | 'independent_producer' | 'independent_client' | 'influencer' | 'free_user'
 
 // Labels amigáveis para os roles
 export const USER_ROLE_LABELS: Record<UserRole, string> = {
   admin: 'Administrador',
   agency_owner: 'Proprietário de Agência',
+  agency_manager: 'Gerente de Agência',
   agency_staff: 'Colaborador de Agência',
   agency_client: 'Cliente de Agência',
   independent_producer: 'Produtor Independente',
@@ -20,6 +21,7 @@ export interface UserPermissions {
   // Dashboard access
   canAccessAdminDashboard: boolean
   canAccessAgencyDashboard: boolean
+  canAccessAgencyManagerDashboard: boolean
   canAccessIndependentDashboard: boolean
   canAccessInfluencerDashboard: boolean
   canAccessFreeDashboard: boolean
@@ -76,6 +78,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
   admin: {
     canAccessAdminDashboard: true,
     canAccessAgencyDashboard: true,
+    canAccessAgencyManagerDashboard: true,
     canAccessIndependentDashboard: true,
     canAccessInfluencerDashboard: true,
     canAccessFreeDashboard: true,
@@ -114,6 +117,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
   agency_owner: {
     canAccessAdminDashboard: false,
     canAccessAgencyDashboard: true,
+    canAccessAgencyManagerDashboard: false,
     canAccessIndependentDashboard: false,
     canAccessInfluencerDashboard: false,
     canAccessFreeDashboard: false,
@@ -149,9 +153,49 @@ export const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
     maxStorageGB: 100
   },
   
+  agency_manager: {
+    canAccessAdminDashboard: false,
+    canAccessAgencyDashboard: false,
+    canAccessAgencyManagerDashboard: true,
+    canAccessIndependentDashboard: false,
+    canAccessInfluencerDashboard: false,
+    canAccessFreeDashboard: false,
+    canAccessClientDashboard: false,
+    canManageAllClients: false,
+    canManageOwnClients: true,
+    canViewClientReports: true,
+    canCreateClientAccounts: true,
+    canAccessAIAgents: true,
+    canAccessAdvancedAI: false,
+    canAccessBasicAI: true,
+    canInviteCollaborators: true,
+    canManageTeam: true,
+    canAssignTasks: true,
+    canViewTeamMetrics: true,
+    canCreateProjects: true,
+    canManageAllProjects: false,
+    canManageOwnProjects: true,
+    canViewProjectAnalytics: true,
+    canAccessSystemSettings: false,
+    canManageUserRoles: false,
+    canViewSystemLogs: false,
+    canExportData: false, // Sem acesso a dados financeiros
+    canChatWithClients: true,
+    canChatWithTeam: true,
+    canSendNotifications: true,
+    canGenerateAdvancedReports: false, // Sem relatórios financeiros avançados
+    canGenerateBasicReports: true,
+    canScheduleReports: false,
+    maxProjects: 50,
+    maxClients: 25,
+    maxAIRequests: 2000,
+    maxStorageGB: 50
+  },
+  
   agency_staff: {
     canAccessAdminDashboard: false,
     canAccessAgencyDashboard: true,
+    canAccessAgencyManagerDashboard: false,
     canAccessIndependentDashboard: false,
     canAccessInfluencerDashboard: false,
     canAccessFreeDashboard: false,
@@ -190,6 +234,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
   agency_client: {
     canAccessAdminDashboard: false,
     canAccessAgencyDashboard: false,
+    canAccessAgencyManagerDashboard: false,
     canAccessIndependentDashboard: false,
     canAccessInfluencerDashboard: false,
     canAccessFreeDashboard: false,
@@ -228,6 +273,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
   independent_producer: {
     canAccessAdminDashboard: false,
     canAccessAgencyDashboard: false,
+    canAccessAgencyManagerDashboard: false,
     canAccessIndependentDashboard: true,
     canAccessInfluencerDashboard: false,
     canAccessFreeDashboard: false,
@@ -266,6 +312,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
   influencer: {
     canAccessAdminDashboard: false,
     canAccessAgencyDashboard: false,
+    canAccessAgencyManagerDashboard: false,
     canAccessIndependentDashboard: false,
     canAccessInfluencerDashboard: true,
     canAccessFreeDashboard: false,
@@ -304,6 +351,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
   independent_client: {
     canAccessAdminDashboard: false,
     canAccessAgencyDashboard: false,
+    canAccessAgencyManagerDashboard: false,
     canAccessIndependentDashboard: false,
     canAccessInfluencerDashboard: false,
     canAccessFreeDashboard: false,
@@ -342,6 +390,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
   free_user: {
     canAccessAdminDashboard: false,
     canAccessAgencyDashboard: false,
+    canAccessAgencyManagerDashboard: false,
     canAccessIndependentDashboard: false,
     canAccessInfluencerDashboard: false,
     canAccessFreeDashboard: true,
@@ -403,7 +452,7 @@ export function isAdmin(role: string | null): boolean {
 }
 
 export function isAgency(role: string | null): boolean {
-  return role === 'agency_owner' || role === 'agency_staff' || role === 'agency_client'
+  return role === 'agency_owner' || role === 'agency_manager' || role === 'agency_staff' || role === 'agency_client'
 }
 
 export function isIndependent(role: string | null): boolean {
@@ -423,7 +472,7 @@ export function isClient(role: string | null): boolean {
 }
 
 export function isPremiumUser(role: string | null): boolean {
-  return ['admin', 'agency_owner', 'agency_staff', 'independent_producer'].includes(role || '')
+  return ['admin', 'agency_owner', 'agency_manager', 'agency_staff', 'independent_producer'].includes(role || '')
 }
 
 export function canManageClients(role: string | null): boolean {
@@ -462,6 +511,8 @@ export function canAccessDashboard(role: string | null, dashboardType: string): 
       return permissions.canAccessAdminDashboard
     case 'agency':
       return permissions.canAccessAgencyDashboard
+    case 'agency-manager':
+      return permissions.canAccessAgencyManagerDashboard
     case 'independent':
       return permissions.canAccessIndependentDashboard
     case 'influencer':
@@ -496,9 +547,9 @@ export function getFeatureFlags(role: UserRole): FeatureFlags {
     teamCollaboration: permissions.canManageTeam || permissions.canInviteCollaborators,
     clientManagement: permissions.canManageOwnClients,
     unlimitedProjects: permissions.maxProjects === -1,
-    prioritySupport: ['admin', 'agency_owner', 'independent_producer'].includes(role),
+    prioritySupport: ['admin', 'agency_owner', 'agency_manager', 'independent_producer'].includes(role),
     customBranding: ['admin', 'agency_owner'].includes(role),
-    apiAccess: ['admin', 'agency_owner', 'independent_producer'].includes(role)
+    apiAccess: ['admin', 'agency_owner', 'agency_manager', 'independent_producer'].includes(role)
   }
 }
 

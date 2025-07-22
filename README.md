@@ -16,7 +16,7 @@ O **FVStudios Dashboard** é uma solução completa que permite:
 - 💰 **Sistema de Vendas** automatizado com Stripe
 - 📊 **Analytics** integrados (Google, Facebook, LinkedIn Ads)
 
-## 🎭 Sistema de Usuários (8 Roles)
+## 🎭 Sistema de Usuários (9 Roles)
 
 ```mermaid
 graph TD
@@ -25,17 +25,19 @@ graph TD
     A --> G[⭐ Influencer]
     A --> H[🆓 Free User]
     
-    B --> C[👨‍💼 Agency Staff]
-    B --> D[🤝 Agency Client]
+    B --> C[👨‍💼 Agency Manager]
+    B --> D[👨‍💻 Agency Staff]
+    B --> F[🤝 Agency Client]
     
-    E --> F[🤝 Independent Client]
+    E --> I[🤝 Independent Client]
 ```
 
 | Role | Descrição | Dashboard |
 |------|-----------|-----------|
 | 👑 **admin** | Administrador global | `/admin` |
 | 🏢 **agency_owner** | Proprietário de agência | `/agency` |
-| 👨‍💼 **agency_staff** | Funcionário de agência | `/agency` |
+| 👨‍💼 **agency_manager** | Gerente de agência (sem dados financeiros) | `/agency-manager` |
+| 👨‍💻 **agency_staff** | Funcionário de agência | `/agency` |
 | 🤝 **agency_client** | Cliente de agência | `/client` |
 | 🎯 **independent_producer** | Produtor independente | `/independent` |
 | 🤝 **independent_client** | Cliente de produtor | `/client` |
