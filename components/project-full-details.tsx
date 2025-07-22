@@ -49,10 +49,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import KanbanTaskForm from "./kanban-task-form";
-import { AreaChart } from "./area-chart";
-import { DonutChart } from "./donut-chart";
-import { BarChart } from "./bar-chart";
 import DashboardMyTasks from "./dashboard-my-tasks";
 
 interface Project {
