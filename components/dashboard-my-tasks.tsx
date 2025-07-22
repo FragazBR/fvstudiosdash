@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-// import { DndProvider } from "react-dnd"
-// import { HTML5Backend } from "react-dnd-html5-backend"
+import { DndProvider } from "react-dnd"
+import { HTML5Backend } from "react-dnd-html5-backend"
 import TaskViewHeader from "./task-view-header"
 import TaskColumn from "./task-column"
 import type { Task, TaskStatus } from "@/types/task"
@@ -155,7 +155,7 @@ export default function DashboardMyTasks() {
     <div className="flex flex-col h-full">
       <TaskViewHeader activeView={activeView} onViewChange={handleViewChange} />
       <div className="flex-1 p-3 lg:p-6">
-        {/* <DndProvider backend={HTML5Backend}> */}
+        <DndProvider backend={HTML5Backend}>
           <div className="grid grid-cols-1 md:grid-cols-2  xl:grid-cols-3 2xl:grid-cols-5 gap-6 h-full">
             <TaskColumn
               title="Backlog"
@@ -198,7 +198,7 @@ export default function DashboardMyTasks() {
               onTaskUpdated={handleTaskUpdated}
             />
           </div>
-        {/* </DndProvider> */}
+        </DndProvider>
       </div>
     </div>
   )

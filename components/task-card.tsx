@@ -1,6 +1,7 @@
 "use client"
 
-// import { useDrag } from "react-dnd"
+import { useRef, useEffect } from "react"
+import { useDrag } from "react-dnd"
 import {
   Calendar,
   Paperclip,
@@ -34,18 +35,23 @@ interface TaskCardProps {
 
 // Update the function signature to include the onClick prop
 export default function TaskCard({ task, onClick }: TaskCardProps) {
+  const dragRef = useRef<HTMLDivElement>(null)
+  
   // Calculate progress based on completed subtasks
   const progress = task.subtasks.total > 0 ? Math.round((task.subtasks.completed / task.subtasks.total) * 100) : 0
 
-  // Set up drag source - DISABLED
-  // const [{ isDragging }, drag] = useDrag({
-  //   type: "task",
-  //   item: { id: task.id },
-  //   collect: (monitor) => ({
-  //     isDragging: !!monitor.isDragging(),
-  //   }),
-  // })
-  const isDragging = false;
+  // Set up drag source
+  const [{ isDragging }, drag] = useDrag({
+    type: "task",
+    item: { id: task.id },
+    collect: (monitor) => ({
+      isDragging: !!monitor.isDragging(),
+    }),
+  })
+
+  useEffect(() => {
+    drag(dragRef.current)
+  }, [drag])
 
   // Priority badge color
   const priorityColor = {
@@ -56,7 +62,7 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
 
   return (
     <div
-      // ref={drag}
+      ref={dragRef}
       className={`bg-white/90 dark:bg-[#1f1f1f]/80 backdrop-blur-sm rounded-lg border border-gray-200 dark:border-[#272727] hover:border-gray-300 dark:hover:border-[#64f481]/30 shadow-sm hover:shadow-md transition-all cursor-grab ${
         isDragging ? "opacity-50" : "opacity-100"
       }`}

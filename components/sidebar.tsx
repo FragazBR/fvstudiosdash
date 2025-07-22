@@ -83,6 +83,9 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   // Verificar se é admin para mostrar opções administrativas
   const isAdmin = user?.role === 'admin';
 
+  // Verificar se pode ver a aba Contas (donos de agência, colaboradores e produtores independentes)
+  const canAccessAccounts = user?.role && ['admin', 'agency', 'agency_owner', 'agency_staff', 'independent'].includes(user.role);
+
   return (
     <>
       {open && (
@@ -135,7 +138,9 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
           <nav className="space-y-1 mb-6">
             <NavItem href={getHomePage()} icon={Home}>Home</NavItem>
             <NavItem href="/dashboard" icon={LayoutGrid}>Dashboard</NavItem>
-            <NavItem href="/contas" icon={Users}>Contas</NavItem>
+            {canAccessAccounts && (
+              <NavItem href="/contas" icon={Users}>Contas</NavItem>
+            )}
             <NavItem href="/projects" icon={FileText}>Projetos</NavItem>
             <NavItem href="/my-tasks" icon={CheckSquare}>Tarefas</NavItem>
             <NavItem href="/workstation" icon={LayoutGrid}>Estação de Trabalho</NavItem>
