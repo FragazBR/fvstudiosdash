@@ -15,6 +15,7 @@ interface UserProfile {
   skills?: string[];
   phone?: string;
   avatar_url?: string;
+  company?: string;
   // Permissões departamentais
   department_permissions?: DepartmentPermission[];
   can_assign_tasks?: boolean;
