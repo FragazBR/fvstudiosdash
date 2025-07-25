@@ -28,7 +28,8 @@ import {
   Eye,
   RefreshCw,
   ArrowUp,
-  FileText
+  FileText,
+  FolderPlus
 } from "lucide-react";
 import { DonutChart } from "./donut-chart";
 import { AreaChart } from "./area-chart";
@@ -254,6 +255,7 @@ export function AgencyDashboard() {
                       >
                         <Plus className="h-4 w-4 mr-2" />
                         Colaborador
+                        <Users className="h-4 w-4 ml-2" />
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-md">
@@ -317,9 +319,13 @@ export function AgencyDashboard() {
                   </Dialog>
                 )}
                 <Link href="/projects">
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                  <Button 
+                    variant="outline"
+                    className="text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-900/20"
+                  >
                     <Plus className="h-4 w-4 mr-2" />
                     Novo Projeto
+                    <FolderPlus className="h-4 w-4 ml-2" />
                   </Button>
                 </Link>
               </div>
