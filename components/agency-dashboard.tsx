@@ -41,10 +41,17 @@ import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from 'sonner';
+import { Send } from "lucide-react";
 import { useUser } from "@/hooks/useUser";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { TeamManagement } from "./team-management";
+import { supabaseBrowser } from '@/lib/supabaseBrowser';
 
 // Mock data para funcionalidades avançadas
 const mockContracts = [
@@ -148,6 +155,14 @@ const getPriorityColor = (priority: string) => {
 export function AgencyDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState('dashboard');
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [inviteForm, setInviteForm] = useState({
+    name: '',
+    email: '',
+    role: 'agency_staff',
+    company: '',
+    phone: ''
+  });
   const searchParams = useSearchParams();
   const { user } = useUser();
   const { data: analytics, loading: analyticsLoading } = useAnalytics('30');
@@ -162,6 +177,42 @@ export function AgencyDashboard() {
       setSelectedTab(tabParam);
     }
   }, [searchParams]);
+
+  // Handle invite form submission
+  const handleInviteSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!user?.can_manage_team) {
+      toast.error('Você não tem permissão para convidar colaboradores');
+      return;
+    }
+
+    try {
+      const { data, error } = await supabaseBrowser().rpc('create_user_invitation', {
+        p_email: inviteForm.email,
+        p_name: inviteForm.name,
+        p_role: inviteForm.role,
+        p_agency_id: user?.agency_id || user?.id,
+        p_company: inviteForm.company,
+        p_phone: inviteForm.phone,
+        p_welcome_message: `Você foi convidado para fazer parte da equipe da ${user?.company || 'nossa agência'}!`
+      });
+
+      if (error) {
+        console.error('Erro ao criar convite:', error);
+        toast.error('Erro ao enviar convite: ' + error.message);
+        return;
+      }
+
+      toast.success(`Convite enviado para ${inviteForm.email}!`);
+      setInviteForm({ name: '', email: '', role: 'agency_staff', company: '', phone: '' });
+      setInviteDialogOpen(false);
+
+    } catch (error) {
+      console.error('Erro ao enviar convite:', error);
+      toast.error('Erro ao enviar convite');
+    }
+  };
 
   return (
     <div className="bg-[#fafafa] dark:bg-[#121212] min-h-screen font-inter">
@@ -195,14 +246,75 @@ export function AgencyDashboard() {
                   Este mês
                 </Button>
                 {user?.can_manage_team && (
-                  <Button 
-                    variant="outline"
-                    onClick={() => setSelectedTab('team')}
-                    className="text-green-600 border-green-200 hover:bg-green-50 dark:text-green-400 dark:border-green-800 dark:hover:bg-green-900/20"
-                  >
-                    <Users className="h-4 w-4 mr-2" />
-                    Colaborador
-                  </Button>
+                  <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant="outline"
+                        className="text-green-600 border-green-200 hover:bg-green-50 dark:text-green-400 dark:border-green-800 dark:hover:bg-green-900/20"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Colaborador
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Convidar Novo Colaborador</DialogTitle>
+                      </DialogHeader>
+                      <form onSubmit={handleInviteSubmit} className="space-y-4">
+                        <div>
+                          <Label htmlFor="name">Nome</Label>
+                          <Input
+                            id="name"
+                            value={inviteForm.name}
+                            onChange={(e) => setInviteForm({...inviteForm, name: e.target.value})}
+                            placeholder="Nome completo"
+                            required
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="email">Email</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            value={inviteForm.email}
+                            onChange={(e) => setInviteForm({...inviteForm, email: e.target.value})}
+                            placeholder="email@exemplo.com"
+                            required
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="role">Cargo</Label>
+                          <Select value={inviteForm.role} onValueChange={(value) => setInviteForm({...inviteForm, role: value})}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="agency_manager">Gerente</SelectItem>
+                              <SelectItem value="agency_staff">Colaborador</SelectItem>
+                              <SelectItem value="agency_client">Cliente</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="phone">Telefone (opcional)</Label>
+                          <Input
+                            id="phone"
+                            value={inviteForm.phone}
+                            onChange={(e) => setInviteForm({...inviteForm, phone: e.target.value})}
+                            placeholder="(11) 99999-9999"
+                          />
+                        </div>
+
+                        <Button type="submit" className="w-full">
+                          <Send className="h-4 w-4 mr-2" />
+                          Enviar Convite
+                        </Button>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
                 )}
                 <Link href="/projects">
                   <Button className="bg-blue-600 hover:bg-blue-700 text-white">
