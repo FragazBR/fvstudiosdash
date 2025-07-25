@@ -132,6 +132,12 @@ function AcceptInviteContent() {
         return
       }
 
+      // Check if the function returned an error in the data
+      if (data && !data.success) {
+        setError('Erro ao criar conta: ' + data.error)
+        return
+      }
+
       // Marcar convite como aceito
       await supabase
         .from('user_invitations')

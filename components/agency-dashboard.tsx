@@ -210,6 +210,13 @@ export function AgencyDashboard() {
           return;
         }
 
+        // Check if the function returned an error in the data
+        if (data && !data.success) {
+          console.error('Erro na função create_user_with_profile:', data.error);
+          toast.error('Erro ao criar usuário: ' + data.error);
+          return;
+        }
+
         toast.success(`Colaborador ${inviteForm.name} criado com sucesso!`);
       } else {
         // Sistema de convite por email
