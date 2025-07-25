@@ -196,9 +196,10 @@ export function WorkstationPage() {
             const projectsData = await projectsResponse.json();
             
             // Transformar dados para formato da Workstation
-            const transformedProjects = projectsData.projects.map((project: any) => {
-              const totalTasks = project.tasks?.length || 0;
-              const completedTasks = project.tasks?.filter((task: any) => task.status === 'completed').length || 0;
+            const transformedProjects = (projectsData.projects || []).map((project: any) => {
+              const totalTasks = (project.tasks && Array.isArray(project.tasks)) ? project.tasks.length : 0;
+              const completedTasks = (project.tasks && Array.isArray(project.tasks)) ? 
+                project.tasks.filter((task: any) => task?.status === 'completed').length : 0;
               const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
               
               // Calcular stage baseado no progresso
@@ -227,7 +228,12 @@ export function WorkstationPage() {
                 end_date: project.end_date || project.created_at,
                 budget_total: project.budget_total,
                 budget_spent: project.budget_spent,
-                team_size: project.tasks?.map((task: any) => task.assigned_to?.id).filter((id: string, index: number, arr: string[]) => arr.indexOf(id) === index).length || 1,
+                team_size: (project.tasks && Array.isArray(project.tasks)) ? 
+                  project.tasks
+                    .map((task: any) => task?.assigned_to?.id)
+                    .filter((id: string | undefined) => id)
+                    .filter((id: string, index: number, arr: string[]) => arr.indexOf(id) === index)
+                    .length || 1 : 1,
                 tasks_total: totalTasks,
                 tasks_completed: completedTasks,
                 days_remaining: daysRemaining,
@@ -293,8 +299,8 @@ export function WorkstationPage() {
   }, [user?.id]);
 
   const filteredProjects = projects.filter(project => {
-    const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.client.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch = (project.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (project.client?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === 'all' || project.status === statusFilter
     const matchesPriority = priorityFilter === 'all' || project.priority === priorityFilter
     const matchesStage = stageFilter === 'all' || project.current_stage === stageFilter
