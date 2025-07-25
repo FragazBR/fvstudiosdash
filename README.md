@@ -149,6 +149,13 @@ scripts/PRODUCTION_SETUP.sql
 -- ⚠️ IMPORTANTE: Altere o email/senha do admin antes de executar!
 ```
 
+### **4.1 Correção de Problemas de API (Se Necessário)**
+Se após a instalação você encontrar erros 500 nas APIs de projetos/tarefas:
+```sql
+-- Execute para corrigir foreign keys faltando:
+scripts/FIX_API_ERRORS_CORRECTED.sql
+```
+
 ### **5. Inicialização**
 ```bash
 # Desenvolvimento
@@ -280,17 +287,19 @@ Este projeto está licenciado sob a **MIT License** - veja o arquivo [LICENSE](L
 
 ## 🎉 Status do Projeto
 
-### **Versão Atual: 2.0.0** 
+### **Versão Atual: 2.1.0** 
 - ✅ **Sistema base** completamente funcional
 - ✅ **Gestão de equipes** implementada
 - ✅ **Interface moderna** com shadcn/ui
 - ✅ **Multi-tenancy** com RLS
 - ✅ **Integração Stripe** operacional
+- ✅ **APIs corrigidas** (foreign keys de projetos/tarefas)
+- ✅ **Scripts de diagnóstico** para troubleshooting
 - 🔄 **Analytics** em desenvolvimento
 
 ### **Próximas Releases:**
-- **v2.1.0** - Sistema de analytics completo
-- **v2.2.0** - Automações com IA
+- **v2.2.0** - Sistema de analytics completo
+- **v2.3.0** - Automações com IA
 - **v3.0.0** - Mobile app + API externa
 
 ---
