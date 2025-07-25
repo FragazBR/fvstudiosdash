@@ -39,39 +39,13 @@ export async function middleware(req: NextRequest) {
       profile = data
       profileError = error
     } catch (err: any) {
-      // Se houver erro RLS, tentar com service role para admin específico
-      if (err.message?.includes('infinite recursion') && session.user.id === '71f0cbbb-1963-430c-b445-78907e747574') {
-        try {
-          const serviceSupabase = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!
-          )
-          
-          const { data: serviceProfile, error: serviceError } = await serviceSupabase
-            .from('user_profiles')
-            .select('role, agency_id, subscription_plan, subscription_status')
-            .eq('id', session.user.id)
-            .single()
-          
-          if (!serviceError && serviceProfile) {
-            profile = serviceProfile
-            profileError = null
-          }
-        } catch (serviceErr) {
-          console.error('Service role fallback failed:', serviceErr)
-        }
-      }
+      console.error('Profile query error:', err)
+      profileError = err
     }
 
     if (profileError || !profile) {
       console.error('Profile error:', profileError?.message || 'No profile found')
-      // Para admin específico, permitir acesso mesmo sem perfil
-      if (session.user.id === '71f0cbbb-1963-430c-b445-78907e747574') {
-        console.log('Admin bypass - permitindo acesso sem perfil')
-        return res // PERMITE CONTINUAR
-      }
-      // Apenas força logout se não for admin
-      console.log('Forçando redirect para login devido ao erro de perfil')
+      // Redirecionar para login para criar/recuperar perfil
       return NextResponse.redirect(new URL('/login', req.url))
     }
 

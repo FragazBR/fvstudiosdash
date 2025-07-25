@@ -36,31 +36,20 @@ export default function LoginPage() {
         return
       }
 
-      // HARDCODED BYPASS - devido a problemas persistentes com RLS
+      // Buscar perfil do usuário com tratamento adequado de erros
       let profile, profileError = null;
       
-      // Para admin específico, bypass completo
-      if (data.user.id === '71f0cbbb-1963-430c-b445-78907e747574') {
-        console.log('Admin user detected - using hardcoded profile');
-        profile = {
-          id: '71f0cbbb-1963-430c-b445-78907e747574',
-          role: 'admin'
-        };
-        profileError = null;
-      } else {
-        // Para outros usuários, tenta a consulta normal
-        try {
-          const result = await supabase
-            .from('user_profiles')
-            .select('role, id')
-            .eq('id', data.user.id)
-            .single();
-          profile = result.data;
-          profileError = result.error;
-        } catch (error) {
-          console.log('Profile query error:', error);
-          profileError = error;
-        }
+      try {
+        const result = await supabase
+          .from('user_profiles')
+          .select('role, id, name, email, agency_id')
+          .eq('id', data.user.id)
+          .single();
+        profile = result.data;
+        profileError = result.error;
+      } catch (error) {
+        console.log('Profile query error:', error);
+        profileError = error;
       }
 
       console.log('Login success:', { profile, user: data.user })
@@ -69,10 +58,11 @@ export default function LoginPage() {
         console.log('Perfil não encontrado, criando novo perfil...')
         console.log('Profile error details:', profileError)
         
-        // Para admin específico, cria perfil admin
-        const isAdminUser = data.user.id === '71f0cbbb-1963-430c-b445-78907e747574'
-        const defaultRole = isAdminUser ? 'admin' : 'free_user'
-        const defaultName = isAdminUser ? 'Admin FVStudios' : (data.user.email?.split('@')[0] || 'Usuário')
+        // Determinar role padrão baseado no email
+        const defaultRole = data.user.email?.includes('@fvstudios.com') ? 'admin' : 'free_user'
+        const defaultName = data.user.email?.split('@')[0] || 'Usuário'
+        const defaultCompany = data.user.email?.includes('@fvstudios.com') ? 'FVStudios' : null
+        const defaultPlan = defaultRole === 'admin' ? 'enterprise' : 'free'
         
         // Se não tem perfil, cria um básico
         const { data: newProfile, error: createError } = await supabase
@@ -82,11 +72,11 @@ export default function LoginPage() {
             email: data.user.email,
             name: defaultName,
             role: defaultRole,
-            company: isAdminUser ? 'FVStudios' : null,
-            subscription_plan: isAdminUser ? 'enterprise' : 'free',
+            company: defaultCompany,
+            subscription_plan: defaultPlan,
             subscription_status: 'active',
           })
-          .select('role, id')
+          .select('role, id, name, email')
           .single();
           
         if (createError) {

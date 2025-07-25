@@ -55,65 +55,41 @@ import { useDashboardData } from "@/hooks/useDashboardData";
 import { TeamManagement } from "./team-management";
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 
-// Mock data para funcionalidades avançadas
-const mockContracts = [
-  {
-    id: '1',
-    clientName: 'Nike Brasil',
-    contractType: 'monthly',
-    monthlyValue: 25000,
-    status: 'active',
-    paymentStatus: 'up_to_date',
-    services: ['Social Media', 'Google Ads', 'Creative'],
-    remainingMonths: 8,
-    nextBillingDate: '2024-08-01'
-  },
-  {
-    id: '2',
-    clientName: 'Adidas Sport',
-    contractType: 'retainer',
-    monthlyValue: 18000,
-    status: 'active',
-    paymentStatus: 'pending',
-    services: ['Meta Ads', 'TikTok Ads'],
-    remainingMonths: 9,
-    nextBillingDate: '2024-08-01'
-  },
-  {
-    id: '3',
-    clientName: 'Local Store',
-    contractType: 'project',
-    monthlyValue: 5000,
-    status: 'expired',
-    paymentStatus: 'overdue',
-    services: ['Website', 'SEO'],
-    remainingMonths: 0,
-    nextBillingDate: '2024-07-15'
-  }
-];
+// Real data interfaces
+interface Contract {
+  id: string;
+  clientName: string;
+  contractType: string;
+  monthlyValue: number;
+  status: string;
+  paymentStatus: string;
+  services: string[];
+  remainingMonths: number;
+  nextBillingDate: string;
+}
 
-const mockAgencyMetrics = {
+interface AgencyMetrics {
   financial: {
-    monthlyRevenue: 148000,
-    recurringRevenue: 135000,
-    profitMargin: 32.5,
-    growthRate: 12.3,
-    totalOutstanding: 23000
-  },
+    monthlyRevenue: number;
+    recurringRevenue: number;
+    profitMargin: number;
+    growthRate: number;
+    totalOutstanding: number;
+  };
   clients: {
-    totalActive: 18,
-    newThisMonth: 3,
-    churnedThisMonth: 1,
-    satisfactionScore: 8.7,
-    contractsExpiring: 4
-  },
+    totalActive: number;
+    newThisMonth: number;
+    churnedThisMonth: number;
+    satisfactionScore: number;
+    contractsExpiring: number;
+  };
   performance: {
-    projectsCompleted: 124,
-    teamUtilization: 87.5,
-    clientRetentionRate: 91.5,
-    onTimeDelivery: 94.2
-  }
-};
+    projectsCompleted: number;
+    teamUtilization: number;
+    clientRetentionRate: number;
+    onTimeDelivery: number;
+  };
+}
 
 // Helper functions
 const formatCurrency = (value: number) => {
@@ -167,12 +143,103 @@ export function AgencyDashboard() {
     password: '',
     mode: 'direct' // 'direct' ou 'invite'
   });
+  
+  // Real data state
+  const [contracts, setContracts] = useState<Contract[]>([]);
+  const [agencyMetrics, setAgencyMetrics] = useState<AgencyMetrics | null>(null);
+  const [realDataLoading, setRealDataLoading] = useState(true);
+  
   const searchParams = useSearchParams();
   const { user } = useUser();
   const { data: analytics, loading: analyticsLoading } = useAnalytics('30');
   const { recentProjects, recentClients, loading: dashboardLoading } = useDashboardData();
   
-  const isLoading = analyticsLoading || dashboardLoading;
+  const isLoading = analyticsLoading || dashboardLoading || realDataLoading;
+
+  // Fetch real contract data
+  const fetchContracts = async () => {
+    try {
+      const supabase = supabaseBrowser();
+      const { data, error } = await supabase
+        .rpc('get_dashboard_projects', { p_limit: 20, p_status: 'active' });
+      
+      if (error) throw error;
+      
+      // Transform project data to contract format
+      const contractData = (data || []).map((project: any) => ({
+        id: project.id,
+        clientName: project.client_name || 'Cliente não informado',
+        contractType: 'project',
+        monthlyValue: project.budget_total || 0,
+        status: project.status,
+        paymentStatus: 'up_to_date', // Default status
+        services: ['Projeto Digital'],
+        remainingMonths: 0,
+        nextBillingDate: '2024-12-01'
+      }));
+      
+      setContracts(contractData);
+    } catch (error) {
+      console.error('Error fetching contracts:', error);
+      toast.error('Erro ao carregar contratos');
+      setContracts([]); // Set empty array on error
+    }
+  };
+
+  // Fetch real agency metrics
+  const fetchAgencyMetrics = async () => {
+    try {
+      const supabase = supabaseBrowser();
+      const { data, error } = await supabase.rpc('get_agency_metrics');
+      
+      if (error) throw error;
+      setAgencyMetrics(data || {
+        financial: {
+          monthlyRevenue: 0,
+          recurringRevenue: 0,
+          profitMargin: 0,
+          growthRate: 0,
+          totalOutstanding: 0
+        },
+        clients: {
+          totalActive: 0,
+          newThisMonth: 0,
+          churnedThisMonth: 0,
+          satisfactionScore: 0,
+          contractsExpiring: 0
+        },
+        performance: {
+          projectsCompleted: 0,
+          teamUtilization: 0,
+          clientRetentionRate: 0,
+          onTimeDelivery: 0
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching agency metrics:', error);
+      toast.error('Erro ao carregar métricas');
+      // Set default metrics on error
+      setAgencyMetrics({
+        financial: { monthlyRevenue: 0, recurringRevenue: 0, profitMargin: 0, growthRate: 0, totalOutstanding: 0 },
+        clients: { totalActive: 0, newThisMonth: 0, churnedThisMonth: 0, satisfactionScore: 0, contractsExpiring: 0 },
+        performance: { projectsCompleted: 0, teamUtilization: 0, clientRetentionRate: 0, onTimeDelivery: 0 }
+      });
+    }
+  };
+
+  // Initialize real data on component mount
+  useEffect(() => {
+    const initializeDashboard = async () => {
+      setRealDataLoading(true);
+      await Promise.all([
+        fetchContracts(),
+        fetchAgencyMetrics()
+      ]);
+      setRealDataLoading(false);
+    };
+    
+    initializeDashboard();
+  }, []);
 
   // Set initial tab from URL parameter
   useEffect(() => {
@@ -755,10 +822,10 @@ export function AgencyDashboard() {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm text-gray-600 dark:text-gray-400">Receita Mensal</p>
-                          <p className="text-2xl font-semibold">{formatCurrency(mockAgencyMetrics.financial.monthlyRevenue)}</p>
+                          <p className="text-2xl font-semibold">{formatCurrency(agencyMetrics?.financial.monthlyRevenue || 0)}</p>
                           <div className="flex items-center gap-1 mt-1">
                             <TrendingUp className="h-3 w-3 text-green-500" />
-                            <span className="text-xs text-green-600">+{mockAgencyMetrics.financial.growthRate}%</span>
+                            <span className="text-xs text-green-600">+{agencyMetrics?.financial.growthRate || 0}%</span>
                           </div>
                         </div>
                         <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
@@ -773,7 +840,7 @@ export function AgencyDashboard() {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm text-gray-600 dark:text-gray-400">MRR (Receita Recorrente)</p>
-                          <p className="text-2xl font-semibold">{formatCurrency(mockAgencyMetrics.financial.recurringRevenue)}</p>
+                          <p className="text-2xl font-semibold">{formatCurrency(agencyMetrics?.financial.recurringRevenue || 0)}</p>
                           <div className="flex items-center gap-1 mt-1">
                             <ArrowUp className="h-3 w-3 text-green-500" />
                             <span className="text-xs text-green-600">+8.4%</span>
@@ -791,7 +858,7 @@ export function AgencyDashboard() {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm text-gray-600 dark:text-gray-400">Margem de Lucro</p>
-                          <p className="text-2xl font-semibold">{mockAgencyMetrics.financial.profitMargin}%</p>
+                          <p className="text-2xl font-semibold">{agencyMetrics?.financial.profitMargin || 0}%</p>
                           <div className="flex items-center gap-1 mt-1">
                             <TrendingUp className="h-3 w-3 text-green-500" />
                             <span className="text-xs text-green-600">+2.1%</span>
@@ -809,10 +876,10 @@ export function AgencyDashboard() {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm text-gray-600 dark:text-gray-400">Clientes Ativos</p>
-                          <p className="text-2xl font-semibold">{mockAgencyMetrics.clients.totalActive}</p>
+                          <p className="text-2xl font-semibold">{agencyMetrics?.clients.totalActive || 0}</p>
                           <div className="flex items-center gap-1 mt-1">
                             <Users className="h-3 w-3 text-blue-500" />
-                            <span className="text-xs text-blue-600">+{mockAgencyMetrics.clients.newThisMonth} este mês</span>
+                            <span className="text-xs text-blue-600">+{agencyMetrics?.clients.newThisMonth || 0} este mês</span>
                           </div>
                         </div>
                         <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
@@ -831,7 +898,7 @@ export function AgencyDashboard() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {mockContracts.map((contract) => (
+                      {contracts.map((contract) => (
                         <div key={contract.id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                           <div className="flex items-center space-x-4">
                             <Avatar>
@@ -890,19 +957,19 @@ export function AgencyDashboard() {
                     <CardContent className="space-y-4">
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600 dark:text-gray-400">Projetos Completados</span>
-                        <span className="font-semibold">{mockAgencyMetrics.performance.projectsCompleted}</span>
+                        <span className="font-semibold">{agencyMetrics?.performance.projectsCompleted || 0}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600 dark:text-gray-400">Utilização da Equipe</span>
-                        <span className="font-semibold">{mockAgencyMetrics.performance.teamUtilization}%</span>
+                        <span className="font-semibold">{agencyMetrics?.performance.teamUtilization || 0}%</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600 dark:text-gray-400">Retenção de Clientes</span>
-                        <span className="font-semibold">{mockAgencyMetrics.performance.clientRetentionRate}%</span>
+                        <span className="font-semibold">{agencyMetrics?.performance.clientRetentionRate || 0}%</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600 dark:text-gray-400">Entrega no Prazo</span>
-                        <span className="font-semibold">{mockAgencyMetrics.performance.onTimeDelivery}%</span>
+                        <span className="font-semibold">{agencyMetrics?.performance.onTimeDelivery || 0}%</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -914,19 +981,19 @@ export function AgencyDashboard() {
                     <CardContent className="space-y-4">
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600 dark:text-gray-400">Novos este Mês</span>
-                        <span className="font-semibold text-green-600">+{mockAgencyMetrics.clients.newThisMonth}</span>
+                        <span className="font-semibold text-green-600">+{agencyMetrics?.clients.newThisMonth || 0}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600 dark:text-gray-400">Perdidos este Mês</span>
-                        <span className="font-semibold text-red-600">-{mockAgencyMetrics.clients.churnedThisMonth}</span>
+                        <span className="font-semibold text-red-600">-{agencyMetrics?.clients.churnedThisMonth || 0}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600 dark:text-gray-400">Satisfação Média</span>
-                        <span className="font-semibold">{mockAgencyMetrics.clients.satisfactionScore}/10</span>
+                        <span className="font-semibold">{agencyMetrics?.clients.satisfactionScore || 0}/10</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600 dark:text-gray-400">Contratos Expirando</span>
-                        <span className="font-semibold text-yellow-600">{mockAgencyMetrics.clients.contractsExpiring}</span>
+                        <span className="font-semibold text-yellow-600">{agencyMetrics?.clients.contractsExpiring || 0}</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -938,15 +1005,15 @@ export function AgencyDashboard() {
                     <CardContent className="space-y-4">
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600 dark:text-gray-400">Taxa de Crescimento</span>
-                        <span className="font-semibold text-green-600">+{mockAgencyMetrics.financial.growthRate}%</span>
+                        <span className="font-semibold text-green-600">+{agencyMetrics?.financial.growthRate || 0}%</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600 dark:text-gray-400">Pendências</span>
-                        <span className="font-semibold text-red-600">{formatCurrency(mockAgencyMetrics.financial.totalOutstanding)}</span>
+                        <span className="font-semibold text-red-600">{formatCurrency(agencyMetrics?.financial.totalOutstanding || 0)}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600 dark:text-gray-400">Margem de Lucro</span>
-                        <span className="font-semibold">{mockAgencyMetrics.financial.profitMargin}%</span>
+                        <span className="font-semibold">{agencyMetrics?.financial.profitMargin || 0}%</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -1026,7 +1093,7 @@ export function AgencyDashboard() {
                             <h4 className="font-semibold text-green-900 dark:text-green-100">Performance Positiva</h4>
                           </div>
                           <p className="text-sm text-green-800 dark:text-green-200">
-                            A agência está com crescimento de {mockAgencyMetrics.financial.growthRate}% e margem de lucro saudável de {mockAgencyMetrics.financial.profitMargin}%.
+                            A agência está com crescimento de {agencyMetrics?.financial.growthRate || 0}% e margem de lucro saudável de {agencyMetrics?.financial.profitMargin || 0}%.
                           </p>
                         </div>
 
@@ -1036,8 +1103,8 @@ export function AgencyDashboard() {
                             <h4 className="font-semibold text-blue-900 dark:text-blue-100">Clientes</h4>
                           </div>
                           <p className="text-sm text-blue-800 dark:text-blue-200">
-                            {mockAgencyMetrics.clients.totalActive} clientes ativos com satisfação de {mockAgencyMetrics.clients.satisfactionScore}/10. 
-                            {mockAgencyMetrics.clients.contractsExpiring} contratos expirando nos próximos 3 meses.
+                            {agencyMetrics?.clients.totalActive || 0} clientes ativos com satisfação de {agencyMetrics?.clients.satisfactionScore || 0}/10. 
+                            {agencyMetrics?.clients.contractsExpiring || 0} contratos expirando nos próximos 3 meses.
                           </p>
                         </div>
 
@@ -1047,7 +1114,7 @@ export function AgencyDashboard() {
                             <h4 className="font-semibold text-yellow-900 dark:text-yellow-100">Atenção</h4>
                           </div>
                           <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                            {formatCurrency(mockAgencyMetrics.financial.totalOutstanding)} em pendências de pagamento requerem acompanhamento.
+                            {formatCurrency(agencyMetrics?.financial.totalOutstanding || 0)} em pendências de pagamento requerem acompanhamento.
                           </p>
                         </div>
                       </div>
