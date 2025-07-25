@@ -26,20 +26,11 @@ export async function GET(request: NextRequest) {
       .from('projects')
       .select(`
         *,
-        client:client_id(id, name, email),
-        creator:created_by(id, name),
-        tasks(id, title, status, progress, due_date)
+        client:client_id(id, name, email, company),
+        creator:created_by(id, name)
       `)
       .order('created_at', { ascending: false })
       .limit(limit);
-
-    // Filtrar por contexto do usuário
-    if (profile?.agency_id) {
-      query = query.eq('agency_id', profile.agency_id);
-    } else {
-      // Usuário individual vê apenas projetos próprios
-      query = query.eq('created_by', user.id);
-    }
       
     if (status) {
       query = query.eq('status', status);
