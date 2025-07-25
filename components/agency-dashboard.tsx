@@ -194,6 +194,16 @@ export function AgencyDashboard() {
                   <Calendar className="h-4 w-4 mr-2" />
                   Este mês
                 </Button>
+                {user?.can_manage_team && (
+                  <Button 
+                    variant="outline"
+                    onClick={() => setSelectedTab('team')}
+                    className="text-green-600 border-green-200 hover:bg-green-50 dark:text-green-400 dark:border-green-800 dark:hover:bg-green-900/20"
+                  >
+                    <Users className="h-4 w-4 mr-2" />
+                    Colaborador
+                  </Button>
+                )}
                 <Link href="/projects">
                   <Button className="bg-blue-600 hover:bg-blue-700 text-white">
                     <Plus className="h-4 w-4 mr-2" />
