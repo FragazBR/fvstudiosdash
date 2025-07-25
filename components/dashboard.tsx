@@ -192,7 +192,7 @@ export default function Dashboard({ userMode = false }: DashboardProps) {
             </div>
 
             {/* Role-specific message */}
-            {user?.role && ['admin', 'agency_owner', 'independent_producer'].includes(user.role) && (
+            {user?.role && ['admin', 'agency_owner', 'agency_manager', 'independent_producer'].includes(user.role) && (
               <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
                 <CardContent className="p-6">
                   <div className="flex items-start space-x-4">

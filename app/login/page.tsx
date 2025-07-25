@@ -125,6 +125,8 @@ export default function LoginPage() {
         redirectPath = '/admin';
       } else if (role === 'agency_owner') {
         redirectPath = '/agency';
+      } else if (role === 'agency_manager') {
+        redirectPath = '/agency';
       } else if (role === 'agency_staff') {
         redirectPath = '/agency';
       } else if (role === 'agency_client') {

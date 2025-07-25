@@ -444,7 +444,7 @@ export function canAccess(userRole: UserRole, allowedRoles: UserRole[]): boolean
 
 // Legacy compatibility functions
 export function isAgencyOwnerOrAdmin(role: string | null): boolean {
-  return role === 'admin' || role === 'agency_owner'
+  return role === 'admin' || role === 'agency_owner' || role === 'agency_manager'
 }
 
 export function isAdmin(role: string | null): boolean {

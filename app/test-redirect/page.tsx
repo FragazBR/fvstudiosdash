@@ -45,6 +45,8 @@ export default function TestRedirectPage() {
       redirectPath = '/admin'
     } else if (role === 'agency') {
       redirectPath = '/dashboard'
+    } else if (role === 'agency_manager') {
+      redirectPath = '/agency'
     } else if (role === 'user') {
       redirectPath = '/user/dashboard'
     } else if (role === 'client') {

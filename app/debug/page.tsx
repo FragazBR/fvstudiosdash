@@ -60,6 +60,8 @@ export default function DebugPage() {
         redirectPath = '/admin';
       } else if (profile.role === 'agency') {
         redirectPath = '/dashboard';
+      } else if (profile.role === 'agency_manager') {
+        redirectPath = '/agency';
       } else if (profile.role === 'user') {
         redirectPath = '/user/dashboard';
       } else if (profile.role === 'client') {

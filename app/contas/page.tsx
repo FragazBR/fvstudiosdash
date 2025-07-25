@@ -394,7 +394,7 @@ function ContasContent() {
 
 export default function ContasPage() {
   return (
-    <PermissionGuard allowedRoles={['admin', 'agency_owner', 'agency_staff', 'independent_producer']} showUnauthorized>
+    <PermissionGuard allowedRoles={['admin', 'agency_owner', 'agency_manager', 'agency_staff', 'independent_producer']} showUnauthorized>
       <ContasContent />
     </PermissionGuard>
   )

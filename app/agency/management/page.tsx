@@ -7,7 +7,7 @@ function AgencyManagementContent() {
 
 export default function AgencyManagementRoute() {
   return (
-    <PermissionGuard allowedRoles={['admin', 'agency_owner', 'independent_producer']} showUnauthorized>
+    <PermissionGuard allowedRoles={['admin', 'agency_owner', 'agency_manager', 'independent_producer']} showUnauthorized>
       <AgencyManagementContent />
     </PermissionGuard>
   )
