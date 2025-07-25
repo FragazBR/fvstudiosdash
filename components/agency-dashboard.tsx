@@ -101,8 +101,16 @@ const formatCurrency = (value: number) => {
 };
 
 const calculateProjectProgress = (project: any): number => {
-  if (!project.tasks || project.tasks.length === 0) return 0;
-  const completedTasks = project.tasks.filter((task: any) => task.status === 'completed').length;
+  // Use progress field from database if available, otherwise calculate from tasks
+  if (project.progress !== undefined && project.progress !== null) {
+    return project.progress;
+  }
+  
+  if (!project.tasks || !Array.isArray(project.tasks) || project.tasks.length === 0) {
+    return 0;
+  }
+  
+  const completedTasks = project.tasks.filter((task: any) => task?.status === 'completed').length;
   return Math.round((completedTasks / project.tasks.length) * 100);
 };
 
@@ -565,7 +573,7 @@ export function AgencyDashboard() {
                               <Skeleton className="h-20 w-full" />
                             </div>
                           ))
-                        ) : recentProjects.length > 0 ? (
+                        ) : (recentProjects && recentProjects.length > 0) ? (
                           recentProjects.map((project) => {
                             const progress = calculateProjectProgress(project);
                             return (
@@ -753,7 +761,7 @@ export function AgencyDashboard() {
                             <Skeleton className="h-6 w-16" />
                           </div>
                         ))
-                      ) : recentClients.length > 0 ? (
+                      ) : (recentClients && recentClients.length > 0) ? (
                         recentClients.map((client) => (
                           <div key={client.id} className="flex items-center justify-between p-4 rounded-lg border border-gray-100 dark:border-[#1f1f1f] hover:border-gray-200 dark:hover:border-[#64f481]/20 transition-all duration-200">
                             <div className="flex items-center space-x-4">
