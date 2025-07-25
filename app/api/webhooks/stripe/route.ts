@@ -65,51 +65,82 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   console.log('💳 Checkout completed:', session.id)
   
   try {
-    const leadId = session.metadata?.lead_id
-    const planName = session.metadata?.plan_name
+    const leadId = session.metadata?.leadId
+    const planName = session.metadata?.planName
+    const userName = session.metadata?.userName
+    const userPassword = session.metadata?.userPassword
+    const companyName = session.metadata?.companyName
+    const email = session.customer_details?.email
     
-    if (!leadId) {
-      console.error('Lead ID not found in session metadata')
+    console.log('📋 Session metadata:', { leadId, planName, userName, email })
+    
+    if (!email) {
+      console.error('Email not found in session')
       return
     }
 
-    // Buscar o lead no banco
+    // Buscar o lead no banco (tabela correta: website_leads)
     const { data: lead, error: leadError } = await supabase
-      .from('agency_leads')
+      .from('website_leads')
       .select('*')
       .eq('id', leadId)
       .single()
 
     if (leadError || !lead) {
       console.error('Lead not found:', leadError)
-      return
+      // Continuar mesmo sem lead, usando dados da sessão
     }
 
-    // Atualizar lead como convertido
-    await supabase
-      .from('agency_leads')
-      .update({
-        status: 'converted',
-        stripe_customer_id: session.customer as string,
-        stripe_subscription_id: session.subscription as string,
-        converted_at: new Date().toISOString(),
-      })
-      .eq('id', leadId)
-
-    // Criar agência usando a função existente
-    const { error: agencyError } = await supabase.rpc('create_agency_after_payment', {
-      p_lead_id: leadId,
-      p_stripe_customer_id: session.customer as string,
-      p_stripe_subscription_id: session.subscription as string,
-      p_plan_name: planName || 'Agency Basic'
+    // Criar usuário no Supabase Auth
+    console.log('👤 Creating user in Supabase Auth...')
+    const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
+      email: email,
+      password: userPassword || 'TempPassword123!', // Senha temporária se não fornecida
+      email_confirm: true, // Confirmar email automaticamente
+      user_metadata: {
+        name: userName || lead?.name,
+        company: companyName || lead?.company_name,
+        role: 'agency_owner'
+      }
     })
 
-    if (agencyError) {
-      console.error('Error creating agency:', agencyError)
+    if (authError) {
+      console.error('❌ Error creating auth user:', authError)
       return
     }
 
-    console.log('✅ Agency created successfully for lead:', leadId)
+    console.log('✅ User created in Auth:', authUser.user?.id)
+
+    // Criar perfil do usuário
+    const { error: profileError } = await supabase
+      .from('user_profiles')
+      .insert({
+        id: authUser.user?.id,
+        email: email,
+        name: userName || lead?.name || email,
+        role: 'agency_owner',
+        company: companyName || lead?.company_name,
+        phone: lead?.phone,
+        stripe_customer_id: session.customer,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+
+    if (profileError) {
+      console.error('❌ Error creating user profile:', profileError)
+    } else {
+      console.log('✅ User profile created')
+    }
+
+    // Marcar lead como convertido
+    if (leadId) {
+      await supabase
+        .from('website_leads')
+        .update({ status: 'converted', updated_at: new Date().toISOString() })
+        .eq('id', leadId)
+    }
+
+    console.log('✅ Checkout processing completed successfully!')
 
   } catch (error) {
     console.error('Error in handleCheckoutCompleted:', error)

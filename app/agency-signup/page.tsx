@@ -62,7 +62,8 @@ export default function AgencySignupPage() {
     phone: '',
     website: '',
     currentTools: '',
-    estimatedClients: ''
+    estimatedClients: '',
+    password: ''
   });
   const [loading, setLoading] = useState(false);
 
@@ -126,6 +127,8 @@ export default function AgencySignupPage() {
             planName: `Agency ${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)}`,
             billingCycle,
             companyName: formData.company,
+            userName: formData.name,
+            userPassword: formData.password
           }
         })
       })
@@ -304,6 +307,20 @@ export default function AgencySignupPage() {
                       onChange={(e) => handleInputChange('email', e.target.value)}
                       className="bg-white dark:bg-[#171717] border-gray-300 dark:border-[#272727] text-gray-900 dark:text-white"
                       required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="password" className="text-gray-700 dark:text-gray-300">Senha *</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="Mínimo 6 caracteres"
+                      value={formData.password}
+                      onChange={(e) => handleInputChange('password', e.target.value)}
+                      className="bg-white dark:bg-[#171717] border-gray-300 dark:border-[#272727] text-gray-900 dark:text-white"
+                      required
+                      minLength={6}
                     />
                   </div>
 

@@ -43,6 +43,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUser } from "@/hooks/useUser";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useDashboardData } from "@/hooks/useDashboardData";
+import { TeamManagement } from "./team-management";
 
 // Mock data para funcionalidades avançadas
 const mockContracts = [
@@ -194,9 +195,10 @@ export function AgencyDashboard() {
 
             {/* Tabs Navigation */}
             <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-4 mb-6">
+              <TabsList className="grid w-full grid-cols-5 mb-6">
                 <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
                 <TabsTrigger value="contracts">Contratos</TabsTrigger>
+                <TabsTrigger value="team">Equipe</TabsTrigger>
                 <TabsTrigger value="analytics">Analytics</TabsTrigger>
                 <TabsTrigger value="management">Gestão</TabsTrigger>
               </TabsList>
@@ -754,6 +756,11 @@ export function AgencyDashboard() {
                     </CardContent>
                   </Card>
                 </div>
+              </TabsContent>
+
+              {/* Team Tab */}
+              <TabsContent value="team" className="space-y-6">
+                <TeamManagement />
               </TabsContent>
 
               {/* Management Tab */}

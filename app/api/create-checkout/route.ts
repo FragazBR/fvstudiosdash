@@ -7,19 +7,25 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(req: NextRequest) {
   try {
+    console.log('🚀 Create checkout API called')
     const body = await req.json()
     const { priceId, email, metadata = {} } = body
 
+    console.log('📝 Request data:', { priceId, email, metadata })
+
     if (!priceId || !email) {
+      console.error('❌ Missing required fields:', { priceId, email })
       return NextResponse.json(
         { error: 'Price ID and email are required' },
         { status: 400 }
       )
     }
 
+    console.log('✅ Validation passed, creating Stripe session...')
+
     // Criar sessão de checkout do Stripe
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card', 'pix'],
+      payment_method_types: ['card'], // Removido PIX temporariamente
       line_items: [
         {
           price: priceId,
@@ -48,9 +54,16 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ url: session.url })
   } catch (error) {
-    console.error('Error creating checkout session:', error)
+    console.error('❌ Error creating checkout session:', error)
+    
+    // Log mais detalhado do erro
+    if (error instanceof Error) {
+      console.error('Error message:', error.message)
+      console.error('Error stack:', error.stack)
+    }
+    
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }
     )
   }
