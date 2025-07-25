@@ -22,6 +22,7 @@ import {
   Users,
   UserCog,
   AlertTriangle,
+  BarChart3,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { SearchModal } from "./search-modal";
@@ -264,17 +265,21 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   const visibleUrgentTasks = showAllUrgent ? urgentTasks : urgentTasks.slice(0, 3);
   const visibleNotifications = showAllMessage ? notifications : notifications.slice(0, 3);
 
-  // Verificar se o usuário pode acessar o módulo Agency (donos de agência, produtores independentes e admin)
-  const canAccessAgency = user?.role && ['admin', 'agency_owner', 'independent_producer'].includes(user.role);
-
-  // Verificar se o usuário pode acessar o módulo Agency Manager
-  const canAccessAgencyManager = user?.role === 'agency_manager';
-
-  // Verificar se é admin para mostrar opções administrativas
+  // Sistema completo de permissões baseado nos 9 roles
+  const userRole = user?.role as UserRole;
+  const permissions = userRole ? getUserPermissions(userRole) : null;
+  
+  // Verificar permissões específicas
   const isAdmin = user?.role === 'admin';
-
-  // Verificar se pode ver a aba Contas (donos de agência, gerentes, colaboradores e produtores independentes)
+  const canAccessAgency = user?.role && ['admin', 'agency_owner', 'independent_producer'].includes(user.role);
+  const canAccessAgencyManager = user?.role === 'agency_manager';
   const canAccessAccounts = user?.role && ['admin', 'agency_owner', 'agency_manager', 'agency_staff', 'independent_producer'].includes(user.role);
+  const canAccessReports = permissions?.canGenerateBasicReports || false;
+  const canAccessAdvancedReports = permissions?.canGenerateAdvancedReports || false;
+  const canAccessWorkstation = user?.role && ['admin', 'agency_owner', 'agency_manager', 'agency_staff', 'independent_producer', 'influencer'].includes(user.role);
+  const canAccessClientPortal = user?.role && ['agency_client', 'independent_client'].includes(user.role);
+  const canAccessInfluencerTools = user?.role === 'influencer';
+  const canAccessSettings = permissions?.canAccessSystemSettings || user?.role && ['admin', 'agency_owner', 'agency_manager'].includes(user.role);
 
   return (
     <>
@@ -328,25 +333,81 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
           <nav className="space-y-1 mb-6">
             <NavItem href={getHomePage()} icon={Home}>Home</NavItem>
             <NavItem href="/dashboard" icon={LayoutGrid}>Dashboard</NavItem>
+            
+            {/* Contas - para quem pode gerenciar clientes */}
             {canAccessAccounts && (
               <NavItem href="/contas" icon={Users}>Contas</NavItem>
             )}
-            <NavItem href="/projects" icon={FileText}>Projetos</NavItem>
-            <NavItem href="/my-tasks" icon={CheckSquare}>Tarefas</NavItem>
-            <NavItem href="/workstation" icon={LayoutGrid}>Estação de Trabalho</NavItem>
-            <NavItem href="/calendar" icon={Calendar}>Calendário</NavItem>
-            <NavItem href="/messages" icon={ContactRound}>Mensagens</NavItem>
-            <NavItem href="/ai-agents" icon={Bot}>IA Agents</NavItem>
+            
+            {/* Projetos - disponível para a maioria dos roles */}
+            {user?.role && !['free_user'].includes(user.role) && (
+              <NavItem href="/projects" icon={FileText}>Projetos</NavItem>
+            )}
+            
+            {/* Tarefas - disponível para quem trabalha em projetos */}
+            {user?.role && !['free_user', 'agency_client', 'independent_client'].includes(user.role) && (
+              <NavItem href="/my-tasks" icon={CheckSquare}>Tarefas</NavItem>
+            )}
+            
+            {/* Workstation - para profissionais */}
+            {canAccessWorkstation && (
+              <NavItem href="/workstation" icon={LayoutGrid}>Estação de Trabalho</NavItem>
+            )}
+            
+            {/* Calendário - para todos exceto free_user */}
+            {user?.role && user.role !== 'free_user' && (
+              <NavItem href="/calendar" icon={Calendar}>Calendário</NavItem>
+            )}
+            
+            {/* Mensagens - para comunicação */}
+            {permissions?.canChatWithClients || permissions?.canChatWithTeam ? (
+              <NavItem href="/messages" icon={ContactRound}>Mensagens</NavItem>
+            ) : null}
+            
+            {/* IA Agents - baseado em permissões */}
+            {permissions?.canAccessAIAgents && (
+              <NavItem href="/ai-agents" icon={Bot}>IA Agents</NavItem>
+            )}
+            
+            {/* Agência - para proprietários e produtores independentes */}
             {canAccessAgency && (
               <NavItem href="/agency" icon={Building2}>Agência</NavItem>
             )}
+            
+            {/* Gestão da Agência - para gerentes */}
             {canAccessAgencyManager && (
               <NavItem href="/agency-manager" icon={Users}>Gestão da Agência</NavItem>
             )}
-            {isAdmin && (
-              <NavItem href="/admin/users" icon={UserCog}>Gerenciar Usuários</NavItem>
+            
+            {/* Portal do Cliente - para clientes */}
+            {canAccessClientPortal && (
+              <NavItem href="/client-portal" icon={ContactRound}>Portal do Cliente</NavItem>
             )}
+            
+            {/* Ferramentas do Influencer */}
+            {canAccessInfluencerTools && (
+              <NavItem href="/influencer-tools" icon={Users}>Ferramentas de Influencer</NavItem>
+            )}
+            
+            {/* Relatórios - baseado em permissões */}
+            {canAccessReports && (
+              <NavItem href="/reports" icon={BarChart3}>Relatórios</NavItem>
+            )}
+            
+            {/* Configurações - para admins e owners */}
+            {canAccessSettings && (
+              <NavItem href="/settings" icon={UserCog}>Configurações</NavItem>
+            )}
+            
+            {/* Admin - apenas para administradores */}
+            {isAdmin && (
+              <NavItem href="/admin" icon={UserCog}>Administração</NavItem>
+            )}
+            
+            {/* Notificações - para todos */}
             <NavItem href="/notifications" icon={Bell}>Notificações</NavItem>
+            
+            {/* Buscar - para todos */}
             <NavItem
               href="#"
               icon={Search}

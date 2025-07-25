@@ -79,13 +79,23 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             });
           } else {
             // Se não tem perfil, cria um básico
+            // Determinar role baseado no email
+            let defaultRole = 'free_user';
+            const email = session.user.email || '';
+            
+            if (email.includes('@fvstudios.com')) {
+              defaultRole = 'admin';
+            } else if (email.includes('@admin.')) {
+              defaultRole = 'admin';
+            }
+            
             const { data: newProfile } = await supabase
               .from('user_profiles')
               .insert({
                 id: session.user.id,
                 email: session.user.email,
                 name: session.user.email?.split('@')[0] || 'Usuário',
-                role: 'free_user', // default role
+                role: defaultRole,
               })
               .select()
               .single();
