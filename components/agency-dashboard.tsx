@@ -46,8 +46,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { toast } from 'sonner';
-import { Send } from "lucide-react";
+import { Send, UserPlus, Mail } from "lucide-react";
 import { useUser } from "@/hooks/useUser";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useDashboardData } from "@/hooks/useDashboardData";
@@ -162,7 +163,9 @@ export function AgencyDashboard() {
     email: '',
     role: 'agency_staff',
     company: '',
-    phone: ''
+    phone: '',
+    password: '',
+    mode: 'direct' // 'direct' ou 'invite'
   });
   const searchParams = useSearchParams();
   const { user } = useUser();
@@ -189,29 +192,52 @@ export function AgencyDashboard() {
     }
 
     try {
-      const { data, error } = await supabaseBrowser().rpc('create_user_invitation', {
-        p_email: inviteForm.email,
-        p_name: inviteForm.name,
-        p_role: inviteForm.role,
-        p_agency_id: user?.agency_id || user?.id,
-        p_company: inviteForm.company,
-        p_phone: inviteForm.phone,
-        p_welcome_message: `Você foi convidado para fazer parte da equipe da ${user?.company || 'nossa agência'}!`
-      });
+      if (inviteForm.mode === 'direct') {
+        // Cadastro direto com senha
+        const { data, error } = await supabaseBrowser().rpc('create_user_with_profile', {
+          p_email: inviteForm.email,
+          p_password: inviteForm.password,
+          p_name: inviteForm.name,
+          p_role: inviteForm.role,
+          p_agency_id: user?.agency_id || user?.id,
+          p_company: inviteForm.company,
+          p_phone: inviteForm.phone
+        });
 
-      if (error) {
-        console.error('Erro ao criar convite:', error);
-        toast.error('Erro ao enviar convite: ' + error.message);
-        return;
+        if (error) {
+          console.error('Erro ao criar usuário:', error);
+          toast.error('Erro ao criar usuário: ' + error.message);
+          return;
+        }
+
+        toast.success(`Colaborador ${inviteForm.name} criado com sucesso!`);
+      } else {
+        // Sistema de convite por email
+        const { data, error } = await supabaseBrowser().rpc('create_user_invitation', {
+          p_email: inviteForm.email,
+          p_name: inviteForm.name,
+          p_role: inviteForm.role,
+          p_agency_id: user?.agency_id || user?.id,
+          p_company: inviteForm.company,
+          p_phone: inviteForm.phone,
+          p_welcome_message: `Você foi convidado para fazer parte da equipe da ${user?.company || 'nossa agência'}!`
+        });
+
+        if (error) {
+          console.error('Erro ao criar convite:', error);
+          toast.error('Erro ao enviar convite: ' + error.message);
+          return;
+        }
+
+        toast.success(`Convite enviado para ${inviteForm.email}!`);
       }
 
-      toast.success(`Convite enviado para ${inviteForm.email}!`);
-      setInviteForm({ name: '', email: '', role: 'agency_staff', company: '', phone: '' });
+      setInviteForm({ name: '', email: '', role: 'agency_staff', company: '', phone: '', password: '', mode: 'direct' });
       setInviteDialogOpen(false);
 
     } catch (error) {
-      console.error('Erro ao enviar convite:', error);
-      toast.error('Erro ao enviar convite');
+      console.error('Erro ao processar solicitação:', error);
+      toast.error('Erro ao processar solicitação');
     }
   };
 
@@ -260,9 +286,31 @@ export function AgencyDashboard() {
                     </DialogTrigger>
                     <DialogContent className="max-w-md">
                       <DialogHeader>
-                        <DialogTitle>Convidar Novo Colaborador</DialogTitle>
+                        <DialogTitle>
+                          {inviteForm.mode === 'direct' ? 'Criar Colaborador' : 'Enviar Convite'}
+                        </DialogTitle>
                       </DialogHeader>
                       <form onSubmit={handleInviteSubmit} className="space-y-4">
+                        {/* Toggle para modo de criação */}
+                        <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                          <div className="flex items-center space-x-2">
+                            {inviteForm.mode === 'direct' ? (
+                              <UserPlus className="h-4 w-4 text-blue-500" />
+                            ) : (
+                              <Mail className="h-4 w-4 text-green-500" />
+                            )}
+                            <span className="text-sm font-medium">
+                              {inviteForm.mode === 'direct' ? 'Criar usuário direto' : 'Enviar convite por email'}
+                            </span>
+                          </div>
+                          <Switch
+                            checked={inviteForm.mode === 'invite'}
+                            onCheckedChange={(checked) => 
+                              setInviteForm({...inviteForm, mode: checked ? 'invite' : 'direct'})
+                            }
+                          />
+                        </div>
+
                         <div>
                           <Label htmlFor="name">Nome</Label>
                           <Input
@@ -300,6 +348,22 @@ export function AgencyDashboard() {
                           </Select>
                         </div>
 
+                        {/* Campo senha só aparece no modo direto */}
+                        {inviteForm.mode === 'direct' && (
+                          <div>
+                            <Label htmlFor="password">Senha</Label>
+                            <Input
+                              id="password"
+                              type="password"
+                              value={inviteForm.password}
+                              onChange={(e) => setInviteForm({...inviteForm, password: e.target.value})}
+                              placeholder="Senha para acesso"
+                              required
+                              minLength={6}
+                            />
+                          </div>
+                        )}
+
                         <div>
                           <Label htmlFor="phone">Telefone (opcional)</Label>
                           <Input
@@ -311,8 +375,17 @@ export function AgencyDashboard() {
                         </div>
 
                         <Button type="submit" className="w-full">
-                          <Send className="h-4 w-4 mr-2" />
-                          Enviar Convite
+                          {inviteForm.mode === 'direct' ? (
+                            <>
+                              <UserPlus className="h-4 w-4 mr-2" />
+                              Criar Colaborador
+                            </>
+                          ) : (
+                            <>
+                              <Send className="h-4 w-4 mr-2" />
+                              Enviar Convite
+                            </>
+                          )}
                         </Button>
                       </form>
                     </DialogContent>
