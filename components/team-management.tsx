@@ -59,7 +59,7 @@ const ROLE_LABELS = {
 };
 
 export function TeamManagement() {
-  const { user, permissions } = useUser();
+  const { user } = useUser();
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,8 +72,8 @@ export function TeamManagement() {
     phone: ''
   });
 
-  const canManageTeam = permissions?.can_manage_team || false;
-  const canInviteCollaborators = permissions?.can_invite_collaborators || false;
+  const canManageTeam = user?.can_manage_team || false;
+  const canInviteCollaborators = user?.can_manage_team || false; // Use can_manage_team for invitations too
 
   useEffect(() => {
     loadTeamData();
