@@ -156,6 +156,14 @@ export default function Dashboard({ userMode = false }: DashboardProps) {
                       Abrir Calendário
                     </Button>
                   </Link>
+                  {user?.role && ['agency_owner', 'agency_manager'].includes(user.role) && (
+                    <Link href="/agency?tab=team">
+                      <Button className="w-full justify-start" variant="outline">
+                        <Users className="h-4 w-4 mr-2" />
+                        Gerenciar Equipe
+                      </Button>
+                    </Link>
+                  )}
                 </CardContent>
               </Card>
 

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Sidebar from "./sidebar";
 import Topbar from "./Shared/Topbar";
 import { StatCard } from "./stat-card";
@@ -147,11 +148,20 @@ const getPriorityColor = (priority: string) => {
 export function AgencyDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState('dashboard');
+  const searchParams = useSearchParams();
   const { user } = useUser();
   const { data: analytics, loading: analyticsLoading } = useAnalytics('30');
   const { recentProjects, recentClients, loading: dashboardLoading } = useDashboardData();
   
   const isLoading = analyticsLoading || dashboardLoading;
+
+  // Set initial tab from URL parameter
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam && ['dashboard', 'contracts', 'team', 'analytics', 'management'].includes(tabParam)) {
+      setSelectedTab(tabParam);
+    }
+  }, [searchParams]);
 
   return (
     <div className="bg-[#fafafa] dark:bg-[#121212] min-h-screen font-inter">
