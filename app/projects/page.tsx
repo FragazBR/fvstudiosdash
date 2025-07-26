@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
+import { NewProjectModal } from '@/components/new-project-modal'
 import {
   FolderKanban,
   Search,
@@ -98,6 +99,7 @@ function ProjectsContent() {
     totalBudget: 0,
     totalClients: 0
   })
+  const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false)
 
   useEffect(() => {
     fetchProjects()
@@ -208,7 +210,7 @@ function ProjectsContent() {
                   <Filter className="h-4 w-4" />
                 </Button>
                 <Button 
-                  onClick={() => router.push('/projects/new')}
+                  onClick={() => setIsNewProjectModalOpen(true)}
                   className="bg-green-600 hover:bg-green-700 text-white"
                 >
                   <Plus className="h-4 w-4 mr-2" />
@@ -428,7 +430,7 @@ function ProjectsContent() {
                     <p className="text-gray-600 dark:text-gray-400 mb-4">
                       {clientGroups.length === 0 ? 'Nenhum projeto cadastrado ainda' : 'Nenhum resultado encontrado'}
                     </p>
-                    <Button>
+                    <Button onClick={() => setIsNewProjectModalOpen(true)}>
                       <Plus className="h-4 w-4 mr-2" />
                       Criar Primeiro Projeto
                     </Button>
@@ -439,6 +441,13 @@ function ProjectsContent() {
           </div>
         </main>
       </div>
+      
+      {/* New Project Modal */}
+      <NewProjectModal
+        isOpen={isNewProjectModalOpen}
+        onClose={() => setIsNewProjectModalOpen(false)}
+        onProjectCreated={fetchProjects}
+      />
     </div>
   )
 }

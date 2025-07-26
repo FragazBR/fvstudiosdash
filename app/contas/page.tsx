@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { PermissionGuard } from '@/components/permission-guard'
 import Topbar from '@/components/Shared/Topbar'
 import { Sidebar } from '@/components/sidebar'
+import { NewClientModal } from '@/components/new-client-modal'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -77,6 +78,7 @@ function ContasContent() {
     activeProjects: 0,
     totalRevenue: 0
   })
+  const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false)
 
   useEffect(() => {
     fetchContacts()
@@ -157,7 +159,7 @@ function ContasContent() {
                   <Filter className="h-4 w-4" />
                 </Button>
                 <Button 
-                  onClick={() => router.push('/contacts?new=true')}
+                  onClick={() => setIsNewClientModalOpen(true)}
                   className="bg-green-600 hover:bg-green-700 text-white"
                 >
                   <Plus className="h-4 w-4 mr-2" />
@@ -384,7 +386,7 @@ function ContasContent() {
                     <p className="text-gray-600 dark:text-gray-400 mb-4">
                       {contacts.length === 0 ? 'Nenhuma conta cadastrada ainda' : 'Nenhuma conta encontrada'}
                     </p>
-                    <Button>
+                    <Button onClick={() => setIsNewClientModalOpen(true)}>
                       <Plus className="h-4 w-4 mr-2" />
                       Adicionar Primeira Conta
                     </Button>
@@ -395,6 +397,13 @@ function ContasContent() {
           </div>
         </main>
       </div>
+      
+      {/* New Client Modal */}
+      <NewClientModal
+        isOpen={isNewClientModalOpen}
+        onClose={() => setIsNewClientModalOpen(false)}
+        onClientCreated={fetchContacts}
+      />
     </div>
   )
 }

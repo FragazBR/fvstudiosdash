@@ -28,11 +28,7 @@ export async function GET(request: NextRequest) {
       .from('contacts')
       .select(`
         *,
-        creator:created_by(id, name),
-        projects:projects(id, name, status),
-        interactions:contact_interactions(
-          id, type, date, notes, outcome, created_at
-        )
+        projects:projects(id, name, status, budget_total)
       `)
       .order('created_at', { ascending: false })
       .limit(limit);
@@ -63,7 +59,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch contacts' }, { status: 500 });
     }
     
-    return NextResponse.json({ contacts });
+    // Process contacts to add calculated fields
+    const processedContacts = (contacts || []).map(contact => ({
+      ...contact,
+      active_projects: contact.projects?.filter((p: any) => p.status === 'active' || p.status === 'in_progress').length || 0,
+      total_project_value: contact.projects?.reduce((sum: number, p: any) => sum + (p.budget_total || 0), 0) || 0,
+      last_interaction: contact.updated_at // Usar updated_at como última interação por enquanto
+    }));
+    
+    return NextResponse.json({ contacts: processedContacts });
   } catch (error) {
     console.error('Contacts API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

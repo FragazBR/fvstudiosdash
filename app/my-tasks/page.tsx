@@ -13,6 +13,7 @@ import { TaskDepartmentFilter, useTaskDepartmentFilter } from '@/components/task
 import { useUser } from '@/hooks/useUser'
 import { DepartmentInfo } from '@/components/department-selector'
 import { type TaskFilter, DepartmentPermission } from '@/types/departments'
+import { NewTaskModal } from '@/components/new-task-modal'
 import {
   Calendar,
   Clock,
@@ -109,6 +110,7 @@ function MyTasksContent() {
     inProgressTasks: 0,
     overdueTasks: 0
   })
+  const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false)
   
   // Check user permissions for departmental filtering
   const canViewAllTasks = user?.department_permissions?.includes(DepartmentPermission.VIEW_ALL) || false
@@ -332,7 +334,7 @@ function MyTasksContent() {
                   Ver Projetos
                 </Button>
                 <Button 
-                  onClick={() => window.location.href = '/projects?new=task'}
+                  onClick={() => setIsNewTaskModalOpen(true)}
                   className="bg-green-600 hover:bg-green-700 text-white"
                 >
                   <Circle className="h-4 w-4 mr-2" />
@@ -613,6 +615,13 @@ function MyTasksContent() {
           </div>
         </main>
       </div>
+      
+      {/* New Task Modal */}
+      <NewTaskModal
+        isOpen={isNewTaskModalOpen}
+        onClose={() => setIsNewTaskModalOpen(false)}
+        onTaskCreated={fetchAllTasks}
+      />
     </div>
   )
 }
