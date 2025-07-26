@@ -91,47 +91,36 @@ export function NewClientModal({ isOpen, onClose, onClientCreated }: NewClientMo
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('Form submitted with data:', formData);
+    
     if (!formData.name.trim()) {
-      toast({
-        title: "Erro",
-        description: "O nome é obrigatório.",
-        variant: "destructive",
-      });
+      alert("O nome é obrigatório.");
       return;
     }
 
     if (!formData.email.trim()) {
-      toast({
-        title: "Erro",
-        description: "O email é obrigatório.",
-        variant: "destructive",
-      });
+      alert("O email é obrigatório.");
       return;
     }
 
     // Validar formato do email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      toast({
-        title: "Erro",
-        description: "Por favor, insira um email válido.",
-        variant: "destructive",
-      });
+      alert("Por favor, insira um email válido.");
       return;
     }
 
     setLoading(true);
+    console.log('Starting client creation process...');
 
     try {
       // Get current user session
       const { data: { session } } = await supabase.auth.getSession();
+      console.log('Session:', session);
       
       if (!session?.user) {
-        toast({
-          title: "Erro",
-          description: "Você precisa estar logado para criar um cliente.",
-          variant: "destructive",
-        });
+        alert("Você precisa estar logado para criar um cliente.");
+        setLoading(false);
         return;
       }
 
@@ -144,14 +133,12 @@ export function NewClientModal({ isOpen, onClose, onClientCreated }: NewClientMo
 
       if (profileError || !userProfile) {
         console.error('Error fetching user profile:', profileError);
-        toast({
-          title: "Erro",
-          description: "Perfil de usuário não encontrado.",
-          variant: "destructive",
-        });
+        alert("Perfil de usuário não encontrado.");
         setLoading(false);
         return;
       }
+      
+      console.log('User profile:', userProfile);
 
       // Check if email already exists
       const { data: existingContact, error: existingError } = await supabase
@@ -162,24 +149,18 @@ export function NewClientModal({ isOpen, onClose, onClientCreated }: NewClientMo
       // Only show error if it's not "no rows found" error
       if (existingError && existingError.code !== 'PGRST116') {
         console.error('Error checking existing contact:', existingError);
-        toast({
-          title: "Erro",
-          description: "Erro ao verificar email existente.",
-          variant: "destructive",
-        });
+        alert("Erro ao verificar email existente.");
         setLoading(false);
         return;
       }
 
       if (existingContact && existingContact.length > 0) {
-        toast({
-          title: "Erro",
-          description: "Já existe um cliente com este email.",
-          variant: "destructive",
-        });
+        alert("Já existe um cliente com este email.");
         setLoading(false);
         return;
       }
+      
+      console.log('Email check passed, proceeding with creation...');
 
       const clientData = {
         name: formData.name.trim(),
@@ -210,11 +191,7 @@ export function NewClientModal({ isOpen, onClose, onClientCreated }: NewClientMo
 
       if (error) {
         console.error('Erro ao criar cliente:', error);
-        toast({
-          title: "Erro ao criar cliente",
-          description: `Não foi possível criar o cliente: ${error.message}`,
-          variant: "destructive",
-        });
+        alert(`Não foi possível criar o cliente: ${error.message}`);
         setLoading(false);
         return;
       }
@@ -237,10 +214,7 @@ export function NewClientModal({ isOpen, onClose, onClientCreated }: NewClientMo
         // Don't fail the whole process if interaction creation fails
       }
 
-      toast({
-        title: "Cliente criado com sucesso!",
-        description: `${formData.name} foi adicionado à sua lista de clientes.`,
-      });
+      alert(`Cliente ${formData.name} criado com sucesso!`);
 
       // Reset form
       setFormData({
@@ -261,17 +235,13 @@ export function NewClientModal({ isOpen, onClose, onClientCreated }: NewClientMo
 
     } catch (error) {
       console.error('Erro ao criar cliente:', error);
-      toast({
-        title: "Erro inesperado",
-        description: "Ocorreu um erro inesperado. Tente novamente.",
-        variant: "destructive",
-      });
-    } finally {
+      alert("Ocorreu um erro inesperado. Tente novamente.");
       setLoading(false);
     }
   };
 
   const handleChange = (field: string, value: string) => {
+    console.log(`Field changed: ${field} = ${value}`);
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -453,6 +423,7 @@ export function NewClientModal({ isOpen, onClose, onClientCreated }: NewClientMo
               type="submit"
               disabled={loading || !formData.name.trim() || !formData.email.trim()}
               className="bg-green-600 hover:bg-green-700"
+              onClick={() => console.log('Submit button clicked!')}
             >
               {loading ? (
                 <>
