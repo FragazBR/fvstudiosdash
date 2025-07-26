@@ -421,8 +421,8 @@ function QuickActions({ onCreateProject }: { onCreateProject: () => void }) {
       icon: <BarChart3 className="h-5 w-5" />,
       color: 'bg-gradient-to-r from-blue-500 to-cyan-500',
       action: () => {
-        router.push('/agency?tab=ai')
-        toast.success('Iniciando análise de campanhas...')
+        router.push('/intelligent/campaigns')
+        toast.success('Abrindo análise de campanhas...')
       },
       badge: 'IA'
     },
@@ -433,8 +433,8 @@ function QuickActions({ onCreateProject }: { onCreateProject: () => void }) {
       icon: <Target className="h-5 w-5" />,
       color: 'bg-gradient-to-r from-green-500 to-emerald-500',
       action: () => {
-        router.push('/agency?tab=ai')
-        toast.success('Otimizando orçamento com IA...')
+        router.push('/intelligent/budget')
+        toast.success('Abrindo otimização de orçamento...')
       },
       badge: 'Smart'
     },
@@ -445,8 +445,8 @@ function QuickActions({ onCreateProject }: { onCreateProject: () => void }) {
       icon: <Sparkles className="h-5 w-5" />,
       color: 'bg-gradient-to-r from-purple-500 to-pink-500',
       action: () => {
-        router.push('/agency?tab=ai')
-        toast.success('Gerando conteúdo com IA...')
+        router.push('/intelligent/content')
+        toast.success('Abrindo geração de conteúdo...')
       },
       badge: 'AI'
     },
@@ -457,8 +457,8 @@ function QuickActions({ onCreateProject }: { onCreateProject: () => void }) {
       icon: <TrendingUp className="h-5 w-5" />,
       color: 'bg-gradient-to-r from-indigo-500 to-purple-500',
       action: () => {
-        router.push('/agency?tab=ai')
-        toast.success('Gerando previsões...')
+        router.push('/intelligent/performance')
+        toast.success('Abrindo previsão de performance...')
       },
       badge: 'ML'
     },
@@ -469,8 +469,8 @@ function QuickActions({ onCreateProject }: { onCreateProject: () => void }) {
       icon: <Workflow className="h-5 w-5" />,
       color: 'bg-gradient-to-r from-orange-500 to-red-500',
       action: () => {
-        router.push('/agency?tab=ai')
-        toast.success('Configurando automação...')
+        router.push('/intelligent/reports')
+        toast.success('Abrindo automação de relatórios...')
       },
       badge: 'Auto'
     },
@@ -481,8 +481,8 @@ function QuickActions({ onCreateProject }: { onCreateProject: () => void }) {
       icon: <Brain className="h-5 w-5" />,
       color: 'bg-gradient-to-r from-yellow-500 to-orange-500',
       action: () => {
-        router.push('/agency?tab=ai')
-        toast.success('Gerando insights...')
+        router.push('/intelligent/insights')
+        toast.success('Abrindo insights inteligentes...')
       },
       badge: 'IA'
     },
@@ -492,7 +492,10 @@ function QuickActions({ onCreateProject }: { onCreateProject: () => void }) {
       description: 'Chat inteligente',
       icon: <Brain className="h-5 w-5" />,
       color: 'bg-gradient-to-r from-indigo-500 to-purple-500',
-      action: () => router.push('/workstation?tab=ai_assistant'),
+      action: () => {
+        router.push('/intelligent/assistant')
+        toast.success('Abrindo assistente IA...')
+      },
       badge: 'Chat'
     },
     {
@@ -501,7 +504,10 @@ function QuickActions({ onCreateProject }: { onCreateProject: () => void }) {
       description: 'Insights personalizados',
       icon: <Sparkles className="h-5 w-5" />,
       color: 'bg-gradient-to-r from-pink-500 to-rose-500',
-      action: () => router.push('/workstation?tab=recommendations'),
+      action: () => {
+        router.push('/intelligent/recommendations')
+        toast.success('Abrindo recomendações IA...')
+      },
       badge: 'Tips'
     },
     {
@@ -510,7 +516,10 @@ function QuickActions({ onCreateProject }: { onCreateProject: () => void }) {
       description: 'Predição de riscos',
       icon: <TrendingUp className="h-5 w-5" />,
       color: 'bg-gradient-to-r from-emerald-500 to-teal-500',
-      action: () => router.push('/workstation?tab=predictive'),
+      action: () => {
+        router.push('/intelligent/performance')
+        toast.success('Abrindo análise preditiva...')
+      },
       badge: 'ML'
     },
     {
@@ -519,7 +528,10 @@ function QuickActions({ onCreateProject }: { onCreateProject: () => void }) {
       description: 'Biblioteca com IA',
       icon: <Layout className="h-5 w-5" />,
       color: 'bg-gradient-to-r from-violet-500 to-purple-500',
-      action: () => router.push('/workstation?tab=templates'),
+      action: () => {
+        router.push('/intelligent/templates')
+        toast.success('Abrindo templates inteligentes...')
+      },
       badge: 'Smart'
     }
   ]
