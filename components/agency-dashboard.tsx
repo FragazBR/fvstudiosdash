@@ -425,7 +425,6 @@ export function AgencyDashboard() {
                             <SelectContent>
                               <SelectItem value="agency_manager">Gerente</SelectItem>
                               <SelectItem value="agency_staff">Colaborador</SelectItem>
-                              <SelectItem value="agency_client">Cliente</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>

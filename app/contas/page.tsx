@@ -39,7 +39,7 @@ interface Contact {
   phone?: string;
   company?: string;
   position?: string;
-  type: 'lead' | 'client' | 'prospect';
+  type: 'lead' | 'client' | 'prospect' | 'independent_client' | 'independent_lead' | 'independent_prospect';
   status: 'active' | 'inactive' | 'pending';
   created_at: string;
   last_interaction?: string;
@@ -59,9 +59,15 @@ const getStatusColor = (status: string) => {
 
 const getTypeColor = (type: string) => {
   switch (type) {
-    case 'client': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
-    case 'lead': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400'
-    case 'prospect': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400'
+    case 'client':
+    case 'independent_client': 
+      return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+    case 'lead':
+    case 'independent_lead': 
+      return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400'
+    case 'prospect':
+    case 'independent_prospect': 
+      return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400'
     default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
   }
 }
@@ -93,7 +99,7 @@ function ContasContent() {
         
         // Calcular estatísticas
         const totalContacts = data.contacts?.length || 0
-        const activeClients = data.contacts?.filter((c: Contact) => c.status === 'active' && c.type === 'client').length || 0
+        const activeClients = data.contacts?.filter((c: Contact) => c.status === 'active' && (c.type === 'client' || c.type === 'independent_client')).length || 0
         const activeProjects = data.contacts?.reduce((sum: number, c: Contact) => sum + (c.active_projects || 0), 0) || 0
         const totalRevenue = data.contacts?.reduce((sum: number, c: Contact) => sum + (c.total_project_value || 0), 0) || 0
         
@@ -306,7 +312,7 @@ function ContasContent() {
                                 {contact.status}
                               </Badge>
                               <Badge className={getTypeColor(contact.type)}>
-                                {contact.type}
+                                {contact.type.replace('independent_', '')}
                               </Badge>
                             </div>
                             <span className="text-sm text-gray-500">

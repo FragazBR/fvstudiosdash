@@ -24,10 +24,12 @@ import {
   Trash2,
   Edit,
   MoreHorizontal,
-  Send
+  Send,
+  UserPlus
 } from "lucide-react";
 import { useUser } from '@/hooks/useUser';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
+import { Switch } from "@/components/ui/switch";
 
 interface TeamMember {
   id: string;
@@ -54,8 +56,7 @@ interface Invitation {
 
 const ROLE_LABELS = {
   agency_manager: { label: 'Gerente', icon: Crown, color: 'bg-purple-100 text-purple-800' },
-  agency_staff: { label: 'Colaborador', icon: Shield, color: 'bg-blue-100 text-blue-800' },
-  agency_client: { label: 'Cliente', icon: User, color: 'bg-green-100 text-green-800' }
+  agency_staff: { label: 'Colaborador', icon: Shield, color: 'bg-blue-100 text-blue-800' }
 };
 
 export function TeamManagement() {
@@ -69,7 +70,9 @@ export function TeamManagement() {
     email: '',
     role: 'agency_staff',
     company: '',
-    phone: ''
+    phone: '',
+    password: '',
+    mode: 'direct' // 'direct' ou 'invite'
   });
 
   const canManageTeam = user?.can_manage_team || false;
@@ -87,7 +90,7 @@ export function TeamManagement() {
       const { data: members, error: membersError } = await supabaseBrowser()
         .from('user_profiles')
         .select('*')
-        .in('role', ['agency_manager', 'agency_staff', 'agency_client'])
+        .in('role', ['agency_manager', 'agency_staff'])
         .eq('agency_id', user?.agency_id || user?.id) // Filtrar pela agência
         .order('created_at', { ascending: false });
 
@@ -128,30 +131,60 @@ export function TeamManagement() {
     }
 
     try {
-      const { data, error } = await supabaseBrowser().rpc('create_user_invitation', {
-        p_email: inviteForm.email,
-        p_name: inviteForm.name,
-        p_role: inviteForm.role,
-        p_agency_id: user?.agency_id || user?.id,
-        p_company: inviteForm.company,
-        p_phone: inviteForm.phone,
-        p_welcome_message: `Você foi convidado para fazer parte da equipe da ${user?.company || 'nossa agência'}!`
-      });
+      if (inviteForm.mode === 'direct') {
+        // Cadastro direto com senha
+        const { data, error } = await supabaseBrowser().rpc('create_user_with_profile', {
+          p_email: inviteForm.email,
+          p_password: inviteForm.password,
+          p_name: inviteForm.name,
+          p_role: inviteForm.role,
+          p_agency_id: user?.agency_id || user?.id,
+          p_company: inviteForm.company,
+          p_phone: inviteForm.phone
+        });
 
-      if (error) {
-        console.error('Erro ao criar convite:', error);
-        toast.error('Erro ao enviar convite: ' + error.message);
-        return;
+        if (error) {
+          console.error('Erro ao criar usuário:', error);
+          toast.error('Erro ao criar usuário: ' + error.message);
+          return;
+        }
+
+        // Check if the function returned an error in the data
+        if (data && !data.success) {
+          console.error('Erro na função create_user_with_profile:', data.error);
+          toast.error('Erro ao criar usuário: ' + data.error);
+          return;
+        }
+
+        toast.success(`Colaborador ${inviteForm.name} criado com sucesso!`);
+      } else {
+        // Sistema de convite por email
+        const { data, error } = await supabaseBrowser().rpc('create_user_invitation', {
+          p_email: inviteForm.email,
+          p_name: inviteForm.name,
+          p_role: inviteForm.role,
+          p_agency_id: user?.agency_id || user?.id,
+          p_company: inviteForm.company,
+          p_phone: inviteForm.phone,
+          p_welcome_message: `Você foi convidado para fazer parte da equipe da ${user?.company || 'nossa agência'}!`
+        });
+
+        if (error) {
+          console.error('Erro ao criar convite:', error);
+          toast.error('Erro ao enviar convite: ' + error.message);
+          return;
+        }
+
+        toast.success(`Convite enviado para ${inviteForm.email}!`);
       }
 
-      toast.success(`Convite enviado para ${inviteForm.email}!`);
-      setInviteForm({ name: '', email: '', role: 'agency_staff', company: '', phone: '' });
+      setInviteForm({ name: '', email: '', role: 'agency_staff', company: '', phone: '', password: '', mode: 'direct' });
       setInviteDialogOpen(false);
       loadTeamData(); // Recarregar dados
 
     } catch (error) {
-      console.error('Erro ao enviar convite:', error);
-      toast.error('Erro ao enviar convite');
+      console.error('Erro ao processar solicitação:', error);
+      toast.error('Erro ao processar solicitação');
     }
   };
 
@@ -277,9 +310,31 @@ export function TeamManagement() {
               </DialogTrigger>
               <DialogContent className="max-w-md">
                 <DialogHeader>
-                  <DialogTitle>Convidar Novo Colaborador</DialogTitle>
+                  <DialogTitle>
+                    {inviteForm.mode === 'direct' ? 'Criar Colaborador' : 'Enviar Convite'}
+                  </DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleInviteSubmit} className="space-y-4">
+                  {/* Toggle para modo de criação */}
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      {inviteForm.mode === 'direct' ? (
+                        <UserPlus className="h-4 w-4 text-blue-500" />
+                      ) : (
+                        <Mail className="h-4 w-4 text-green-500" />
+                      )}
+                      <span className="text-sm font-medium">
+                        {inviteForm.mode === 'direct' ? 'Criar usuário direto' : 'Enviar convite por email'}
+                      </span>
+                    </div>
+                    <Switch
+                      checked={inviteForm.mode === 'invite'}
+                      onCheckedChange={(checked) => 
+                        setInviteForm({...inviteForm, mode: checked ? 'invite' : 'direct'})
+                      }
+                    />
+                  </div>
+
                   <div>
                     <Label htmlFor="name">Nome</Label>
                     <Input
@@ -312,9 +367,34 @@ export function TeamManagement() {
                       <SelectContent>
                         <SelectItem value="agency_manager">Gerente</SelectItem>
                         <SelectItem value="agency_staff">Colaborador</SelectItem>
-                        <SelectItem value="agency_client">Cliente</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  {/* Campo senha só aparece no modo direto */}
+                  {inviteForm.mode === 'direct' && (
+                    <div>
+                      <Label htmlFor="password">Senha</Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        value={inviteForm.password}
+                        onChange={(e) => setInviteForm({...inviteForm, password: e.target.value})}
+                        placeholder="Senha para acesso"
+                        required
+                        minLength={6}
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <Label htmlFor="company">Empresa (opcional)</Label>
+                    <Input
+                      id="company"
+                      value={inviteForm.company}
+                      onChange={(e) => setInviteForm({...inviteForm, company: e.target.value})}
+                      placeholder="Nome da empresa"
+                    />
                   </div>
 
                   <div>
@@ -328,8 +408,17 @@ export function TeamManagement() {
                   </div>
 
                   <Button type="submit" className="w-full">
-                    <Send className="h-4 w-4 mr-2" />
-                    Enviar Convite
+                    {inviteForm.mode === 'direct' ? (
+                      <>
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Criar Colaborador
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4 mr-2" />
+                        Enviar Convite
+                      </>
+                    )}
                   </Button>
                 </form>
               </DialogContent>

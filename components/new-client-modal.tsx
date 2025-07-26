@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from '@supabase/supabase-js';
+import { useUser } from '@/hooks/useUser';
 import {
   Dialog,
   DialogContent,
@@ -36,6 +37,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export function NewClientModal({ isOpen, onClose, onClientCreated }: NewClientModalProps) {
   const [loading, setLoading] = useState(false);
+  const [userRole, setUserRole] = useState<string>('');
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -50,6 +52,41 @@ export function NewClientModal({ isOpen, onClose, onClientCreated }: NewClientMo
   });
 
   const { toast } = useToast();
+  const { user } = useUser();
+
+  // Set default client type based on user role
+  useEffect(() => {
+    const setDefaultType = async () => {
+      let currentUserRole = user?.role;
+      
+      // If useUser hook didn't return role, fetch it directly
+      if (!currentUserRole) {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user) {
+            const { data: profile } = await supabase
+              .from('user_profiles')
+              .select('role')
+              .eq('id', session.user.id)
+              .single();
+            currentUserRole = profile?.role;
+          }
+        } catch (error) {
+          console.warn('Could not fetch user role:', error);
+        }
+      }
+      
+      setUserRole(currentUserRole || '');
+      
+      if (currentUserRole === 'independent_producer') {
+        setFormData(prev => ({ ...prev, type: "independent_client" }));
+      } else {
+        setFormData(prev => ({ ...prev, type: "client" }));
+      }
+    };
+    
+    setDefaultType();
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,34 +136,48 @@ export function NewClientModal({ isOpen, onClose, onClientCreated }: NewClientMo
       }
 
       // Get user profile to get agency_id
-      const { data: userProfile } = await supabase
+      const { data: userProfile, error: profileError } = await supabase
         .from('user_profiles')
-        .select('id, agency_id')
-        .eq('email', session.user.email)
+        .select('id, agency_id, role')
+        .eq('id', session.user.id)
         .single();
 
-      if (!userProfile) {
+      if (profileError || !userProfile) {
+        console.error('Error fetching user profile:', profileError);
         toast({
           title: "Erro",
           description: "Perfil de usuário não encontrado.",
           variant: "destructive",
         });
+        setLoading(false);
         return;
       }
 
       // Check if email already exists
-      const { data: existingContact } = await supabase
+      const { data: existingContact, error: existingError } = await supabase
         .from('contacts')
         .select('id')
-        .eq('email', formData.email.trim())
-        .single();
+        .eq('email', formData.email.trim().toLowerCase());
 
-      if (existingContact) {
+      // Only show error if it's not "no rows found" error
+      if (existingError && existingError.code !== 'PGRST116') {
+        console.error('Error checking existing contact:', existingError);
+        toast({
+          title: "Erro",
+          description: "Erro ao verificar email existente.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (existingContact && existingContact.length > 0) {
         toast({
           title: "Erro",
           description: "Já existe um cliente com este email.",
           variant: "destructive",
         });
+        setLoading(false);
         return;
       }
 
@@ -149,6 +200,8 @@ export function NewClientModal({ isOpen, onClose, onClientCreated }: NewClientMo
         custom_fields: {}
       };
 
+      console.log('Creating client with data:', clientData);
+
       const { data: contact, error } = await supabase
         .from('contacts')
         .insert([clientData])
@@ -159,22 +212,30 @@ export function NewClientModal({ isOpen, onClose, onClientCreated }: NewClientMo
         console.error('Erro ao criar cliente:', error);
         toast({
           title: "Erro ao criar cliente",
-          description: "Não foi possível criar o cliente. Tente novamente.",
+          description: `Não foi possível criar o cliente: ${error.message}`,
           variant: "destructive",
         });
+        setLoading(false);
         return;
       }
 
-      // Create initial interaction
-      await supabase
-        .from('contact_interactions')
-        .insert({
-          contact_id: contact.id,
-          type: 'note',
-          notes: `Cliente criado no sistema. Fonte: Manual`,
-          outcome: 'completed',
-          created_by: userProfile.id
-        });
+      console.log('Client created successfully:', contact);
+
+      // Create initial interaction (optional - don't fail if table doesn't exist)
+      try {
+        await supabase
+          .from('contact_interactions')
+          .insert({
+            contact_id: contact.id,
+            type: 'note',
+            notes: `Cliente criado no sistema. Fonte: Manual`,
+            outcome: 'completed',
+            created_by: userProfile.id
+          });
+      } catch (interactionError) {
+        console.warn('Could not create initial interaction:', interactionError);
+        // Don't fail the whole process if interaction creation fails
+      }
 
       toast({
         title: "Cliente criado com sucesso!",
@@ -188,7 +249,7 @@ export function NewClientModal({ isOpen, onClose, onClientCreated }: NewClientMo
         phone: "",
         company: "",
         position: "",
-        type: "client",
+        type: userRole === 'independent_producer' ? "independent_client" : "client",
         status: "active",
         notes: "",
         website: "",
@@ -320,9 +381,19 @@ export function NewClientModal({ isOpen, onClose, onClientCreated }: NewClientMo
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="client">Cliente</SelectItem>
-                  <SelectItem value="lead">Lead</SelectItem>
-                  <SelectItem value="prospect">Prospect</SelectItem>
+                  {userRole === 'independent_producer' ? (
+                    <>
+                      <SelectItem value="independent_client">Cliente</SelectItem>
+                      <SelectItem value="independent_lead">Lead</SelectItem>
+                      <SelectItem value="independent_prospect">Prospect</SelectItem>
+                    </>
+                  ) : (
+                    <>
+                      <SelectItem value="client">Cliente</SelectItem>
+                      <SelectItem value="lead">Lead</SelectItem>
+                      <SelectItem value="prospect">Prospect</SelectItem>
+                    </>
+                  )}
                 </SelectContent>
               </Select>
             </div>
