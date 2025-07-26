@@ -158,7 +158,7 @@ export function TaskDepartmentFilter({
                   <SelectValue placeholder="Todos departamentos" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos departamentos</SelectItem>
+                  <SelectItem value="all">Todos departamentos</SelectItem>
                   {availableDepartments.map((department) => (
                     <SelectItem key={department.id} value={department.id}>
                       <div className="flex items-center gap-2">
@@ -184,7 +184,7 @@ export function TaskDepartmentFilter({
                   <SelectValue placeholder="Todas especializações" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas especializações</SelectItem>
+                  <SelectItem value="all">Todas especializações</SelectItem>
                   {availableSpecializations.map((specialization) => (
                     <SelectItem key={specialization.id} value={specialization.id}>
                       {specialization.name}
@@ -206,7 +206,7 @@ export function TaskDepartmentFilter({
                 <SelectValue placeholder="Todas etapas" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas etapas</SelectItem>
+                <SelectItem value="all">Todas etapas</SelectItem>
                 {WORKFLOW_STAGES.map((stage) => (
                   <SelectItem key={stage.id} value={stage.id}>
                     {stage.name}
@@ -239,7 +239,7 @@ export function TaskDepartmentFilter({
                     <SelectValue placeholder="Todas pessoas" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todas pessoas</SelectItem>
+                    <SelectItem value="all">Todas pessoas</SelectItem>
                     {filteredAssignees.slice(0, 10).map((assignee) => (
                       <SelectItem key={assignee.id} value={assignee.id}>
                         <div className="flex items-center gap-2">

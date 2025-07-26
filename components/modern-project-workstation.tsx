@@ -375,7 +375,7 @@ export function ModernProjectWorkstation({ userId }: { userId: string }) {
   const [filters, setFilters] = useState<WorkstationFilters>({
     search: '',
     assignee: '',
-    priority: '',
+    priority: 'all',
     due_date: '',
     client: '',
     template: ''
@@ -643,7 +643,7 @@ export function ModernProjectWorkstation({ userId }: { userId: string }) {
                 <SelectValue placeholder="Prioridade" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas</SelectItem>
+                <SelectItem value="all">Todas</SelectItem>
                 <SelectItem value="urgent">Urgente</SelectItem>
                 <SelectItem value="high">Alta</SelectItem>
                 <SelectItem value="medium">Média</SelectItem>
