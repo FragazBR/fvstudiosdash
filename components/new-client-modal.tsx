@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClient } from '@supabase/supabase-js';
 import { useUser } from '@/hooks/useUser';
+import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import {
   Dialog,
   DialogContent,
@@ -31,9 +31,7 @@ interface NewClientModalProps {
   onClientCreated: () => void;
 }
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabase = supabaseBrowser();
 
 export function NewClientModal({ isOpen, onClose, onClientCreated }: NewClientModalProps) {
   const [loading, setLoading] = useState(false);
