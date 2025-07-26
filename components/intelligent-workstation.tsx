@@ -121,30 +121,40 @@ function IntelligentHeader() {
   })
 
   useEffect(() => {
-    loadStats()
-  }, [])
+    if (user) {
+      loadStats()
+    }
+  }, [user])
 
   const loadStats = async () => {
     try {
       const supabase = supabaseBrowser()
       
-      // Carregar estatísticas em paralelo
-      const [projectsResult, stagesResult] = await Promise.all([
-        supabase.from('projects').select('status'),
-        supabase.from('project_stages').select('status, created_at, updated_at')
+      // Verificar se o usuário tem agency_id
+      if (!user?.agency_id) {
+        console.log('Usuário sem agency_id para estatísticas:', user)
+        return
+      }
+      
+      // Carregar estatísticas em paralelo - apenas da agência do usuário
+      const [projectsResult, tasksResult] = await Promise.all([
+        supabase.from('projects').select('status').eq('agency_id', user.agency_id),
+        supabase.from('tasks').select('status, created_at, updated_at').eq('agency_id', user.agency_id)
       ])
 
       const projects = projectsResult.data || []
-      const stages = stagesResult.data || []
+      const tasks = tasksResult.data || []
+
+      console.log('Estatísticas carregadas:', { projects, tasks })
 
       setStats({
         total_projects: projects.length,
         active_projects: projects.filter(p => p.status === 'active').length,
         completed_projects: projects.filter(p => p.status === 'completed').length,
         overdue_projects: projects.filter(p => p.status === 'overdue').length,
-        total_stages: stages.length,
-        completed_stages: stages.filter(s => s.status === 'completed').length,
-        team_velocity: calculateVelocity(stages),
+        total_stages: tasks.length, // Usando tasks como etapas
+        completed_stages: tasks.filter(s => s.status === 'concluido').length,
+        team_velocity: calculateVelocity(tasks),
         automation_rate: 85, // Mock - seria calculado baseado em projetos auto-gerados
         avg_completion_time: 14 // Mock - média de dias para conclusão
       })
@@ -153,14 +163,14 @@ function IntelligentHeader() {
     }
   }
 
-  const calculateVelocity = (stages: any[]): number => {
-    const recentStages = stages.filter(stage => {
-      const updatedAt = new Date(stage.updated_at)
+  const calculateVelocity = (tasks: any[]): number => {
+    const recentTasks = tasks.filter(task => {
+      const updatedAt = new Date(task.updated_at)
       const weekAgo = new Date()
       weekAgo.setDate(weekAgo.getDate() - 7)
-      return updatedAt > weekAgo && stage.status === 'completed'
+      return updatedAt > weekAgo && task.status === 'concluido'
     })
-    return recentStages.length
+    return recentTasks.length
   }
 
   const progressPercentage = stats.total_stages > 0 ? Math.round((stats.completed_stages / stats.total_stages) * 100) : 0

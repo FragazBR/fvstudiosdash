@@ -61,6 +61,7 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { ProjectStage, ProjectAutomationEngine } from '@/lib/project-automation'
 import { supabaseBrowser } from '@/lib/supabaseBrowser'
+import { useUser } from '@/hooks/useUser'
 
 // Interfaces
 interface ProjectCard {
@@ -367,6 +368,7 @@ function KanbanColumn({ column, onAddCard }: { column: Column; onAddCard: (colum
 // ==================================================
 
 export function ModernProjectWorkstation({ userId }: { userId: string }) {
+  const { user } = useUser()
   const [columns, setColumns] = useState<Column[]>([])
   const [activeCard, setActiveCard] = useState<ProjectCard | null>(null)
   const [loading, setLoading] = useState(true)
@@ -397,13 +399,22 @@ export function ModernProjectWorkstation({ userId }: { userId: string }) {
 
   // Carregar dados dos projetos
   useEffect(() => {
-    loadProjectData()
-  }, [userId, filters, view])
+    if (user) {
+      loadProjectData()
+    }
+  }, [user, userId, filters, view])
 
   const loadProjectData = async () => {
     try {
       setLoading(true)
       const supabase = supabaseBrowser()
+      
+      // Verificar se o usuário está logado e tem agency_id
+      if (!user?.agency_id) {
+        console.log('Usuário sem agency_id:', user)
+        setColumns([])
+        return
+      }
       
       let query = supabase
         .from('projects')
@@ -411,7 +422,7 @@ export function ModernProjectWorkstation({ userId }: { userId: string }) {
           *,
           client:contacts(id, name)
         `)
-        .eq('status', 'active')
+        .eq('agency_id', user.agency_id)
 
       // Aplicar filtros
       if (filters.search) {
@@ -424,6 +435,8 @@ export function ModernProjectWorkstation({ userId }: { userId: string }) {
       const { data: projects, error } = await query
 
       if (error) throw error
+
+      console.log('Projetos carregados:', projects)
 
       // Transformar dados para o formato do Kanban
       const transformedData = transformProjectsToKanban(projects || [])
@@ -445,34 +458,30 @@ export function ModernProjectWorkstation({ userId }: { userId: string }) {
     ]
 
     return statusColumns.map(columnDef => {
+      // Filtrar projetos por status - mapear status do banco para Kanban
       const columnProjects = projects.filter(project => {
-        const mainStage = project.project_stages?.[0]
-        return mainStage?.status === columnDef.status
+        if (columnDef.status === 'in_progress') return project.status === 'active'
+        return project.status === columnDef.status
       })
 
       const cards: ProjectCard[] = columnProjects.map(project => {
-        const mainStage = project.project_stages?.[0] || {}
         return {
           id: project.id,
-          title: project.name,
+          title: project.name || 'Projeto sem nome',
           description: project.description,
-          status: mainStage.status || 'pending',
+          status: columnDef.status as any,
           priority: project.priority || 'medium',
-          assignee: mainStage.assignee ? {
-            id: mainStage.assignee.id,
-            name: mainStage.assignee.name,
-            avatar: mainStage.assignee.avatar_url
-          } : undefined,
-          due_date: mainStage.estimated_end_date,
-          progress: mainStage.progress_percentage || 0,
-          tags: project.tags || [],
-          comments_count: 0, // TODO: Implementar contagem real
-          attachments_count: 0, // TODO: Implementar contagem real
+          assignee: undefined, // Será implementado com user_profiles
+          due_date: project.due_date,
+          progress: project.progress || 0,
+          tags: Array.isArray(project.tags) ? project.tags : [],
+          comments_count: 0,
+          attachments_count: 0,
           estimated_hours: project.estimated_hours,
-          client_name: project.client?.name,
+          client_name: project.client?.name || 'Cliente não definido',
           budget: project.budget_total,
-          stage_color: mainStage.color || columnDef.color,
-          template_name: project.template?.name
+          stage_color: columnDef.color,
+          template_name: undefined
         }
       })
 
