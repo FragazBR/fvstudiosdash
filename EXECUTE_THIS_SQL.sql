@@ -18,6 +18,16 @@ BEGIN
     END IF;
 END $$;
 
+-- 1.1. Verificar e adicionar coluna address na tabela contacts
+DO $$
+BEGIN
+    -- Adicionar address se não existir
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='contacts' AND column_name='address') THEN
+        ALTER TABLE contacts ADD COLUMN address TEXT;
+        RAISE NOTICE 'Coluna address adicionada à tabela contacts';
+    END IF;
+END $$;
+
 -- 2. Atualizar tarefas existentes com agency_id
 UPDATE tasks 
 SET agency_id = (
