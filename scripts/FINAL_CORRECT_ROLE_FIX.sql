@@ -22,11 +22,11 @@ ORDER BY created_at DESC
 LIMIT 3;
 
 -- STEP 4: CORREÇÃO COMPLETA
--- IMPORTANTE: Substitua 'SEU_EMAIL_AQUI' pelo seu email real
+-- IMPORTANTE: Substitua 'agencyowner@test.com' pelo seu email real
 
 DO $$
 DECLARE
-    user_email TEXT := 'SEU_EMAIL_AQUI'; -- SUBSTITUA PELO SEU EMAIL
+    user_email TEXT := 'agencyowner@test.com';
     user_id UUID;
     user_agency_id UUID;
     new_agency_id UUID;
@@ -94,7 +94,7 @@ SELECT
     END as status_final
 FROM user_profiles up
 LEFT JOIN agencies a ON up.agency_id = a.id
-WHERE up.email = 'SEU_EMAIL_AQUI' -- SUBSTITUA PELO SEU EMAIL
+WHERE up.email = 'agencyowner@test.com'
 ORDER BY up.updated_at DESC;
 
 -- STEP 6: Verificar permissões
@@ -109,4 +109,4 @@ SELECT
         ELSE 'Sidebar limitada: SIM ✗'
     END as sidebar_status
 FROM user_profiles 
-WHERE email = 'SEU_EMAIL_AQUI'; -- SUBSTITUA PELO SEU EMAIL
+WHERE email = 'agencyowner@test.com';

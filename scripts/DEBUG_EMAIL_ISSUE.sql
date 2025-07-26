@@ -3,11 +3,11 @@
 -- 1. VERIFICAR se o email realmente existe (substitua pelo email que você testou)
 SELECT 'auth.users' as tabela, email, id, created_at 
 FROM auth.users 
-WHERE email = 'SEU_EMAIL_AQUI@exemplo.com';
+WHERE email = 'agencymanager@test.com';
 
 SELECT 'user_profiles' as tabela, email, id, name, created_at 
 FROM user_profiles 
-WHERE email = 'SEU_EMAIL_AQUI@exemplo.com';
+WHERE email = 'agencymanager@test.com';
 
 -- 2. VERIFICAR todos os emails que existem (para ver se há duplicatas)
 SELECT email, COUNT(*) as total

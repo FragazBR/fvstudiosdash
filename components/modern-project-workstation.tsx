@@ -409,13 +409,7 @@ export function ModernProjectWorkstation({ userId }: { userId: string }) {
         .from('projects')
         .select(`
           *,
-          client:contacts(id, name),
-          project_stages(
-            id, name, status, progress_percentage, estimated_start_date, 
-            estimated_end_date, assigned_user_id, color,
-            assignee:user_profiles(id, name, avatar_url)
-          ),
-          template:project_templates(name, color)
+          client:contacts(id, name)
         `)
         .eq('status', 'active')
 

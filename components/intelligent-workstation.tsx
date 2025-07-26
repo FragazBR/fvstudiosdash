@@ -39,7 +39,7 @@ import {
   Eye,
   Bell,
   Rocket,
-  Lightning,
+  Bolt,
   Cpu,
   Database,
   Globe,
@@ -423,7 +423,7 @@ function QuickActions({ onCreateProject }: { onCreateProject: () => void }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Lightning className="h-5 w-5 text-yellow-500" />
+          <Bolt className="h-5 w-5 text-yellow-500" />
           Ações Rápidas
         </CardTitle>
       </CardHeader>
