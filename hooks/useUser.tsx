@@ -16,6 +16,10 @@ interface UserProfile {
   phone?: string;
   avatar_url?: string;
   company?: string;
+  bio?: string;
+  location?: string;
+  website?: string;
+  created_at?: string;
   // Permissões departamentais
   department_permissions?: DepartmentPermission[];
   can_assign_tasks?: boolean;
@@ -27,12 +31,14 @@ interface UserContextType {
   user: UserProfile | null;
   loading: boolean;
   supabaseUser: User | null;
+  refreshUser: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType>({ 
   user: null, 
   loading: true,
-  supabaseUser: null 
+  supabaseUser: null,
+  refreshUser: async () => {}
 });
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
@@ -41,90 +47,98 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const supabase = supabaseBrowser();
 
-  useEffect(() => {
-    async function fetchUser() {
-      setLoading(true);
+  async function fetchUser() {
+    setLoading(true);
+    
+    try {
+      // Pega a sessão atual
+      const { data: { session } } = await supabase.auth.getSession();
       
-      try {
-        // Pega a sessão atual
-        const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setSupabaseUser(session.user);
         
-        if (session?.user) {
-          setSupabaseUser(session.user);
+        // Busca o perfil do usuário na tabela user_profiles
+        const { data: profile, error } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+
+        if (profile && !error) {
+          setUser({
+            id: profile.id,
+            name: profile.name || undefined,
+            email: profile.email || session.user.email || undefined,
+            role: profile.role || undefined,
+            agency_id: profile.agency_id || undefined,
+            department_id: profile.department_id || undefined,
+            specialization_id: profile.specialization_id || undefined,
+            skills: profile.skills ? JSON.parse(profile.skills) : undefined,
+            phone: profile.phone || undefined,
+            avatar_url: profile.avatar_url || undefined,
+            bio: profile.bio || undefined,
+            location: profile.location || undefined,
+            website: profile.website || undefined,
+            created_at: profile.created_at || undefined,
+            // Definir permissões baseadas no role
+            department_permissions: getDepartmentPermissions(profile.role, profile.specialization_id),
+            can_assign_tasks: ['agency_owner', 'agency_manager', 'agency_staff'].includes(profile.role),
+            can_view_team_metrics: ['agency_owner', 'agency_manager', 'agency_staff'].includes(profile.role),
+            can_manage_team: ['agency_owner', 'agency_manager'].includes(profile.role),
+          });
+        } else {
+          // Se não tem perfil, cria um básico
+          // Determinar role baseado no email
+          let defaultRole = 'free_user';
+          const email = session.user.email || '';
           
-          // Busca o perfil do usuário na tabela user_profiles
-          const { data: profile, error } = await supabase
+          if (email.includes('@fvstudios.com')) {
+            defaultRole = 'admin';
+          } else if (email.includes('@admin.')) {
+            defaultRole = 'admin';
+          }
+          
+          const { data: newProfile } = await supabase
             .from('user_profiles')
-            .select('*')
-            .eq('id', session.user.id)
+            .insert({
+              id: session.user.id,
+              email: session.user.email,
+              name: session.user.email?.split('@')[0] || 'Usuário',
+              role: defaultRole,
+            })
+            .select()
             .single();
 
-          if (profile && !error) {
+          if (newProfile) {
             setUser({
-              id: profile.id,
-              name: profile.name || undefined,
-              email: profile.email || session.user.email || undefined,
-              role: profile.role || undefined,
-              agency_id: profile.agency_id || undefined,
-              department_id: profile.department_id || undefined,
-              specialization_id: profile.specialization_id || undefined,
-              skills: profile.skills ? JSON.parse(profile.skills) : undefined,
-              phone: profile.phone || undefined,
-              avatar_url: profile.avatar_url || undefined,
-              // Definir permissões baseadas no role
-              department_permissions: getDepartmentPermissions(profile.role, profile.specialization_id),
-              can_assign_tasks: ['agency_owner', 'agency_manager', 'agency_staff'].includes(profile.role),
-              can_view_team_metrics: ['agency_owner', 'agency_manager', 'agency_staff'].includes(profile.role),
-              can_manage_team: ['agency_owner', 'agency_manager'].includes(profile.role),
+              id: newProfile.id,
+              name: newProfile.name || undefined,
+              email: newProfile.email || undefined,
+              role: newProfile.role || undefined,
+              agency_id: newProfile.agency_id || undefined,
+              phone: newProfile.phone || undefined,
+              avatar_url: newProfile.avatar_url || undefined,
+              bio: newProfile.bio || undefined,
+              location: newProfile.location || undefined,
+              website: newProfile.website || undefined,
+              created_at: newProfile.created_at || undefined,
             });
-          } else {
-            // Se não tem perfil, cria um básico
-            // Determinar role baseado no email
-            let defaultRole = 'free_user';
-            const email = session.user.email || '';
-            
-            if (email.includes('@fvstudios.com')) {
-              defaultRole = 'admin';
-            } else if (email.includes('@admin.')) {
-              defaultRole = 'admin';
-            }
-            
-            const { data: newProfile } = await supabase
-              .from('user_profiles')
-              .insert({
-                id: session.user.id,
-                email: session.user.email,
-                name: session.user.email?.split('@')[0] || 'Usuário',
-                role: defaultRole,
-              })
-              .select()
-              .single();
-
-            if (newProfile) {
-              setUser({
-                id: newProfile.id,
-                name: newProfile.name || undefined,
-                email: newProfile.email || undefined,
-                role: newProfile.role || undefined,
-                agency_id: newProfile.agency_id || undefined,
-                phone: newProfile.phone || undefined,
-                avatar_url: newProfile.avatar_url || undefined,
-              });
-            }
           }
-        } else {
-          setUser(null);
-          setSupabaseUser(null);
         }
-      } catch (error) {
-        console.error('Error fetching user:', error);
+      } else {
         setUser(null);
         setSupabaseUser(null);
-      } finally {
-        setLoading(false);
       }
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      setUser(null);
+      setSupabaseUser(null);
+    } finally {
+      setLoading(false);
     }
+  }
 
+  useEffect(() => {
     fetchUser();
 
     // Escuta mudanças de autenticação
@@ -144,7 +158,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, loading, supabaseUser }}>
+    <UserContext.Provider value={{ user, loading, supabaseUser, refreshUser: fetchUser }}>
       {children}
     </UserContext.Provider>
   );

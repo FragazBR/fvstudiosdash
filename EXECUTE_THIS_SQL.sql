@@ -119,6 +119,35 @@ BEGIN
         ALTER TABLE user_profiles ADD COLUMN specialization_id UUID;
         RAISE NOTICE 'Coluna specialization_id adicionada à tabela user_profiles';
     END IF;
+    
+    -- Adicionar bio se não existir
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='user_profiles' AND column_name='bio') THEN
+        ALTER TABLE user_profiles ADD COLUMN bio TEXT;
+        RAISE NOTICE 'Coluna bio adicionada à tabela user_profiles';
+    END IF;
+    
+    -- Adicionar location se não existir
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='user_profiles' AND column_name='location') THEN
+        ALTER TABLE user_profiles ADD COLUMN location TEXT;
+        RAISE NOTICE 'Coluna location adicionada à tabela user_profiles';
+    END IF;
+    
+    -- Adicionar website se não existir
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='user_profiles' AND column_name='website') THEN
+        ALTER TABLE user_profiles ADD COLUMN website TEXT;
+        RAISE NOTICE 'Coluna website adicionada à tabela user_profiles';
+    END IF;
+END $$;
+
+-- 1.3. Criar bucket para avatars (se não existir)
+DO $$
+BEGIN
+    -- Inserir o bucket para avatars se não existir
+    INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+    VALUES ('avatars', 'avatars', true, 5242880, ARRAY['image/*'])
+    ON CONFLICT (id) DO NOTHING;
+    
+    RAISE NOTICE 'Bucket avatars criado ou já existe';
 END $$;
 
 -- 2. Atualizar tarefas existentes com agency_id
