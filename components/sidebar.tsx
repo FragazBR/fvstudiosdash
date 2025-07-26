@@ -353,7 +353,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
 
         <div className="h-[calc(100vh-4rem)] px-3 py-4">
           <nav className="space-y-1 mb-6">
-            <NavItem href={getHomePage()} icon={Home}>Home</NavItem>
+            <NavItem href="/home" icon={Home}>Home</NavItem>
             <NavItem href="/dashboard" icon={LayoutGrid}>Dashboard</NavItem>
             
             {/* Contas - para quem pode gerenciar clientes */}
