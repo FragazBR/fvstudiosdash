@@ -528,9 +528,10 @@ export function AgencyManagementPage() {
           </div>
 
           <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="contracts">Contratos</TabsTrigger>
+          <TabsTrigger value="financial">Controle Financeiro</TabsTrigger>
           <TabsTrigger value="profitability">Rentabilidade</TabsTrigger>
           <TabsTrigger value="client-growth">Cliente</TabsTrigger>
           <TabsTrigger value="agency-growth">Agência</TabsTrigger>
@@ -798,6 +799,380 @@ export function AgencyManagementPage() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </TabsContent>
+
+        {/* Financial Control Tab */}
+        <TabsContent value="financial" className="space-y-6">
+          {/* Financial Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Entradas Este Mês</p>
+                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">R$ 148.000</p>
+                    <div className="flex items-center gap-1 mt-1">
+                      <TrendingUp className="h-3 w-3 text-green-500" />
+                      <span className="text-xs text-green-600">+12.3%</span>
+                    </div>
+                  </div>
+                  <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                    <ArrowUp className="h-5 w-5 text-green-600 dark:text-green-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Saídas Este Mês</p>
+                    <p className="text-2xl font-bold text-red-600 dark:text-red-400">R$ 98.000</p>
+                    <div className="flex items-center gap-1 mt-1">
+                      <TrendingUp className="h-3 w-3 text-red-500" />
+                      <span className="text-xs text-red-600">+8.5%</span>
+                    </div>
+                  </div>
+                  <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                    <ArrowDown className="h-5 w-5 text-red-600 dark:text-red-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Lucro Líquido</p>
+                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">R$ 50.000</p>
+                    <div className="flex items-center gap-1 mt-1">
+                      <TrendingUp className="h-3 w-3 text-blue-500" />
+                      <span className="text-xs text-blue-600">+18.2%</span>
+                    </div>
+                  </div>
+                  <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                    <DollarSign className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Margem Líquida</p>
+                    <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">33.8%</p>
+                    <div className="flex items-center gap-1 mt-1">
+                      <TrendingUp className="h-3 w-3 text-purple-500" />
+                      <span className="text-xs text-purple-600">+4.1%</span>
+                    </div>
+                  </div>
+                  <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                    <PieChart className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Financial Transactions */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Recent Income */}
+            <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <ArrowUp className="h-5 w-5 text-green-500" />
+                  Entradas Recentes
+                </CardTitle>
+                <Button variant="outline" size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nova Entrada
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                        <Building2 className="h-4 w-4 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Nike Brasil - Mensalidade</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">25 Jul 2024</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-green-600">+ R$ 25.000</p>
+                      <p className="text-xs text-gray-500">Recebido</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                        <Building2 className="h-4 w-4 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Adidas Sport - Monthly</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">24 Jul 2024</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-green-600">+ R$ 18.000</p>
+                      <p className="text-xs text-gray-500">Recebido</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
+                        <Clock className="h-4 w-4 text-yellow-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Local Store - Projeto</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">15 Jul 2024</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-yellow-600">R$ 5.000</p>
+                      <p className="text-xs text-gray-500">Pendente</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                        <Building2 className="h-4 w-4 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Tech Startup - Setup</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">20 Jul 2024</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-green-600">+ R$ 12.500</p>
+                      <p className="text-xs text-gray-500">Recebido</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Recent Expenses */}
+            <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <ArrowDown className="h-5 w-5 text-red-500" />
+                  Saídas Recentes
+                </CardTitle>
+                <Button variant="outline" size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nova Saída
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                        <Users className="h-4 w-4 text-red-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Folha de Pagamento</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">25 Jul 2024</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-red-600">- R$ 45.000</p>
+                      <p className="text-xs text-gray-500">Pago</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                        <Building2 className="h-4 w-4 text-red-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Aluguel Escritório</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">20 Jul 2024</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-red-600">- R$ 8.500</p>
+                      <p className="text-xs text-gray-500">Pago</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                        <Settings className="h-4 w-4 text-red-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Softwares e Ferramentas</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">18 Jul 2024</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-red-600">- R$ 3.200</p>
+                      <p className="text-xs text-gray-500">Pago</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                        <Target className="h-4 w-4 text-red-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Facebook Ads - Cliente</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">15 Jul 2024</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-red-600">- R$ 15.000</p>
+                      <p className="text-xs text-gray-500">Pago</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Financial Categories */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Income Categories */}
+            <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-green-500" />
+                  Categorias de Entrada
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Contratos Mensais</span>
+                    <span className="font-medium text-green-600">R$ 110.000</span>
+                  </div>
+                  <Progress value={74} className="h-2" />
+                </div>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Projetos Únicos</span>
+                    <span className="font-medium text-green-600">R$ 25.000</span>
+                  </div>
+                  <Progress value={17} className="h-2" />
+                </div>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Consultoria</span>
+                    <span className="font-medium text-green-600">R$ 13.000</span>
+                  </div>
+                  <Progress value={9} className="h-2" />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Expense Categories */}
+            <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingDown className="h-5 w-5 text-red-500" />
+                  Categorias de Saída
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Pessoal</span>
+                    <span className="font-medium text-red-600">R$ 45.000</span>
+                  </div>
+                  <Progress value={46} className="h-2" />
+                </div>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Marketing/Ads</span>
+                    <span className="font-medium text-red-600">R$ 25.000</span>
+                  </div>
+                  <Progress value={26} className="h-2" />
+                </div>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Operacional</span>
+                    <span className="font-medium text-red-600">R$ 15.500</span>
+                  </div>
+                  <Progress value={16} className="h-2" />
+                </div>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Ferramentas</span>
+                    <span className="font-medium text-red-600">R$ 12.500</span>
+                  </div>
+                  <Progress value={12} className="h-2" />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Cash Flow Prediction */}
+            <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5 text-blue-500" />
+                  Fluxo de Caixa
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Saldo Atual</p>
+                  <p className="text-2xl font-bold text-blue-600">R$ 85.300</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Próximos 30 dias</p>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Entradas previstas</span>
+                      <span className="text-green-600">+ R$ 125.000</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Saídas previstas</span>
+                      <span className="text-red-600">- R$ 95.000</span>
+                    </div>
+                    <div className="border-t pt-2">
+                      <div className="flex justify-between font-medium">
+                        <span>Saldo projetado</span>
+                        <span className="text-blue-600">R$ 115.300</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Button className="bg-green-600 hover:bg-green-700 text-white">
+              <Plus className="h-4 w-4 mr-2" />
+              Registrar Entrada
+            </Button>
+            <Button variant="outline" className="border-red-600 text-red-600 hover:bg-red-50">
+              <Minus className="h-4 w-4 mr-2" />
+              Registrar Saída
+            </Button>
+            <Button variant="outline">
+              <Download className="h-4 w-4 mr-2" />
+              Exportar Relatório
+            </Button>
+            <Button variant="outline">
+              <Eye className="h-4 w-4 mr-2" />
+              Ver Extrato Completo
+            </Button>
           </div>
         </TabsContent>
 
