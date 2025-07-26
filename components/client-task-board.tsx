@@ -74,9 +74,9 @@ const mapKanbanStatusToApi = (kanbanStatus: FivePhaseStatus): string => {
 const getProgressByPhase = (kanbanStatus: FivePhaseStatus): number => {
   switch (kanbanStatus) {
     case 'todo': return 0          // A fazer - 0%
-    case 'in-progress': return 25  // Em execução - 25%
-    case 'approval': return 50     // Aprovação - 50%
-    case 'finalization': return 75 // Finalização - 75%
+    case 'in-progress': return 50  // Em execução - 50%
+    case 'approval': return 75     // Aprovação - 75%
+    case 'finalization': return 90 // Finalização - 90%
     case 'done': return 100        // Concluído - 100%
     default: return 0
   }
@@ -287,21 +287,21 @@ export default function ClientTaskBoard({ clientId, onTaskCreated }: ClientTaskB
             status="in-progress"
             tasks={getTasksByStatus("in-progress")}
             onTaskMove={handleTaskMove}
-            progressPercentage={25}
+            progressPercentage={50}
           />
           <ClientTaskColumn
             title="Aprovação"
             status="approval"
             tasks={getTasksByStatus("approval")}
             onTaskMove={handleTaskMove}
-            progressPercentage={50}
+            progressPercentage={75}
           />
           <ClientTaskColumn
             title="Finalização"
             status="finalization"
             tasks={getTasksByStatus("finalization")}
             onTaskMove={handleTaskMove}
-            progressPercentage={75}
+            progressPercentage={90}
           />
           <ClientTaskColumn
             title="Concluído"
