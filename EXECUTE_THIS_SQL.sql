@@ -50,6 +50,12 @@ BEGIN
         ALTER TABLE contacts ADD COLUMN source TEXT DEFAULT 'Manual';
         RAISE NOTICE 'Coluna source adicionada à tabela contacts';
     END IF;
+    
+    -- Adicionar notes se não existir
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='contacts' AND column_name='notes') THEN
+        ALTER TABLE contacts ADD COLUMN notes TEXT;
+        RAISE NOTICE 'Coluna notes adicionada à tabela contacts';
+    END IF;
 END $$;
 
 -- 2. Atualizar tarefas existentes com agency_id
