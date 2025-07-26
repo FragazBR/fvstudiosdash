@@ -378,7 +378,10 @@ export function WorkstationPage() {
                 <Eye className="h-4 w-4 mr-2" />
                 Visão Geral
               </Button>
-              <Button className="bg-[#64f481] hover:bg-[#50d66f] text-black">
+              <Button 
+                onClick={() => window.location.href = '/projects/new'}
+                className="bg-[#64f481] hover:bg-[#50d66f] text-black"
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Novo Projeto
               </Button>

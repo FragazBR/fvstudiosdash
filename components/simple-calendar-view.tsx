@@ -336,7 +336,14 @@ export default function SimpleCalendarView({
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
-        <div>
+        <div className="flex items-center gap-3">
+          <Button 
+            onClick={() => setIsNewEventFormOpen(true)}
+            className="bg-green-600 hover:bg-green-700 text-white"
+            disabled={loading}
+          >
+            + Novo Evento
+          </Button>
           <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
             {loading ? 'Carregando...' : `${filteredEvents.length} tarefas`}
           </Badge>

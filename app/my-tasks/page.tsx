@@ -121,9 +121,13 @@ function MyTasksContent() {
 
   const fetchAllTasks = async () => {
     try {
+      console.log('Fetching tasks from /api/tasks...')
       const response = await fetch('/api/tasks')
+      console.log('Response status:', response.status)
+      
       if (response.ok) {
         const data = await response.json()
+        console.log('Tasks data received:', data)
         const tasksData = data.tasks || []
         
         // Ordenar por prioridade de entrega
@@ -165,9 +169,15 @@ function MyTasksContent() {
           inProgressTasks,
           overdueTasks
         })
+      } else {
+        console.error('Failed to fetch tasks. Status:', response.status)
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        console.error('Error details:', errorData)
+        setTasks([])
       }
     } catch (error) {
       console.error('Error fetching tasks:', error)
+      setTasks([])
     } finally {
       setLoading(false)
     }
@@ -312,6 +322,22 @@ function MyTasksContent() {
                 <p className="text-gray-600 dark:text-gray-400 mt-2">
                   Todas as suas tarefas organizadas por prioridade de entrega
                 </p>
+              </div>
+              <div className="flex gap-3 mt-4 sm:mt-0">
+                <Button 
+                  onClick={() => window.location.href = '/projects'}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <FolderKanban className="h-4 w-4 mr-2" />
+                  Ver Projetos
+                </Button>
+                <Button 
+                  onClick={() => window.location.href = '/projects?new=task'}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <Circle className="h-4 w-4 mr-2" />
+                  Nova Tarefa
+                </Button>
               </div>
             </div>
 

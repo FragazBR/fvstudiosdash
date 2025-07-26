@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -28,93 +28,40 @@ import {
 } from 'lucide-react'
 import { type Message, type Conversation, type AIAgent } from '@/types/workflow'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useUser } from '@/hooks/useUser'
+import { supabaseBrowser } from '@/lib/supabaseBrowser'
 
-// Mock data para demonstração
-const mockConversations: Conversation[] = [
-  {
-    id: '1',
-    participants: ['user-1', 'client-1'],
-    type: 'direct',
-    updatedAt: new Date(),
-    lastMessage: {
-      id: '1',
-      senderId: 'client-1',
-      receiverId: 'user-1',
-      content: 'Olá! Como está o andamento do projeto?',
-      type: 'text',
-      timestamp: new Date(),
-      read: false,
-      conversationId: '1'
-    }
-  },
-  {
-    id: '2',
-    participants: ['user-1', 'team-1', 'team-2'],
-    type: 'group',
-    projectId: 'project-1',
-    updatedAt: new Date(Date.now() - 3600000),
-    lastMessage: {
-      id: '2',
-      senderId: 'team-1',
-      receiverId: 'user-1',
-      content: 'Arquivo de criativo anexado',
-      type: 'file',
-      timestamp: new Date(Date.now() - 3600000),
-      read: true,
-      conversationId: '2'
-    }
-  }
-]
+// Types for database data
+interface DatabaseConversation {
+  conversation_id: string
+  conversation_type: string
+  conversation_name: string
+  project_name?: string
+  last_message: string
+  last_message_time: string
+  unread_count: number
+  participants: Array<{
+    id: string
+    name: string
+    email: string
+    role: string
+  }>
+}
 
-const mockUsers = [
-  { id: 'user-1', name: 'João Silva', role: 'Project Manager', avatar: '', online: true },
-  { id: 'client-1', name: 'Maria Santos', role: 'Cliente', avatar: '', online: false },
-  { id: 'team-1', name: 'Pedro Costa', role: 'Designer', avatar: '', online: true },
-  { id: 'team-2', name: 'Ana Oliveira', role: 'Content Creator', avatar: '', online: true }
-]
-
-const mockMessages: Message[] = [
-  {
-    id: '1',
-    senderId: 'client-1',
-    receiverId: 'user-1',
-    content: 'Olá! Como está o andamento do projeto?',
-    type: 'text',
-    timestamp: new Date(Date.now() - 7200000),
-    read: true,
-    conversationId: '1'
-  },
-  {
-    id: '2',
-    senderId: 'user-1',
-    receiverId: 'client-1',
-    content: 'Oi Maria! O projeto está indo muito bem. Estamos na fase de criação de conteúdo.',
-    type: 'text',
-    timestamp: new Date(Date.now() - 3600000),
-    read: true,
-    conversationId: '1'
-  },
-  {
-    id: '3',
-    senderId: 'user-1',
-    receiverId: 'client-1',
-    content: 'Vou enviar um preview das peças criativas ainda hoje.',
-    type: 'text',
-    timestamp: new Date(Date.now() - 3600000),
-    read: true,
-    conversationId: '1'
-  },
-  {
-    id: '4',
-    senderId: 'client-1',
-    receiverId: 'user-1',
-    content: 'Perfeito! Aguardo ansiosamente. Vocês são incríveis! 🚀',
-    type: 'text',
-    timestamp: new Date(Date.now() - 1800000),
-    read: false,
-    conversationId: '1'
-  }
-]
+interface DatabaseMessage {
+  message_id: string
+  sender_id: string
+  sender_name: string
+  sender_email: string
+  content: string
+  message_type: string
+  file_url?: string
+  file_name?: string
+  reply_to_id?: string
+  is_edited: boolean
+  created_at: string
+  is_read: boolean
+}
 
 const mockAIAgents: AIAgent[] = [
   {
@@ -136,30 +83,95 @@ const mockAIAgents: AIAgent[] = [
 ]
 
 export function MessagesPage() {
+  const { user } = useUser()
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [selectedConversation, setSelectedConversation] = useState<string | null>('1')
+  const [selectedConversation, setSelectedConversation] = useState<string | null>(null)
   const [messageText, setMessageText] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState('all')
   const [showAIPanel, setShowAIPanel] = useState(false)
+  const [conversations, setConversations] = useState<DatabaseConversation[]>([])
+  const [messages, setMessages] = useState<DatabaseMessage[]>([])
+  const [loading, setLoading] = useState(true)
+  const [sendingMessage, setSendingMessage] = useState(false)
 
-  const filteredConversations = mockConversations.filter(conv => {
-    const participants = conv.participants.map(id => 
-      mockUsers.find(u => u.id === id)?.name || ''
-    ).join(' ')
-    
-    const matchesSearch = participants.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesFilter = filterType === 'all' || conv.type === filterType
+  // Fetch conversations on component mount
+  useEffect(() => {
+    if (user?.id) {
+      fetchConversations()
+    }
+  }, [user?.id])
+
+  // Fetch messages when conversation is selected
+  useEffect(() => {
+    if (selectedConversation) {
+      fetchMessages(selectedConversation)
+    }
+  }, [selectedConversation])
+
+  const fetchConversations = async () => {
+    try {
+      setLoading(true)
+      const supabase = supabaseBrowser()
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.access_token) return
+
+      const response = await fetch('/api/conversations', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setConversations(data.conversations || [])
+        
+        // Auto-select first conversation if none selected
+        if (!selectedConversation && data.conversations?.length > 0) {
+          setSelectedConversation(data.conversations[0].conversation_id)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching conversations:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchMessages = async (conversationId: string) => {
+    try {
+      const supabase = supabaseBrowser()
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.access_token) return
+
+      const response = await fetch(`/api/messages?conversation_id=${conversationId}`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setMessages(data.messages || [])
+      }
+    } catch (error) {
+      console.error('Error fetching messages:', error)
+    }
+  }
+
+  const filteredConversations = conversations.filter(conv => {
+    const participantNames = conv.participants.map(p => p.name).join(' ')
+    const matchesSearch = participantNames.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (conv.conversation_name || '').toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesFilter = filterType === 'all' || conv.conversation_type === filterType
     
     return matchesSearch && matchesFilter
   })
 
-  const currentConversation = mockConversations.find(c => c.id === selectedConversation)
-  const conversationMessages = mockMessages.filter(m => m.conversationId === selectedConversation)
-
-  const getUserInfo = (userId: string) => {
-    return mockUsers.find(u => u.id === userId)
-  }
+  const currentConversation = conversations.find(c => c.conversation_id === selectedConversation)
+  const conversationMessages = messages
 
   const getLastMessageTime = (timestamp: Date) => {
     const now = new Date()
@@ -174,12 +186,41 @@ export function MessagesPage() {
     return `${days}d`
   }
 
-  const handleSendMessage = () => {
-    if (!messageText.trim() || !selectedConversation) return
+  const handleSendMessage = async () => {
+    if (!messageText.trim() || !selectedConversation || sendingMessage) return
     
-    // Aqui você implementaria o envio da mensagem
-    console.log('Sending message:', messageText)
-    setMessageText('')
+    try {
+      setSendingMessage(true)
+      const supabase = supabaseBrowser()
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.access_token) return
+
+      const response = await fetch('/api/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          conversation_id: selectedConversation,
+          content: messageText,
+          message_type: 'text'
+        })
+      })
+
+      if (response.ok) {
+        setMessageText('')
+        // Refresh messages to show the new one
+        await fetchMessages(selectedConversation)
+        // Refresh conversations to update last message
+        await fetchConversations()
+      }
+    } catch (error) {
+      console.error('Error sending message:', error)
+    } finally {
+      setSendingMessage(false)
+    }
   }
 
   return (
@@ -244,50 +285,50 @@ export function MessagesPage() {
 
         {/* Conversations List */}
         <div className="flex-1 overflow-y-auto">
-          {filteredConversations.map((conversation) => {
-            const isSelected = selectedConversation === conversation.id
-            const unreadCount = mockMessages.filter(m => 
-              m.conversationId === conversation.id && !m.read
-            ).length
+          {loading ? (
+            <div className="p-4 text-center text-gray-500">Carregando conversas...</div>
+          ) : filteredConversations.length === 0 ? (
+            <div className="p-4 text-center text-gray-500">Nenhuma conversa encontrada</div>
+          ) : (
+            filteredConversations.map((conversation) => {
+              const isSelected = selectedConversation === conversation.conversation_id
+              const unreadCount = conversation.unread_count
 
-            return (
+              return (
               <div
-                key={conversation.id}
+                key={conversation.conversation_id}
                 className={`p-4 border-b border-gray-100 dark:border-[#272727] cursor-pointer hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 ${
                   isSelected ? 'bg-slate-50 dark:bg-slate-900/20 border-r-2 border-slate-500 dark:border-[#64f481]' : ''
                 }`}
-                onClick={() => setSelectedConversation(conversation.id)}
+                onClick={() => setSelectedConversation(conversation.conversation_id)}
               >
                 <div className="flex items-center gap-3">
                   <div className="relative">
-                    {conversation.type === 'group' ? (
+                    {conversation.conversation_type === 'group' || conversation.conversation_type === 'project' ? (
                       <div className="h-12 w-12 bg-gray-200 dark:bg-[#1f1f1f] rounded-full flex items-center justify-center">
                         <Users className="h-6 w-6 text-gray-600 dark:text-gray-300" />
                       </div>
                     ) : (
                       <Avatar className="h-12 w-12">
-                        <AvatarImage src={getUserInfo(conversation.participants[1])?.avatar} />
+                        <AvatarImage src="" />
                         <AvatarFallback>
-                          {getUserInfo(conversation.participants[1])?.name.split(' ').map(n => n[0]).join('')}
+                          {conversation.participants.find(p => p.id !== user?.id)?.name?.split(' ').map(n => n[0]).join('') || 'U'}
                         </AvatarFallback>
                       </Avatar>
-                    )}
-                    {conversation.type === 'direct' && getUserInfo(conversation.participants[1])?.online && (
-                      <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-white dark:border-[#171717]" />
                     )}
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <h3 className="font-medium truncate">
-                        {conversation.type === 'group' 
-                          ? `Grupo ${conversation.projectId ? '- Projeto' : ''}`
-                          : getUserInfo(conversation.participants[1])?.name
+                        {conversation.conversation_type === 'group' || conversation.conversation_type === 'project'
+                          ? (conversation.conversation_name || `Grupo ${conversation.project_name ? '- ' + conversation.project_name : ''}`)
+                          : conversation.participants.find(p => p.id !== user?.id)?.name || 'Conversa'
                         }
                       </h3>
                       <div className="flex items-center gap-1">
                         <span className="text-xs text-gray-500">
-                          {getLastMessageTime(conversation.updatedAt)}
+                          {getLastMessageTime(new Date(conversation.last_message_time))}
                         </span>
                         {unreadCount > 0 && (
                           <Badge className="bg-[#64f481] text-black text-xs">
@@ -297,16 +338,14 @@ export function MessagesPage() {
                       </div>
                     </div>
                     <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                      {conversation.lastMessage?.type === 'file' 
-                        ? '📎 ' + conversation.lastMessage.content
-                        : conversation.lastMessage?.content
-                      }
+                      {conversation.last_message || 'Nenhuma mensagem'}
                     </p>
                   </div>
                 </div>
               </div>
-            )
-          })}
+              )
+            })
+          )}
         </div>
       </div>
 
@@ -317,30 +356,27 @@ export function MessagesPage() {
           <div className="p-4 border-b border-gray-200 dark:border-[#272727] bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                {currentConversation?.type === 'group' ? (
+                {currentConversation?.conversation_type === 'group' || currentConversation?.conversation_type === 'project' ? (
                   <div className="h-10 w-10 bg-gray-200 dark:bg-[#1f1f1f] rounded-full flex items-center justify-center">
                     <Users className="h-5 w-5 text-gray-600 dark:text-gray-300" />
                   </div>
                 ) : (
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={getUserInfo(currentConversation?.participants[1] || '')?.avatar} />
+                    <AvatarImage src="" />
                     <AvatarFallback>
-                      {getUserInfo(currentConversation?.participants[1] || '')?.name.split(' ').map(n => n[0]).join('')}
+                      {currentConversation?.participants.find(p => p.id !== user?.id)?.name?.split(' ').map(n => n[0]).join('') || 'U'}
                     </AvatarFallback>
                   </Avatar>
                 )}
                 <div>
                   <h2 className="font-medium text-gray-900 dark:text-white">
-                    {currentConversation?.type === 'group' 
-                      ? `Grupo ${currentConversation.projectId ? '- Projeto' : ''}`
-                      : getUserInfo(currentConversation?.participants[1] || '')?.name
+                    {currentConversation?.conversation_type === 'group' || currentConversation?.conversation_type === 'project'
+                      ? (currentConversation.conversation_name || `Grupo ${currentConversation.project_name ? '- ' + currentConversation.project_name : ''}`)
+                      : currentConversation?.participants.find(p => p.id !== user?.id)?.name || 'Conversa'
                     }
                   </h2>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {currentConversation?.type === 'direct' && getUserInfo(currentConversation.participants[1])?.online 
-                      ? 'Online' 
-                      : 'Offline'
-                    }
+                    {currentConversation?.participants.length || 0} participante(s)
                   </p>
                 </div>
               </div>
@@ -365,17 +401,16 @@ export function MessagesPage() {
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#fafafa] dark:bg-[#121212]">
             {conversationMessages.map((message) => {
-              const sender = getUserInfo(message.senderId)
-              const isOwn = message.senderId === 'user-1'
+              const isOwn = message.sender_id === user?.id
 
               return (
-                <div key={message.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                <div key={message.message_id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
                   <div className={`flex items-end gap-2 max-w-xs lg:max-w-md ${isOwn ? 'flex-row-reverse' : ''}`}>
                     {!isOwn && (
                       <Avatar className="h-6 w-6">
-                        <AvatarImage src={sender?.avatar} />
+                        <AvatarImage src="" />
                         <AvatarFallback className="text-xs">
-                          {sender?.name.split(' ').map(n => n[0]).join('')}
+                          {message.sender_name?.split(' ').map(n => n[0]).join('') || 'U'}
                         </AvatarFallback>
                       </Avatar>
                     )}
@@ -390,7 +425,7 @@ export function MessagesPage() {
                       <p className={`text-xs mt-1 ${
                         isOwn ? 'text-black/70' : 'text-gray-500'
                       }`}>
-                        {message.timestamp.toLocaleTimeString('pt-BR', { 
+                        {new Date(message.created_at).toLocaleTimeString('pt-BR', { 
                           hour: '2-digit', 
                           minute: '2-digit' 
                         })}
@@ -425,10 +460,10 @@ export function MessagesPage() {
               />
               <Button 
                 onClick={handleSendMessage}
-                disabled={!messageText.trim()}
+                disabled={!messageText.trim() || sendingMessage}
                 className="bg-[#64f481] hover:bg-[#50d66f] text-black"
               >
-                <Send className="h-4 w-4" />
+                {sendingMessage ? '...' : <Send className="h-4 w-4" />}
               </Button>
             </div>
           </div>

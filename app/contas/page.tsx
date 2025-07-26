@@ -156,6 +156,13 @@ function ContasContent() {
                 <Button variant="outline" size="icon">
                   <Filter className="h-4 w-4" />
                 </Button>
+                <Button 
+                  onClick={() => router.push('/contacts?new=true')}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nova Conta
+                </Button>
               </div>
             </div>
 

@@ -207,6 +207,13 @@ function ProjectsContent() {
                 <Button variant="outline" size="icon">
                   <Filter className="h-4 w-4" />
                 </Button>
+                <Button 
+                  onClick={() => router.push('/projects/new')}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Novo Projeto
+                </Button>
               </div>
             </div>
 
