@@ -18,13 +18,37 @@ BEGIN
     END IF;
 END $$;
 
--- 1.1. Verificar e adicionar coluna address na tabela contacts
+-- 1.1. Verificar e adicionar colunas necessárias na tabela contacts
 DO $$
 BEGIN
     -- Adicionar address se não existir
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='contacts' AND column_name='address') THEN
         ALTER TABLE contacts ADD COLUMN address TEXT;
         RAISE NOTICE 'Coluna address adicionada à tabela contacts';
+    END IF;
+    
+    -- Adicionar tags se não existir
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='contacts' AND column_name='tags') THEN
+        ALTER TABLE contacts ADD COLUMN tags TEXT[] DEFAULT '{}';
+        RAISE NOTICE 'Coluna tags adicionada à tabela contacts';
+    END IF;
+    
+    -- Adicionar social_media se não existir
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='contacts' AND column_name='social_media') THEN
+        ALTER TABLE contacts ADD COLUMN social_media JSONB DEFAULT '{}';
+        RAISE NOTICE 'Coluna social_media adicionada à tabela contacts';
+    END IF;
+    
+    -- Adicionar custom_fields se não existir
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='contacts' AND column_name='custom_fields') THEN
+        ALTER TABLE contacts ADD COLUMN custom_fields JSONB DEFAULT '{}';
+        RAISE NOTICE 'Coluna custom_fields adicionada à tabela contacts';
+    END IF;
+    
+    -- Adicionar source se não existir
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='contacts' AND column_name='source') THEN
+        ALTER TABLE contacts ADD COLUMN source TEXT DEFAULT 'Manual';
+        RAISE NOTICE 'Coluna source adicionada à tabela contacts';
     END IF;
 END $$;
 
