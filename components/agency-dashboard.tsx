@@ -525,13 +525,43 @@ export function AgencyDashboard() {
 
             {/* Tabs Navigation */}
             <Tabs value={selectedTab} onValueChange={handleTabChange} className="w-full">
-              <TabsList className="grid w-full grid-cols-6 mb-6">
-                <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-                <TabsTrigger value="contracts">Contratos</TabsTrigger>
-                <TabsTrigger value="financial">Controle Financeiro</TabsTrigger>
-                <TabsTrigger value="team">Equipe</TabsTrigger>
-                <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                <TabsTrigger value="management">Gestão</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-6 mb-6 bg-transparent p-0 gap-2">
+                <TabsTrigger 
+                  value="dashboard" 
+                  className="border border-gray-200 dark:border-gray-700 hover:border-[#64f481]/60 data-[state=active]:border-[#64f481] data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none transition-all duration-200"
+                >
+                  Dashboard
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="contracts" 
+                  className="border border-gray-200 dark:border-gray-700 hover:border-[#64f481]/60 data-[state=active]:border-[#64f481] data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none transition-all duration-200"
+                >
+                  Contratos
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="financial" 
+                  className="border border-gray-200 dark:border-gray-700 hover:border-[#64f481]/60 data-[state=active]:border-[#64f481] data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none transition-all duration-200"
+                >
+                  Controle Financeiro
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="team" 
+                  className="border border-gray-200 dark:border-gray-700 hover:border-[#64f481]/60 data-[state=active]:border-[#64f481] data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none transition-all duration-200"
+                >
+                  Equipe
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="analytics" 
+                  className="border border-gray-200 dark:border-gray-700 hover:border-[#64f481]/60 data-[state=active]:border-[#64f481] data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none transition-all duration-200"
+                >
+                  Analytics
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="management" 
+                  className="border border-gray-200 dark:border-gray-700 hover:border-[#64f481]/60 data-[state=active]:border-[#64f481] data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none transition-all duration-200"
+                >
+                  Gestão
+                </TabsTrigger>
               </TabsList>
 
               {/* Dashboard Tab - Dados Reais */}
