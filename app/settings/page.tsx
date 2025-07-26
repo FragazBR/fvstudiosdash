@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Settings, ArrowLeft } from "lucide-react";
+import { DebugUserInfo } from "@/components/debug-user-info";
 
 export default function SettingsPage() {
   return (
@@ -22,6 +23,9 @@ export default function SettingsPage() {
             </div>
           </div>
         </div>
+        
+        {/* Debug Info */}
+        <DebugUserInfo />
       </div>
     </div>
   );
