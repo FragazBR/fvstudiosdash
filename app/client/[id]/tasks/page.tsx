@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
+import { NewTaskModal } from '@/components/new-task-modal'
 import {
   ArrowLeft,
   Calendar,
@@ -100,6 +101,7 @@ function ClientTasksContent() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [client, setClient] = useState<Client | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false)
   const [stats, setStats] = useState({
     totalTasks: 0,
     completedTasks: 0,
@@ -223,33 +225,43 @@ function ClientTasksContent() {
         <main className="flex-1 overflow-y-auto p-3 lg:p-6">
           <div className="max-w-7xl mx-auto">
             {/* Header */}
-            <div className="flex items-center gap-4 mb-6">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => router.back()}
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
+            <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-4">
-                {client && (
-                  <Avatar className="h-12 w-12">
-                    <AvatarFallback className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-                      {client.name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                    {client ? `Tarefas - ${client.name}` : 'Carregando...'}
-                  </h1>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => router.back()}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <div className="flex items-center gap-4">
                   {client && (
-                    <p className="text-gray-600 dark:text-gray-400">
-                      {client.company && `${client.company} • `}{client.email}
-                    </p>
+                    <Avatar className="h-12 w-12">
+                      <AvatarFallback className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                        {client.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
                   )}
+                  <div>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                      {client ? `Tarefas - ${client.name}` : 'Carregando...'}
+                    </h1>
+                    {client && (
+                      <p className="text-gray-600 dark:text-gray-400">
+                        {client.company && `${client.company} • `}{client.email}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
+              
+              <Button
+                onClick={() => setIsNewTaskModalOpen(true)}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                <Calendar className="h-4 w-4 mr-2" />
+                Nova Tarefa
+              </Button>
             </div>
 
             {/* Filters */}
@@ -451,6 +463,14 @@ function ClientTasksContent() {
           </div>
         </main>
       </div>
+
+      {/* New Task Modal */}
+      <NewTaskModal
+        isOpen={isNewTaskModalOpen}
+        onClose={() => setIsNewTaskModalOpen(false)}
+        onTaskCreated={fetchClientTasks}
+        preSelectedClientId={clientId}
+      />
     </div>
   )
 }

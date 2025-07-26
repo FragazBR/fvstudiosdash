@@ -37,11 +37,12 @@ interface NewTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   onTaskCreated: () => void;
+  preSelectedClientId?: string;
 }
 
 const supabase = supabaseBrowser();
 
-export function NewTaskModal({ isOpen, onClose, onTaskCreated }: NewTaskModalProps) {
+export function NewTaskModal({ isOpen, onClose, onTaskCreated, preSelectedClientId }: NewTaskModalProps) {
   const [loading, setLoading] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [formData, setFormData] = useState({
@@ -63,17 +64,25 @@ export function NewTaskModal({ isOpen, onClose, onTaskCreated }: NewTaskModalPro
 
   const fetchProjects = async () => {
     try {
-      const { data: projectsData, error } = await supabase
+      let query = supabase
         .from('projects')
         .select(`
           id,
           name,
           contacts:client_id (
+            id,
             name,
             company
           )
         `)
         .order('name');
+
+      // If preSelectedClientId is provided, filter projects for that client
+      if (preSelectedClientId) {
+        query = query.eq('client_id', preSelectedClientId);
+      }
+
+      const { data: projectsData, error } = await query;
 
       if (error) {
         console.error('Erro ao buscar projetos:', error);
@@ -260,18 +269,27 @@ export function NewTaskModal({ isOpen, onClose, onTaskCreated }: NewTaskModalPro
                 <SelectValue placeholder="Selecione um projeto" />
               </SelectTrigger>
               <SelectContent>
-                {projects.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
-                    <div className="flex flex-col">
-                      <span className="font-medium">{project.name}</span>
-                      {project.client && (
-                        <span className="text-xs text-gray-500">
-                          {project.client.company || project.client.name}
-                        </span>
-                      )}
-                    </div>
+                {projects.length === 0 ? (
+                  <SelectItem value="no-projects" disabled>
+                    {preSelectedClientId 
+                      ? 'Nenhum projeto encontrado para este cliente'
+                      : 'Nenhum projeto encontrado'
+                    }
                   </SelectItem>
-                ))}
+                ) : (
+                  projects.map((project) => (
+                    <SelectItem key={project.id} value={project.id}>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{project.name}</span>
+                        {project.client && (
+                          <span className="text-xs text-gray-500">
+                            {project.client.company || project.client.name}
+                          </span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
