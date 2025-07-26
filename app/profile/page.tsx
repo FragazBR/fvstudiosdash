@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/components/ui/use-toast'
 import { useUser } from '@/hooks/useUser'
 import { DepartmentSelector } from '@/components/department-selector'
+import { SocialMediaKeysSection } from '@/components/social-media-keys-section'
 import {
   User,
   Mail,
@@ -563,6 +564,11 @@ function ProfileContent() {
                     </CardContent>
                   )}
                 </Card>
+
+                {/* Social Media APIs Section - Only for clients */}
+                {user?.role && ['agency_client', 'independent_client'].includes(user.role) && (
+                  <SocialMediaKeysSection />
+                )}
               </div>
             </div>
           </div>

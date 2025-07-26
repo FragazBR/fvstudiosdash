@@ -29,18 +29,31 @@ export default async function HomePage() {
     switch (profile.role) {
       case "admin":
         redirect("/admin")  // FVStudios - Controle total
-      case "agency":
-        redirect("/agency")  // Agências - Com níveis hierárquicos
-      case "independent":
-        redirect("/independent")  // Produtores Independentes - Autônomos
+      case "agency_owner":
+      case "agency_manager": 
+      case "agency_staff":
+        redirect("/dashboard")  // Agências - Dashboard principal
+      case "independent_producer":
+        redirect("/dashboard")  // Produtores Independentes - Dashboard
       case "influencer":
-        redirect("/influencer")  // Influencers/Criadores - Individual
-      case "free":
-        redirect("/free")  // Plano Gratuito - Limitado
-      case "client":
+        redirect("/dashboard")  // Influencers/Criadores - Dashboard
+      case "free_user":
+        redirect("/dashboard")  // Plano Gratuito - Dashboard básico
+      case "agency_client":
         redirect(`/client/${user.id}`)  // Clientes das agências
+      case "independent_client":
+        redirect(`/client/${user.id}`)  // Clientes independentes
+      // Legacy support para roles antigos
+      case "agency":
+        redirect("/dashboard")
+      case "independent":
+        redirect("/dashboard")
+      case "free":
+        redirect("/dashboard")
+      case "client":
+        redirect(`/client/${user.id}`)
       default:
-        redirect("/unauthorized")
+        redirect("/dashboard")  // Default para dashboard
     }
   } catch (error) {
     console.error("Error in HomePage:", error)

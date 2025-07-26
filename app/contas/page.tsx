@@ -6,12 +6,14 @@ import { PermissionGuard } from '@/components/permission-guard'
 import Topbar from '@/components/Shared/Topbar'
 import { Sidebar } from '@/components/sidebar'
 import { NewClientModal } from '@/components/new-client-modal'
+import { SocialMediaTab } from '@/components/social-media-tab'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Users,
   Search,
@@ -29,7 +31,13 @@ import {
   MapPin,
   TrendingUp,
   Activity,
-  Plus
+  Plus,
+  MessageCircle,
+  Target,
+  PieChart,
+  Instagram,
+  Facebook,
+  Linkedin
 } from 'lucide-react'
 
 interface Contact {
@@ -174,232 +182,252 @@ function ContasContent() {
               </div>
             </div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-              <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total de Contas</p>
-                      {loading ? (
-                        <Skeleton className="h-8 w-12" />
-                      ) : (
-                        <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.totalContacts}</p>
-                      )}
-                    </div>
-                    <Building2 className="h-8 w-8 text-blue-500" />
-                  </div>
-                </CardContent>
-              </Card>
+            {/* Tabs Navigation */}
+            <Tabs defaultValue="accounts" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="accounts" className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Contas
+                </TabsTrigger>
+                <TabsTrigger value="social-media" className="flex items-center gap-2">
+                  <MessageCircle className="h-4 w-4" />
+                  Social Media
+                </TabsTrigger>
+              </TabsList>
 
-              <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Clientes Ativos</p>
-                      {loading ? (
-                        <Skeleton className="h-8 w-12" />
-                      ) : (
-                        <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.activeClients}</p>
-                      )}
-                    </div>
-                    <Activity className="h-8 w-8 text-green-500" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Projetos Ativos</p>
-                      {loading ? (
-                        <Skeleton className="h-8 w-12" />
-                      ) : (
-                        <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.activeProjects}</p>
-                      )}
-                    </div>
-                    <FolderKanban className="h-8 w-8 text-yellow-500" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Receita Total</p>
-                      {loading ? (
-                        <Skeleton className="h-8 w-16" />
-                      ) : (
-                        <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                          {new Intl.NumberFormat('pt-BR', { 
-                            style: 'currency', 
-                            currency: 'BRL',
-                            minimumFractionDigits: 0 
-                          }).format(stats.totalRevenue)}
-                        </p>
-                      )}
-                    </div>
-                    <TrendingUp className="h-8 w-8 text-purple-500" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Loading skeleton */}
-            {loading ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                {[...Array(6)].map((_, i) => (
-                  <Card key={i} className="bg-white/90 dark:bg-[#171717]/60">
-                    <CardHeader>
-                      <div className="flex items-center gap-3">
-                        <Skeleton className="h-12 w-12 rounded-full" />
-                        <div className="space-y-2">
-                          <Skeleton className="h-5 w-32" />
-                          <Skeleton className="h-4 w-24" />
+              <TabsContent value="accounts" className="space-y-6">
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total de Contas</p>
+                          {loading ? (
+                            <Skeleton className="h-8 w-12" />
+                          ) : (
+                            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.totalContacts}</p>
+                          )}
                         </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <Skeleton className="h-6 w-20" />
-                        <div className="space-y-2">
-                          <Skeleton className="h-4 w-full" />
-                          <Skeleton className="h-4 w-full" />
-                          <Skeleton className="h-4 w-3/4" />
-                        </div>
+                        <Building2 className="h-8 w-8 text-blue-500" />
                       </div>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
-            ) : (
-              <>
-                {/* Contas Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {filteredContacts.map((contact) => (
-                    <Card key={contact.id} className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 hover:shadow-lg transition-all duration-200 cursor-pointer">
-                      <CardHeader className="pb-3">
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-12 w-12">
-                              <AvatarFallback className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                                {contact.name.charAt(0).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <CardTitle className="text-lg text-gray-900 dark:text-gray-100">
-                                {contact.name}
-                              </CardTitle>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
-                                {contact.position || contact.company || 'Cliente'}
-                              </p>
-                            </div>
-                          </div>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
+
+                  <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Clientes Ativos</p>
+                          {loading ? (
+                            <Skeleton className="h-8 w-12" />
+                          ) : (
+                            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.activeClients}</p>
+                          )}
                         </div>
-                      </CardHeader>
+                        <Activity className="h-8 w-8 text-green-500" />
+                      </div>
+                    </CardContent>
+                  </Card>
 
-                      <CardContent>
-                        <div className="space-y-4">
-                          {/* Status & Type */}
-                          <div className="flex items-center justify-between">
-                            <div className="flex gap-2">
-                              <Badge className={getStatusColor(contact.status)}>
-                                {contact.status}
-                              </Badge>
-                              <Badge className={getTypeColor(contact.type)}>
-                                {contact.type.replace('independent_', '')}
-                              </Badge>
-                            </div>
-                            <span className="text-sm text-gray-500">
-                              {contact.last_interaction 
-                                ? `${Math.floor((Date.now() - new Date(contact.last_interaction).getTime()) / (1000 * 60 * 60 * 24))}d atrás`
-                                : 'Sem interação'
-                              }
-                            </span>
-                          </div>
-
-                          {/* Informações de contato */}
-                          <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                            <div className="flex items-center gap-2">
-                              <Mail className="h-4 w-4" />
-                              <span className="truncate">{contact.email}</span>
-                            </div>
-                            {contact.phone && (
-                              <div className="flex items-center gap-2">
-                                <Phone className="h-4 w-4" />
-                                <span>{contact.phone}</span>
-                              </div>
-                            )}
-                            {contact.company && (
-                              <div className="flex items-center gap-2">
-                                <Building2 className="h-4 w-4" />
-                                <span className="truncate">{contact.company}</span>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Métricas */}
-                          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                            <div>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">Projetos</p>
-                              <p className="font-semibold text-gray-900 dark:text-gray-100">
-                                {contact.active_projects || 0}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">Valor</p>
-                              <p className="font-semibold text-gray-900 dark:text-gray-100">
-                                {contact.total_project_value 
-                                  ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 }).format(contact.total_project_value)
-                                  : 'R$ 0'
-                                }
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Ações */}
-                          <div className="flex gap-2 pt-4">
-                            <Button 
-                              size="sm" 
-                              className="flex-1"
-                              onClick={() => handleViewProjects(contact.id)}
-                            >
-                              <FolderKanban className="h-4 w-4 mr-2" />
-                              Ver Projetos
-                            </Button>
-                            <Button variant="outline" size="sm">
-                              <Calendar className="h-4 w-4" />
-                            </Button>
-                            <Button variant="outline" size="sm">
-                              <MessageSquare className="h-4 w-4" />
-                            </Button>
-                          </div>
+                  <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Projetos Ativos</p>
+                          {loading ? (
+                            <Skeleton className="h-8 w-12" />
+                          ) : (
+                            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.activeProjects}</p>
+                          )}
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        <FolderKanban className="h-8 w-8 text-yellow-500" />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Receita Total</p>
+                          {loading ? (
+                            <Skeleton className="h-8 w-16" />
+                          ) : (
+                            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                              {new Intl.NumberFormat('pt-BR', { 
+                                style: 'currency', 
+                                currency: 'BRL',
+                                minimumFractionDigits: 0 
+                              }).format(stats.totalRevenue)}
+                            </p>
+                          )}
+                        </div>
+                        <TrendingUp className="h-8 w-8 text-purple-500" />
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
 
-                {/* Empty state */}
-                {!loading && filteredContacts.length === 0 && (
-                  <div className="text-center py-12">
-                    <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600 dark:text-gray-400 mb-4">
-                      {contacts.length === 0 ? 'Nenhuma conta cadastrada ainda' : 'Nenhuma conta encontrada'}
-                    </p>
-                    <Button onClick={() => setIsNewClientModalOpen(true)}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Adicionar Primeira Conta
-                    </Button>
+                {/* Loading skeleton */}
+                {loading ? (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {[...Array(6)].map((_, i) => (
+                      <Card key={i} className="bg-white/90 dark:bg-[#171717]/60">
+                        <CardHeader>
+                          <div className="flex items-center gap-3">
+                            <Skeleton className="h-12 w-12 rounded-full" />
+                            <div className="space-y-2">
+                              <Skeleton className="h-5 w-32" />
+                              <Skeleton className="h-4 w-24" />
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-4">
+                            <Skeleton className="h-6 w-20" />
+                            <div className="space-y-2">
+                              <Skeleton className="h-4 w-full" />
+                              <Skeleton className="h-4 w-full" />
+                              <Skeleton className="h-4 w-3/4" />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
+                ) : (
+                  <>
+                    {/* Contas Grid */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                      {filteredContacts.map((contact) => (
+                        <Card key={contact.id} className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 hover:shadow-lg transition-all duration-200 cursor-pointer">
+                          <CardHeader className="pb-3">
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-center gap-3">
+                                <Avatar className="h-12 w-12">
+                                  <AvatarFallback className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                    {contact.name.charAt(0).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <CardTitle className="text-lg text-gray-900 dark:text-gray-100">
+                                    {contact.name}
+                                  </CardTitle>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                                    {contact.position || contact.company || 'Cliente'}
+                                  </p>
+                                </div>
+                              </div>
+                              <Button variant="ghost" size="icon">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </CardHeader>
+
+                          <CardContent>
+                            <div className="space-y-4">
+                              {/* Status & Type */}
+                              <div className="flex items-center justify-between">
+                                <div className="flex gap-2">
+                                  <Badge className={getStatusColor(contact.status)}>
+                                    {contact.status}
+                                  </Badge>
+                                  <Badge className={getTypeColor(contact.type)}>
+                                    {contact.type.replace('independent_', '')}
+                                  </Badge>
+                                </div>
+                                <span className="text-sm text-gray-500">
+                                  {contact.last_interaction 
+                                    ? `${Math.floor((Date.now() - new Date(contact.last_interaction).getTime()) / (1000 * 60 * 60 * 24))}d atrás`
+                                    : 'Sem interação'
+                                  }
+                                </span>
+                              </div>
+
+                              {/* Informações de contato */}
+                              <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                                <div className="flex items-center gap-2">
+                                  <Mail className="h-4 w-4" />
+                                  <span className="truncate">{contact.email}</span>
+                                </div>
+                                {contact.phone && (
+                                  <div className="flex items-center gap-2">
+                                    <Phone className="h-4 w-4" />
+                                    <span>{contact.phone}</span>
+                                  </div>
+                                )}
+                                {contact.company && (
+                                  <div className="flex items-center gap-2">
+                                    <Building2 className="h-4 w-4" />
+                                    <span className="truncate">{contact.company}</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Métricas */}
+                              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <div>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">Projetos</p>
+                                  <p className="font-semibold text-gray-900 dark:text-gray-100">
+                                    {contact.active_projects || 0}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">Valor</p>
+                                  <p className="font-semibold text-gray-900 dark:text-gray-100">
+                                    {contact.total_project_value 
+                                      ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 }).format(contact.total_project_value)
+                                      : 'R$ 0'
+                                    }
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Ações */}
+                              <div className="flex gap-2 pt-4">
+                                <Button 
+                                  size="sm" 
+                                  className="flex-1"
+                                  onClick={() => handleViewProjects(contact.id)}
+                                >
+                                  <FolderKanban className="h-4 w-4 mr-2" />
+                                  Ver Projetos
+                                </Button>
+                                <Button variant="outline" size="sm">
+                                  <Calendar className="h-4 w-4" />
+                                </Button>
+                                <Button variant="outline" size="sm">
+                                  <MessageSquare className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+
+                    {/* Empty state */}
+                    {!loading && filteredContacts.length === 0 && (
+                      <div className="text-center py-12">
+                        <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600 dark:text-gray-400 mb-4">
+                          {contacts.length === 0 ? 'Nenhuma conta cadastrada ainda' : 'Nenhuma conta encontrada'}
+                        </p>
+                        <Button onClick={() => setIsNewClientModalOpen(true)}>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Adicionar Primeira Conta
+                        </Button>
+                      </div>
+                    )}
+                  </>
                 )}
-              </>
-            )}
+              </TabsContent>
+
+              <TabsContent value="social-media">
+                <SocialMediaTab contacts={contacts} loading={loading} />
+              </TabsContent>
+            </Tabs>
           </div>
         </main>
       </div>

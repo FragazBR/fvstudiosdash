@@ -23,6 +23,15 @@ import {
   UserCog,
   AlertTriangle,
   BarChart3,
+  MessageCircle,
+  Camera,
+  TrendingUp,
+  Target,
+  Clock,
+  History,
+  PieChart,
+  UserPlus,
+  Zap
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { SearchModal } from "./search-modal";
@@ -90,6 +99,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   const [showAllProjects, setShowAllProjects] = useState(false);
   const [showAllUrgent, setShowAllUrgent] = useState(false);
   const [showAllMessage, setShowAllMessage] = useState(false);
+  const [socialMediaExpanded, setSocialMediaExpanded] = useState(false);
   const { theme, resolvedTheme } = useTheme();
   const { user, loading } = useUser();
   const [projects, setProjects] = useState<Project[]>([]);
@@ -248,16 +258,28 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
     switch (user.role) {
       case 'admin':
         return '/admin';
+      case 'agency_owner':
+      case 'agency_manager':
+      case 'agency_staff':
+        return '/';
+      case 'independent_producer':
+        return '/';
+      case 'influencer':
+        return '/';
+      case 'free_user':
+        return '/';
+      case 'agency_client':
+      case 'independent_client':
+        return `/client/${user.id}`;
+      // Legacy support
       case 'agency':
-        return '/dashboard';
       case 'user':
-        return '/dashboard'; // Usuários também vão para dashboard
       case 'personal':
-        return '/personal/dashboard';
+        return '/';
       case 'client':
         return `/client/${user.id}`;
       default:
-        return '/dashboard';
+        return '/';
     }
   };
 
@@ -377,6 +399,55 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
             {/* Gestão da Agência - para gerentes */}
             {canAccessAgencyManager && (
               <NavItem href="/agency-manager" icon={Users}>Gestão da Agência</NavItem>
+            )}
+            
+            {/* Social Media - para todos os usuários (exceto free_user) */}
+            {user?.role && user.role !== 'free_user' && (
+              <div className="space-y-0.5">
+                <button
+                  onClick={() => setSocialMediaExpanded(!socialMediaExpanded)}
+                  className={cn(
+                    "group w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 font-inter",
+                    "text-gray-600 dark:text-[#737373] hover:text-gray-900 dark:hover:text-gray-200 hover:bg-slate-50 dark:hover:bg-[#1e1e1e]/80"
+                  )}
+                >
+                  <div className="flex items-center">
+                    <MessageCircle className="h-5 w-5 mr-3 text-gray-400 dark:text-[#6b7280] group-hover:text-slate-600 dark:group-hover:text-gray-300" />
+                    <span>Social Media</span>
+                  </div>
+                  {socialMediaExpanded ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
+                </button>
+                
+                {socialMediaExpanded && (
+                  <div className="ml-8 space-y-0.5">
+                    <NavSubItem href="/social-media/calendar" icon={Calendar} tooltip="Visualize posts programados em calendário visual">
+                      Calendário
+                    </NavSubItem>
+                    <NavSubItem href="/social-media/scheduling" icon={Clock} tooltip="Agende posts para Instagram, Facebook, LinkedIn e TikTok">
+                      Agendamento
+                    </NavSubItem>
+                    <NavSubItem href="/social-media/history" icon={History} tooltip="Histórico completo de publicações">
+                      Histórico
+                    </NavSubItem>
+                    <NavSubItem href="/social-media/campaigns" icon={Target} tooltip="Gerencie campanhas do Meta Ads, Google Ads e TikTok Ads">
+                      Campanhas
+                    </NavSubItem>
+                    <NavSubItem href="/social-media/reports" icon={PieChart} tooltip="Relatórios detalhados com KPIs: CPC, CPA, CTR, ROAS">
+                      Relatórios
+                    </NavSubItem>
+                    <NavSubItem href="/social-media/leads" icon={UserPlus} tooltip="Integração com RD Station e CRMs - gestão de leads e funis">
+                      Leads e CRM
+                    </NavSubItem>
+                    <NavSubItem href="/social-media/settings" icon={UserCog} tooltip="Configure suas chaves de API para Instagram, Facebook, LinkedIn, TikTok e outras integrações">
+                      Configurações
+                    </NavSubItem>
+                  </div>
+                )}
+              </div>
             )}
             
             {/* Portal do Cliente - para clientes */}
@@ -742,6 +813,50 @@ function SystemNotificationItem({ notification }: { notification: SystemNotifica
         </div>
       </div>
     </div>
+  );
+}
+
+function NavSubItem({
+  href,
+  icon: Icon,
+  children,
+  tooltip,
+}: {
+  href: string;
+  icon: React.ElementType;
+  children: React.ReactNode;
+  tooltip?: string;
+}) {
+  const pathname = usePathname();
+  const isActive = pathname === href;
+
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 font-inter relative",
+        isActive 
+          ? "text-slate-800 bg-slate-100 dark:bg-[#64f481]/10 dark:text-[#64f481]" 
+          : "text-gray-500 dark:text-[#9ca3af] hover:text-gray-700 dark:hover:text-gray-300 hover:bg-slate-50 dark:hover:bg-[#1e1e1e]/60"
+      )}
+      title={tooltip}
+    >
+      <Icon className={cn(
+        "h-4 w-4 mr-3 transition-colors", 
+        isActive 
+          ? "text-slate-700 dark:text-[#64f481]" 
+          : "text-gray-400 dark:text-[#6b7280] group-hover:text-slate-600 dark:group-hover:text-gray-400"
+      )} />
+      {children}
+      
+      {/* Tooltip on hover */}
+      {tooltip && (
+        <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none whitespace-nowrap z-50">
+          {tooltip}
+          <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900 dark:border-r-gray-700"></div>
+        </div>
+      )}
+    </Link>
   );
 }
 

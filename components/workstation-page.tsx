@@ -650,6 +650,15 @@ export function WorkstationPage() {
 function ProjectDetailModal({ project, onClose }: { project: any; onClose: () => void }) {
   const currentStageIndex = WORKFLOW_STAGES.findIndex(stage => stage.id === (project.current_stage || project.currentStage))
 
+  // Dados seguros com fallbacks
+  const safeProject = {
+    ...project,
+    team: project.team || [],
+    timeline: project.timeline || {
+      milestones: []
+    }
+  }
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727] rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
@@ -657,8 +666,8 @@ function ProjectDetailModal({ project, onClose }: { project: any; onClose: () =>
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-bold">{project.name}</h2>
-              <p className="text-gray-600 dark:text-gray-400">{project.client.name}</p>
+              <h2 className="text-2xl font-bold">{safeProject.name}</h2>
+              <p className="text-gray-600 dark:text-gray-400">{safeProject.client?.name || 'Cliente não informado'}</p>
             </div>
             <Button variant="ghost" onClick={onClose}>
               ×
@@ -673,7 +682,7 @@ function ProjectDetailModal({ project, onClose }: { project: any; onClose: () =>
                 const isCompleted = index < currentStageIndex
                 const isActive = index === currentStageIndex
                 const isNext = index === currentStageIndex + 1
-                const progress = project.stage_progress || 0
+                const progress = safeProject.stage_progress || 0
                 const stageProgress = Math.max(0, Math.min(100, (progress - (index * (100 / WORKFLOW_STAGES.length)))))
 
                 return (
@@ -756,7 +765,7 @@ function ProjectDetailModal({ project, onClose }: { project: any; onClose: () =>
             <h3 className="text-lg font-semibold mb-4">IA Agents para esta Etapa</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {mockAIAgents.filter(agent => 
-                agent.workflowStage === project.currentStage
+                agent.workflowStage === (safeProject.current_stage || safeProject.currentStage)
               ).map((agent) => (
                 <Card key={agent.id} className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
                   <CardContent className="p-4">
@@ -781,6 +790,50 @@ function ProjectDetailModal({ project, onClose }: { project: any; onClose: () =>
             </div>
           </div>
 
+          {/* Project Summary */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-4">Informações do Projeto</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727]">
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Progresso Geral</p>
+                    <p className="text-2xl font-bold text-blue-600">{Math.round(safeProject.stage_progress || 0)}%</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727]">
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Tarefas</p>
+                    <p className="text-2xl font-bold text-green-600">
+                      {safeProject.tasks_completed || 0}/{safeProject.tasks_total || 0}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727]">
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Prazo</p>
+                    <p className={`text-2xl font-bold ${
+                      (safeProject.days_remaining || 0) < 0 ? 'text-red-600' : 
+                      (safeProject.days_remaining || 0) <= 3 ? 'text-orange-600' : 
+                      'text-green-600'
+                    }`}>
+                      {(safeProject.days_remaining || 0) < 0 ? 
+                        `${Math.abs(safeProject.days_remaining || 0)}d atraso` :
+                        `${safeProject.days_remaining || 0}d restantes`
+                      }
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
           {/* Team & Timeline */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727] hover:bg-gray-50 dark:hover:bg-[#1e1e1e]/80 transition-all duration-200">
@@ -789,20 +842,31 @@ function ProjectDetailModal({ project, onClose }: { project: any; onClose: () =>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {project.team.map((member: any) => (
-                    <div key={member.id} className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={member.avatar} />
-                        <AvatarFallback>
-                          {member.name.split(' ').map((n: any) => n[0]).join('')}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium text-sm">{member.name}</p>
-                        <p className="text-xs text-gray-600">{member.role}</p>
+                  {safeProject.team.length > 0 ? (
+                    safeProject.team.map((member: any) => (
+                      <div key={member.id} className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={member.avatar} />
+                          <AvatarFallback>
+                            {member.name.split(' ').map((n: any) => n[0]).join('')}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium text-sm">{member.name}</p>
+                          <p className="text-xs text-gray-600">{member.role}</p>
+                        </div>
                       </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-4">
+                      <p className="text-sm text-gray-500">
+                        {safeProject.team_size > 0 
+                          ? `${safeProject.team_size} membro${safeProject.team_size > 1 ? 's' : ''} da equipe`
+                          : 'Equipe não definida'
+                        }
+                      </p>
                     </div>
-                  ))}
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -813,19 +877,46 @@ function ProjectDetailModal({ project, onClose }: { project: any; onClose: () =>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {project.timeline.milestones.map((milestone: any) => (
-                    <div key={milestone.id} className="flex items-center gap-3">
-                      <div className={`h-3 w-3 rounded-full ${
-                        milestone.completed ? 'bg-green-500' : 'bg-gray-300'
-                      }`} />
-                      <div>
-                        <p className="font-medium text-sm">{milestone.name}</p>
-                        <p className="text-xs text-gray-600">
-                          {milestone.date.toLocaleDateString()}
-                        </p>
+                  {safeProject.timeline.milestones && safeProject.timeline.milestones.length > 0 ? (
+                    safeProject.timeline.milestones.map((milestone: any) => (
+                      <div key={milestone.id} className="flex items-center gap-3">
+                        <div className={`h-3 w-3 rounded-full ${
+                          milestone.completed ? 'bg-green-500' : 'bg-gray-300'
+                        }`} />
+                        <div>
+                          <p className="font-medium text-sm">{milestone.name}</p>
+                          <p className="text-xs text-gray-600">
+                            {milestone.date ? new Date(milestone.date).toLocaleDateString() : 'Data não definida'}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-3">
+                          <div className="h-3 w-3 rounded-full bg-green-500" />
+                          <div>
+                            <p className="font-medium text-sm">Início do Projeto</p>
+                            <p className="text-xs text-gray-600">
+                              {safeProject.start_date ? new Date(safeProject.start_date).toLocaleDateString() : 'Data não definida'}
+                            </p>
+                          </div>
+                        </div>
+                        {safeProject.end_date && (
+                          <div className="flex items-center gap-3">
+                            <div className="h-3 w-3 rounded-full bg-gray-300" />
+                            <div>
+                              <p className="font-medium text-sm">Prazo Final</p>
+                              <p className="text-xs text-gray-600">
+                                {new Date(safeProject.end_date).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  ))}
+                  )}
                 </div>
               </CardContent>
             </Card>

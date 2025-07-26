@@ -150,6 +150,58 @@ BEGIN
     RAISE NOTICE 'Bucket avatars criado ou já existe';
 END $$;
 
+-- 1.4. Criar tabela para chaves de API das redes sociais
+CREATE TABLE IF NOT EXISTS social_media_keys (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    platform TEXT NOT NULL CHECK (platform IN ('instagram', 'facebook', 'linkedin', 'tiktok', 'google_ads', 'meta_ads', 'tiktok_ads', 'rd_station', 'mailchimp', 'sendgrid')),
+    api_key TEXT,
+    access_token TEXT,
+    refresh_token TEXT,
+    app_id TEXT,
+    app_secret TEXT,
+    additional_config JSONB DEFAULT '{}',
+    is_active BOOLEAN DEFAULT true,
+    expires_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(user_id, platform)
+);
+
+-- Adicionar RLS (Row Level Security) para social_media_keys
+ALTER TABLE social_media_keys ENABLE ROW LEVEL SECURITY;
+
+-- Política para usuários verem apenas suas próprias chaves
+CREATE POLICY "Users can view own social media keys" ON social_media_keys
+    FOR SELECT USING (auth.uid() = user_id);
+
+-- Política para usuários criarem suas próprias chaves
+CREATE POLICY "Users can insert own social media keys" ON social_media_keys
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Política para usuários atualizarem suas próprias chaves
+CREATE POLICY "Users can update own social media keys" ON social_media_keys
+    FOR UPDATE USING (auth.uid() = user_id);
+
+-- Política para usuários deletarem suas próprias chaves
+CREATE POLICY "Users can delete own social media keys" ON social_media_keys
+    FOR DELETE USING (auth.uid() = user_id);
+
+-- Função para atualizar o timestamp updated_at
+CREATE OR REPLACE FUNCTION update_social_media_keys_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger para atualizar automaticamente o updated_at
+CREATE TRIGGER update_social_media_keys_updated_at
+    BEFORE UPDATE ON social_media_keys
+    FOR EACH ROW
+    EXECUTE FUNCTION update_social_media_keys_updated_at();
+
 -- 2. Atualizar tarefas existentes com agency_id
 UPDATE tasks 
 SET agency_id = (
