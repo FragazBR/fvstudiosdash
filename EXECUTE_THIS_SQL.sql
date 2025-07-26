@@ -21,6 +21,47 @@ END $$;
 -- 1.1. Verificar e adicionar colunas necessárias na tabela contacts
 DO $$
 BEGIN
+    -- Adicionar colunas básicas se não existirem
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='contacts' AND column_name='name') THEN
+        ALTER TABLE contacts ADD COLUMN name TEXT NOT NULL;
+        RAISE NOTICE 'Coluna name adicionada à tabela contacts';
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='contacts' AND column_name='email') THEN
+        ALTER TABLE contacts ADD COLUMN email TEXT NOT NULL;
+        RAISE NOTICE 'Coluna email adicionada à tabela contacts';
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='contacts' AND column_name='phone') THEN
+        ALTER TABLE contacts ADD COLUMN phone TEXT;
+        RAISE NOTICE 'Coluna phone adicionada à tabela contacts';
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='contacts' AND column_name='company') THEN
+        ALTER TABLE contacts ADD COLUMN company TEXT;
+        RAISE NOTICE 'Coluna company adicionada à tabela contacts';
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='contacts' AND column_name='position') THEN
+        ALTER TABLE contacts ADD COLUMN position TEXT;
+        RAISE NOTICE 'Coluna position adicionada à tabela contacts';
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='contacts' AND column_name='website') THEN
+        ALTER TABLE contacts ADD COLUMN website TEXT;
+        RAISE NOTICE 'Coluna website adicionada à tabela contacts';
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='contacts' AND column_name='type') THEN
+        ALTER TABLE contacts ADD COLUMN type TEXT DEFAULT 'client';
+        RAISE NOTICE 'Coluna type adicionada à tabela contacts';
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='contacts' AND column_name='status') THEN
+        ALTER TABLE contacts ADD COLUMN status TEXT DEFAULT 'active';
+        RAISE NOTICE 'Coluna status adicionada à tabela contacts';
+    END IF;
+    
     -- Adicionar address se não existir
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='contacts' AND column_name='address') THEN
         ALTER TABLE contacts ADD COLUMN address TEXT;
