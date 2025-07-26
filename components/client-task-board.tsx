@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
 import { useToast } from "@/components/ui/use-toast"
-import TaskColumn from "./task-column"
+import ClientTaskColumn from "./client-task-column"
 import type { TaskStatus } from "@/types/task"
 
 interface ClientTask {
@@ -40,30 +40,49 @@ interface ClientTask {
   };
 }
 
-// Map API status to kanban status
-const mapApiStatusToKanban = (apiStatus: string): TaskStatus => {
+// 5-phase task status system
+type FivePhaseStatus = "todo" | "in-progress" | "approval" | "finalization" | "done";
+
+// Define our custom 5-phase statuses 
+const FIVE_PHASE_STATUSES = {
+  'todo': 'todo',
+  'in-progress': 'in_progress', 
+  'approval': 'review',
+  'finalization': 'ready', // New status for finalization phase
+  'done': 'completed'
+} as const;
+
+// Map API status to our 5-phase kanban status
+const mapApiStatusToKanban = (apiStatus: string): FivePhaseStatus => {
   switch (apiStatus) {
     case 'todo': return 'todo'
     case 'in_progress': return 'in-progress'
-    case 'review': return 'in-review'
+    case 'review': return 'approval'
+    case 'ready': return 'finalization'
     case 'completed': return 'done'
-    case 'cancelled': return 'done' // Treat cancelled as done for kanban
+    case 'cancelled': return 'done'
     default: return 'todo'
   }
 }
 
 // Map kanban status back to API status
-const mapKanbanStatusToApi = (kanbanStatus: TaskStatus): string => {
+const mapKanbanStatusToApi = (kanbanStatus: FivePhaseStatus): string => {
+  return FIVE_PHASE_STATUSES[kanbanStatus];
+}
+
+// Calculate progress based on phase (automatic progression)
+const getProgressByPhase = (kanbanStatus: FivePhaseStatus): number => {
   switch (kanbanStatus) {
-    case 'todo': return 'todo'
-    case 'in-progress': return 'in_progress'
-    case 'in-review': return 'review'
-    case 'done': return 'completed'
-    default: return 'todo'
+    case 'todo': return 0          // A fazer - 0%
+    case 'in-progress': return 25  // Em execução - 25%
+    case 'approval': return 50     // Aprovação - 50%
+    case 'finalization': return 75 // Finalização - 75%
+    case 'done': return 100        // Concluído - 100%
+    default: return 0
   }
 }
 
-// Convert ClientTask to Task for kanban board
+// Convert ClientTask to Task for kanban board (5-phase compatible)
 const convertToKanbanTask = (clientTask: ClientTask) => ({
   id: clientTask.id,
   title: clientTask.title,
@@ -71,10 +90,10 @@ const convertToKanbanTask = (clientTask: ClientTask) => ({
   priority: clientTask.priority === 'urgent' ? 'high' : clientTask.priority as 'low' | 'medium' | 'high',
   status: mapApiStatusToKanban(clientTask.status),
   dueDate: clientTask.due_date || new Date().toISOString(),
-  attachments: 0, // Not available from API
-  comments: 0, // Not available from API
+  attachments: 0,
+  comments: 0,
   progress: clientTask.progress,
-  subtasks: { completed: 0, total: 0 }, // Not available from API
+  subtasks: { completed: 0, total: 0 },
   assignees: clientTask.assigned_to ? [{
     id: clientTask.assigned_to.id,
     name: clientTask.assigned_to.name,
@@ -138,15 +157,17 @@ export default function ClientTaskBoard({ clientId, onTaskCreated }: ClientTaskB
     }
   }
 
-  // Handle moving a task to a different status
-  const handleTaskMove = async (taskId: string, newStatus: TaskStatus) => {
+  // Handle moving a task to a different status with automatic progress calculation
+  const handleTaskMove = async (taskId: string, newStatus: FivePhaseStatus) => {
     const task = tasks.find(t => t.id === taskId)
     if (!task) return
 
-    const newApiStatus = mapKanbanStatusToApi(newStatus)
+    const kanbanStatus = newStatus
+    const newApiStatus = mapKanbanStatusToApi(kanbanStatus)
+    const newProgress = getProgressByPhase(kanbanStatus)
     
     try {
-      // Update task status via API
+      // Update task status and progress via API
       const response = await fetch(`/api/tasks/${taskId}`, {
         method: 'PATCH',
         headers: {
@@ -154,7 +175,7 @@ export default function ClientTaskBoard({ clientId, onTaskCreated }: ClientTaskB
         },
         body: JSON.stringify({
           status: newApiStatus,
-          progress: newStatus === 'done' ? 100 : task.progress // Set to 100% when completed
+          progress: newProgress // Automatic progress based on phase
         }),
       })
 
@@ -166,15 +187,31 @@ export default function ClientTaskBoard({ clientId, onTaskCreated }: ClientTaskB
               const updatedTask = { 
                 ...t, 
                 status: newApiStatus as any,
-                progress: newStatus === 'done' ? 100 : t.progress,
-                completed_at: newStatus === 'done' ? new Date().toISOString() : undefined
+                progress: newProgress,
+                completed_at: kanbanStatus === 'done' ? new Date().toISOString() : undefined
               }
               
               // Show completion toast
-              if (newStatus === "done" && t.status !== 'completed') {
+              if (kanbanStatus === "done" && t.status !== 'completed') {
                 toast({
                   title: "🎉 Tarefa concluída!",
                   description: `"${t.title}" foi marcada como concluída.`,
+                })
+              }
+              
+              // Show progress update toast
+              if (newProgress !== t.progress) {
+                const phaseNames = {
+                  'todo': 'A Fazer',
+                  'in-progress': 'Em Execução', 
+                  'approval': 'Aprovação',
+                  'finalization': 'Finalização',
+                  'done': 'Concluído'
+                };
+                
+                toast({
+                  title: "Progresso atualizado",
+                  description: `"${t.title}" movida para ${phaseNames[kanbanStatus]} (${newProgress}%)`,
                 })
               }
               
@@ -208,8 +245,8 @@ export default function ClientTaskBoard({ clientId, onTaskCreated }: ClientTaskB
     fetchClientTasks() // Refresh local tasks
   }
 
-  // Filter tasks by status for kanban columns
-  const getTasksByStatus = (status: TaskStatus) => {
+  // Filter tasks by status for kanban columns (5-phase)
+  const getTasksByStatus = (status: FivePhaseStatus) => {
     return tasks
       .filter((task) => mapApiStatusToKanban(task.status) === status)
       .map(convertToKanbanTask)
@@ -218,8 +255,8 @@ export default function ClientTaskBoard({ clientId, onTaskCreated }: ClientTaskB
   if (loading) {
     return (
       <div className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          {[...Array(5)].map((_, i) => (
             <div key={i} className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 animate-pulse">
               <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
               <div className="space-y-3">
@@ -237,34 +274,41 @@ export default function ClientTaskBoard({ clientId, onTaskCreated }: ClientTaskB
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <TaskColumn
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <ClientTaskColumn
             title="A Fazer"
             status="todo"
             tasks={getTasksByStatus("todo")}
             onTaskMove={handleTaskMove}
-            onTaskCreated={handleTaskCreated}
+            progressPercentage={0}
           />
-          <TaskColumn
-            title="Em Progresso"
+          <ClientTaskColumn
+            title="Em Execução"
             status="in-progress"
             tasks={getTasksByStatus("in-progress")}
             onTaskMove={handleTaskMove}
-            onTaskCreated={handleTaskCreated}
+            progressPercentage={25}
           />
-          <TaskColumn
-            title="Em Revisão"
-            status="in-review"
-            tasks={getTasksByStatus("in-review")}
+          <ClientTaskColumn
+            title="Aprovação"
+            status="approval"
+            tasks={getTasksByStatus("approval")}
             onTaskMove={handleTaskMove}
-            onTaskCreated={handleTaskCreated}
+            progressPercentage={50}
           />
-          <TaskColumn
+          <ClientTaskColumn
+            title="Finalização"
+            status="finalization"
+            tasks={getTasksByStatus("finalization")}
+            onTaskMove={handleTaskMove}
+            progressPercentage={75}
+          />
+          <ClientTaskColumn
             title="Concluído"
             status="done"
             tasks={getTasksByStatus("done")}
             onTaskMove={handleTaskMove}
-            onTaskCreated={handleTaskCreated}
+            progressPercentage={100}
           />
         </div>
       </div>
