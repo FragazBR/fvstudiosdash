@@ -134,14 +134,27 @@ function ClientTasksContent() {
         const projectsData = await projectsResponse.json()
         const clientProjects = projectsData.projects || []
         
-        // Depois, buscar tarefas de todos os projetos do cliente
+        console.log(`Found ${clientProjects.length} projects for client ${clientId}`);
+        
+        // Depois, buscar tarefas de todos os projetos do cliente em paralelo
         const allTasks: Task[] = []
-        for (const project of clientProjects) {
-          const tasksResponse = await fetch(`/api/tasks?project_id=${project.id}`)
-          if (tasksResponse.ok) {
-            const tasksData = await tasksResponse.json()
-            allTasks.push(...(tasksData.tasks || []))
-          }
+        if (clientProjects.length > 0) {
+          const taskPromises = clientProjects.map(async (project) => {
+            try {
+              const tasksResponse = await fetch(`/api/tasks?project_id=${project.id}`)
+              if (tasksResponse.ok) {
+                const tasksData = await tasksResponse.json()
+                return tasksData.tasks || []
+              }
+              return []
+            } catch (error) {
+              console.error(`Error fetching tasks for project ${project.id}:`, error)
+              return []
+            }
+          })
+          
+          const taskResults = await Promise.all(taskPromises)
+          taskResults.forEach(tasks => allTasks.push(...tasks))
         }
         
         // Ordenar por data de entrega (due_date) e depois por prioridade
@@ -173,6 +186,15 @@ function ClientTasksContent() {
           completedTasks,
           inProgressTasks,
           overdueTasks
+        })
+      } else {
+        console.error('Failed to fetch projects:', projectsResponse.status, projectsResponse.statusText)
+        setTasks([])
+        setStats({
+          totalTasks: 0,
+          completedTasks: 0,
+          inProgressTasks: 0,
+          overdueTasks: 0
         })
       }
     } catch (error) {

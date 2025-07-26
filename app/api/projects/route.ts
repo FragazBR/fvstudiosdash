@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
+    const client_id = searchParams.get('client_id');
     const limit = parseInt(searchParams.get('limit') || '50');
     
     // Buscar perfil do usuário para pegar agency_id
@@ -34,6 +35,10 @@ export async function GET(request: NextRequest) {
       
     if (status) {
       query = query.eq('status', status);
+    }
+    
+    if (client_id) {
+      query = query.eq('client_id', client_id);
     }
     
     const { data: projects, error } = await query;
