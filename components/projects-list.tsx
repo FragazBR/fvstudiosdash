@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { createClient } from '@supabase/supabase-js';
 import {
   Card,
   CardContent,
@@ -38,10 +39,10 @@ import { ProjectStatusModal } from "./project-status-modal";
 import { ProjectArchiveModal } from "./project-archive-modal";
 
 interface Project {
-  id: number;
+  id: string;
   name: string;
   description: string;
-  status: "Planning" | "In Progress" | "Completed" | "On Hold";
+  status: "planning" | "active" | "in_progress" | "review" | "completed" | "cancelled";
   deadline: string;
   progress: number;
   tasks: number;
@@ -51,10 +52,25 @@ interface Project {
     name: string;
     avatar: string;
   }[];
-  priority: "Low" | "Medium" | "High";
-  client: string;
-  budget: string;
+  priority: "low" | "medium" | "high" | "urgent";
+  client: {
+    id: string;
+    name: string;
+    company?: string;
+  };
+  budget_total: number;
+  budget_spent: number;
   startDate: string;
+  endDate: string;
+}
+
+interface ClientGroup {
+  client: {
+    id: string;
+    name: string;
+    company?: string;
+  };
+  projects: Project[];
 }
 
 interface ProjectsListProps {
@@ -130,12 +146,17 @@ const teamMembers = [
   },
 ];
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
 export default function ProjectsList({
   viewMode,
   filterStatus,
 }: ProjectsListProps) {
   const [projects, setProjects] = useState<Project[]>([]);
-  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
+  const [clientGroups, setClientGroups] = useState<ClientGroup[]>([]);
+  const [filteredGroups, setFilteredGroups] = useState<ClientGroup[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [viewDetailsOpen, setViewDetailsOpen] = useState(false);
   const [timelineOpen, setTimelineOpen] = useState(false);
@@ -144,24 +165,120 @@ export default function ProjectsList({
     "complete" | "hold" | "change"
   >("change");
   const [archiveModalOpen, setArchiveModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  // Simulate fetching projects
+  // Fetch projects from database
   useEffect(() => {
-    // This would normally be an API call
-    setProjects(sampleProjects);
+    fetchProjects();
   }, []);
+
+  const fetchProjects = async () => {
+    try {
+      setLoading(true);
+      
+      const { data: projectsData, error } = await supabase
+        .from('projects')
+        .select(`
+          *,
+          contacts:client_id (
+            id,
+            name,
+            company
+          ),
+          tasks:tasks(count)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Erro ao buscar projetos:', error);
+        toast({
+          title: "Erro ao carregar projetos",
+          description: "Não foi possível carregar os projetos. Tente novamente.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Transform data to match component interface
+      const transformedProjects: Project[] = (projectsData || []).map(project => ({
+        id: project.id,
+        name: project.name,
+        description: project.description || '',
+        status: project.status,
+        deadline: project.end_date ? new Date(project.end_date).toLocaleDateString('pt-BR') : 'Sem prazo',
+        progress: calculateProgress(project.budget_spent, project.budget_total),
+        tasks: project.tasks?.length || 0,
+        activity: Math.floor(Math.random() * 50) + 10, // Temporary
+        starred: false, // Temporary
+        team: [], // Temporary
+        priority: project.priority || 'medium',
+        client: {
+          id: project.contacts?.id || '',
+          name: project.contacts?.name || 'Cliente não encontrado',
+          company: project.contacts?.company
+        },
+        budget_total: project.budget_total || 0,
+        budget_spent: project.budget_spent || 0,
+        startDate: project.start_date ? new Date(project.start_date).toLocaleDateString('pt-BR') : 'Não definido',
+        endDate: project.end_date ? new Date(project.end_date).toLocaleDateString('pt-BR') : 'Não definido'
+      }));
+
+      setProjects(transformedProjects);
+      
+      // Group projects by client
+      const grouped = groupProjectsByClient(transformedProjects);
+      setClientGroups(grouped);
+      
+    } catch (error) {
+      console.error('Erro ao buscar projetos:', error);
+      toast({
+        title: "Erro ao carregar projetos",
+        description: "Ocorreu um erro inesperado. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const calculateProgress = (spent: number, total: number): number => {
+    if (!total || total === 0) return 0;
+    return Math.min(Math.round((spent / total) * 100), 100);
+  };
+
+  const groupProjectsByClient = (projects: Project[]): ClientGroup[] => {
+    const grouped = projects.reduce((acc, project) => {
+      const clientId = project.client.id;
+      if (!acc[clientId]) {
+        acc[clientId] = {
+          client: project.client,
+          projects: []
+        };
+      }
+      acc[clientId].projects.push(project);
+      return acc;
+    }, {} as Record<string, ClientGroup>);
+
+    return Object.values(grouped).sort((a, b) => 
+      a.client.name.localeCompare(b.client.name)
+    );
+  };
 
   // Apply filters
   useEffect(() => {
     if (filterStatus) {
-      setFilteredProjects(
-        projects.filter((project) => project.status === filterStatus)
-      );
+      const filtered = clientGroups.map(group => ({
+        ...group,
+        projects: group.projects.filter((project) => 
+          project.status.toLowerCase().replace('_', ' ') === filterStatus.toLowerCase()
+        )
+      })).filter(group => group.projects.length > 0);
+      setFilteredGroups(filtered);
     } else {
-      setFilteredProjects(projects);
+      setFilteredGroups(clientGroups);
     }
-  }, [filterStatus, projects]);
+  }, [filterStatus, clientGroups]);
 
   const handleViewDetails = (project: Project) => {
     setSelectedProject(project);
@@ -248,15 +365,23 @@ export default function ProjectsList({
     setSelectedProject(null);
   };
 
-  if (filteredProjects.length === 0) {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (filteredGroups.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <h3 className="text-lg font-medium text-gray-900 mb-1">
-            No projects found
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">
+            Nenhum projeto encontrado
           </h3>
-          <p className="text-gray-500">
-            Try adjusting your filters or create a new project.
+          <p className="text-gray-500 dark:text-gray-400">
+            Tente ajustar os filtros ou criar um novo projeto.
           </p>
         </div>
       </div>
@@ -264,64 +389,106 @@ export default function ProjectsList({
   }
 
   return (
-    <div>
-      {viewMode === "grid" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-3 xl:gap-6">
-          {filteredProjects.map((project) => (
-            <ProjectCard
-              key={project.id}
-              project={project}
-              onViewDetails={handleViewDetails}
-              onViewTimeline={handleViewTimeline}
-              onToggleStar={handleToggleStar}
-              onStatusChange={handleStatusChange}
-              onArchive={handleArchiveProject}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="bg-white/90 dark:bg-[#171717]/60 border border-gray-200 dark:border-[#272727] rounded-lg overflow-hidden">
-          <div className="overflow-x-auto ">
-            <table className="w-full whitespace-nowrap">
-              <thead>
-                <tr className="bg-gray-50 dark:bg-[#1e1e1e]/80 border-b border-gray-200 dark:border-[#272727]">
-                  <th className="text-left py-3 px-4 font-medium text-gray-500">
-                    Project
-                  </th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-500">
-                    Status
-                  </th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-500">
-                    Progress
-                  </th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-500">
-                    Deadline
-                  </th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-500">
-                    Team
-                  </th>
-                  <th className="text-right py-3 px-4 font-medium text-gray-500">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredProjects.map((project) => (
-                  <ProjectRow
-                    key={project.id}
-                    project={project}
-                    onViewDetails={handleViewDetails}
-                    onViewTimeline={handleViewTimeline}
-                    onToggleStar={handleToggleStar}
-                    onStatusChange={handleStatusChange}
-                    onArchive={handleArchiveProject}
-                  />
-                ))}
-              </tbody>
-            </table>
+    <div className="space-y-8">
+      {filteredGroups.map((group) => (
+        <div key={group.client.id} className="space-y-4">
+          {/* Client Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                {group.client.company || group.client.name}
+              </h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {group.projects.length} projeto{group.projects.length !== 1 ? 's' : ''}
+              </p>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => toast({
+                title: "Funcionalidade em desenvolvimento",
+                description: "Ver todos os projetos do cliente em breve."
+              })}
+            >
+              Ver Todos os Projetos
+            </Button>
           </div>
+
+          {/* Projects Grid/List */}
+          {viewMode === "grid" ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-3 xl:gap-6">
+              {group.projects.slice(0, 3).map((project) => (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  onViewDetails={handleViewDetails}
+                  onViewTimeline={handleViewTimeline}
+                  onToggleStar={handleToggleStar}
+                  onStatusChange={handleStatusChange}
+                  onArchive={handleArchiveProject}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white/90 dark:bg-[#171717]/60 border border-gray-200 dark:border-[#272727] rounded-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full whitespace-nowrap">
+                  <thead>
+                    <tr className="bg-gray-50 dark:bg-[#1e1e1e]/80 border-b border-gray-200 dark:border-[#272727]">
+                      <th className="text-left py-3 px-4 font-medium text-gray-500">
+                        Projeto
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-500">
+                        Status
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-500">
+                        Progresso
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-500">
+                        Prazo
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-500">
+                        Equipe
+                      </th>
+                      <th className="text-right py-3 px-4 font-medium text-gray-500">
+                        Ações
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {group.projects.slice(0, 3).map((project) => (
+                      <ProjectRow
+                        key={project.id}
+                        project={project}
+                        onViewDetails={handleViewDetails}
+                        onViewTimeline={handleViewTimeline}
+                        onToggleStar={handleToggleStar}
+                        onStatusChange={handleStatusChange}
+                        onArchive={handleArchiveProject}
+                      />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {group.projects.length > 3 && (
+            <div className="text-center">
+              <Button 
+                variant="ghost" 
+                onClick={() => toast({
+                  title: "Funcionalidade em desenvolvimento",
+                  description: "Ver mais projetos em breve."
+                })}
+                className="text-blue-600 hover:text-blue-700"
+              >
+                Ver mais {group.projects.length - 3} projeto{group.projects.length - 3 !== 1 ? 's' : ''}
+              </Button>
+            </div>
+          )}
         </div>
-      )}
+      ))}
 
       {/* Modals */}
       <ProjectViewDetailsModal
@@ -382,10 +549,10 @@ function ProjectCard({
             <div
               className={cn(
                 "w-1 h-12 rounded-full",
-                project.status === "In Progress" && "bg-yellow-500",
-                project.status === "Completed" && "bg-green-500",
-                project.status === "Planning" && "bg-slate-500",
-                project.status === "On Hold" && "bg-gray-500"
+                (project.status === "in_progress" || project.status === "active") && "bg-yellow-500",
+                project.status === "completed" && "bg-green-500",
+                project.status === "planning" && "bg-slate-500",
+                (project.status === "cancelled" || project.status === "review") && "bg-gray-500"
               )}
             />
             <div>
@@ -401,17 +568,22 @@ function ProjectCard({
           <Badge
             className={cn(
               "font-medium text-nowrap",
-              project.status === "In Progress" &&
+              (project.status === "in_progress" || project.status === "active") &&
                 "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
-              project.status === "Completed" &&
+              project.status === "completed" &&
                 "bg-green-100 text-green-800 hover:bg-green-100",
-              project.status === "Planning" &&
+              project.status === "planning" &&
                 "bg-slate-100 text-slate-800 hover:bg-slate-100",
-              project.status === "On Hold" &&
+              (project.status === "cancelled" || project.status === "review") &&
                 "bg-gray-100 text-gray-800 hover:bg-gray-100"
             )}
           >
-            {project.status}
+            {project.status === 'in_progress' ? 'Em Andamento' :
+             project.status === 'active' ? 'Ativo' :
+             project.status === 'completed' ? 'Concluído' :
+             project.status === 'planning' ? 'Planejamento' :
+             project.status === 'review' ? 'Revisão' :
+             project.status === 'cancelled' ? 'Cancelado' : project.status}
           </Badge>
         </div>
       </CardHeader>
@@ -463,31 +635,34 @@ function ProjectCard({
         <div className="mt-4 pt-4 border-t border-gray-100">
           <div className="grid grid-cols-2 gap-4 text-xs">
             <div>
-              <p className="text-gray-500 mb-1">Client</p>
-              <p className="font-medium">{project.client}</p>
+              <p className="text-gray-500 mb-1">Cliente</p>
+              <p className="font-medium">{project.client.company || project.client.name}</p>
             </div>
             <div>
-              <p className="text-gray-500 mb-1">Budget</p>
-              <p className="font-medium">{project.budget}</p>
+              <p className="text-gray-500 mb-1">Orçamento</p>
+              <p className="font-medium">R$ {project.budget_total?.toLocaleString('pt-BR') || '0'}</p>
             </div>
             <div>
-              <p className="text-gray-500 mb-1">Start Date</p>
+              <p className="text-gray-500 mb-1">Início</p>
               <p className="font-medium">{project.startDate}</p>
             </div>
             <div>
-              <p className="text-gray-500 mb-1">Priority</p>
+              <p className="text-gray-500 mb-1">Prioridade</p>
               <Badge
                 className={cn(
                   "font-medium",
-                  project.priority === "High" &&
+                  (project.priority === "high" || project.priority === "urgent") &&
                     "bg-red-100 text-red-800 hover:bg-red-100",
-                  project.priority === "Medium" &&
+                  project.priority === "medium" &&
                     "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
-                  project.priority === "Low" &&
+                  project.priority === "low" &&
                     "bg-green-100 text-green-800 hover:bg-green-100"
                 )}
               >
-                {project.priority}
+                {project.priority === 'high' ? 'Alta' :
+                 project.priority === 'urgent' ? 'Urgente' :
+                 project.priority === 'medium' ? 'Média' :
+                 project.priority === 'low' ? 'Baixa' : project.priority}
               </Badge>
             </div>
           </div>
