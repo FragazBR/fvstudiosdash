@@ -9,7 +9,8 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Sidebar from '@/components/sidebar'
 import Topbar from '@/components/Shared/Topbar'
-import { ModernProjectWorkstation } from '@/components/modern-project-workstation'
+import PersonalTaskBoard from '@/components/personal-task-board'
+import TimelineView from '@/components/timeline-view'
 import { IntelligentProjectWizard } from '@/components/intelligent-project-wizard'
 import { RealtimeNotifications } from '@/components/realtime-notifications'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -855,12 +856,12 @@ export function IntelligentWorkstation() {
 
               {/* Kanban View */}
               <TabsContent value="kanban" className="space-y-6">
-                <ModernProjectWorkstation userId={user.id} />
+                <PersonalTaskBoard />
               </TabsContent>
 
               {/* Timeline View */}
               <TabsContent value="timeline" className="space-y-6">
-                <TimelineView userId={user.id} />
+                <TimelineView />
               </TabsContent>
 
               {/* Analytics View */}
