@@ -13,6 +13,11 @@ import PersonalTaskBoard from '@/components/personal-task-board'
 import TimelineView from '@/components/timeline-view'
 import { IntelligentProjectWizard } from '@/components/intelligent-project-wizard'
 import { RealtimeNotifications } from '@/components/realtime-notifications'
+import { IntelligentTaskRecommendations } from '@/components/intelligent-task-recommendations'
+import { PredictiveAnalytics } from '@/components/predictive-analytics'
+import { AIAssistant } from '@/components/ai-assistant'
+import { IntelligentAutomation } from '@/components/intelligent-automation'
+import { IntelligentTemplates } from '@/components/intelligent-templates'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -109,6 +114,7 @@ interface SmartInsight {
 // Header Inteligente com IA
 function IntelligentHeader() {
   const { user } = useUser()
+  const router = useRouter()
   const [stats, setStats] = useState<WorkstationStats>({
     total_projects: 0,
     active_projects: 0,
@@ -177,19 +183,19 @@ function IntelligentHeader() {
   const progressPercentage = stats.total_stages > 0 ? Math.round((stats.completed_stages / stats.total_stages) * 100) : 0
 
   return (
-    <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white p-6 rounded-lg mb-6">
+    <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:bg-none dark:bg-[#171717]/60 dark:border dark:border-[#272727] text-white dark:text-gray-100 p-6 rounded-lg mb-6">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
         {/* Welcome Section */}
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-              <Cpu className="h-6 w-6" />
+            <div className="p-2 bg-white/20 dark:bg-[#1e1e1e]/80 rounded-lg backdrop-blur-sm">
+              <Cpu className="h-6 w-6 dark:text-[#01b86c]" />
             </div>
             <div>
               <h1 className="text-2xl font-bold">
                 Bem-vindo, {user?.name}! 🚀
               </h1>
-              <p className="text-blue-100">
+              <p className="text-blue-100 dark:text-gray-400">
                 Sua estação de trabalho inteligente está otimizada e pronta
               </p>
             </div>
@@ -197,7 +203,7 @@ function IntelligentHeader() {
 
           {/* Quick Stats */}
           <div className="flex flex-wrap gap-4 mt-4">
-            <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
+            <div className="bg-white/10 dark:bg-[#1e1e1e]/80 rounded-lg p-3 backdrop-blur-sm">
               <div className="flex items-center gap-2">
                 <Briefcase className="h-4 w-4" />
                 <span className="text-sm">Projetos Ativos</span>
@@ -205,7 +211,7 @@ function IntelligentHeader() {
               <div className="text-xl font-bold">{stats.active_projects}</div>
             </div>
             
-            <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
+            <div className="bg-white/10 dark:bg-[#1e1e1e]/80 rounded-lg p-3 backdrop-blur-sm">
               <div className="flex items-center gap-2">
                 <Zap className="h-4 w-4" />
                 <span className="text-sm">Velocidade da Equipe</span>
@@ -213,12 +219,24 @@ function IntelligentHeader() {
               <div className="text-xl font-bold">{stats.team_velocity}/sem</div>
             </div>
 
-            <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
+            <div className="bg-white/10 dark:bg-[#1e1e1e]/80 rounded-lg p-3 backdrop-blur-sm">
               <div className="flex items-center gap-2">
                 <Brain className="h-4 w-4" />
                 <span className="text-sm">Automação</span>
               </div>
               <div className="text-xl font-bold">{stats.automation_rate}%</div>
+            </div>
+
+            {/* Link para IA Avançada */}
+            <div 
+              className="bg-gradient-to-r from-purple-500/20 to-indigo-500/20 dark:from-purple-500/30 dark:to-indigo-500/30 rounded-lg p-3 backdrop-blur-sm border border-purple-300/30 cursor-pointer hover:scale-105 transition-transform"
+              onClick={() => router.push('/agency?tab=ai')}
+            >
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-purple-200" />
+                <span className="text-sm text-purple-200">IA Avançada</span>
+              </div>
+              <div className="text-xl font-bold text-purple-100">Sistema</div>
             </div>
           </div>
         </div>
@@ -388,36 +406,85 @@ function QuickActions({ onCreateProject }: { onCreateProject: () => void }) {
       badge: 'IA'
     },
     {
-      id: 'templates',
-      title: 'Gerenciar Templates',
-      description: 'Criar e editar templates',
-      icon: <Layout className="h-5 w-5" />,
-      color: 'bg-gradient-to-r from-green-500 to-teal-500',
-      action: () => router.push('/templates')
+      id: 'agency-ai-hub',
+      title: 'IA Avançada da Agência',
+      description: 'Sistema completo de IA',
+      icon: <Brain className="h-5 w-5" />,
+      color: 'bg-gradient-to-r from-purple-600 to-indigo-600',
+      action: () => router.push('/agency?tab=ai'),
+      badge: 'Novo'
     },
     {
-      id: 'analytics',
-      title: 'Analytics Avançados',
-      description: 'Insights e relatórios',
+      id: 'analyze-campaigns',
+      title: 'Analisar Campanhas',
+      description: 'IA analisa performance',
       icon: <BarChart3 className="h-5 w-5" />,
-      color: 'bg-gradient-to-r from-orange-500 to-red-500',
-      action: () => router.push('/analytics')
+      color: 'bg-gradient-to-r from-blue-500 to-cyan-500',
+      action: () => {
+        router.push('/agency?tab=ai')
+        toast.success('Iniciando análise de campanhas...')
+      },
+      badge: 'IA'
     },
     {
-      id: 'automation',
-      title: 'Central de Automação',
-      description: 'Configurar automações',
-      icon: <Zap className="h-5 w-5" />,
+      id: 'optimize-budget',
+      title: 'Otimizar Orçamento',
+      description: 'IA realoca recursos',
+      icon: <Target className="h-5 w-5" />,
+      color: 'bg-gradient-to-r from-green-500 to-emerald-500',
+      action: () => {
+        router.push('/agency?tab=ai')
+        toast.success('Otimizando orçamento com IA...')
+      },
+      badge: 'Smart'
+    },
+    {
+      id: 'generate-content',
+      title: 'Gerar Conteúdo IA',
+      description: 'Criação automática',
+      icon: <Sparkles className="h-5 w-5" />,
       color: 'bg-gradient-to-r from-purple-500 to-pink-500',
-      action: () => router.push('/automation')
+      action: () => {
+        router.push('/agency?tab=ai')
+        toast.success('Gerando conteúdo com IA...')
+      },
+      badge: 'AI'
     },
     {
-      id: 'integrations',
-      title: 'Integrações',
-      description: 'Conectar ferramentas',
-      icon: <Globe className="h-5 w-5" />,
-      color: 'bg-gradient-to-r from-cyan-500 to-blue-500',
-      action: () => router.push('/integrations')
+      id: 'predict-performance',
+      title: 'Prever Performance',
+      description: 'Análise preditiva ML',
+      icon: <TrendingUp className="h-5 w-5" />,
+      color: 'bg-gradient-to-r from-indigo-500 to-purple-500',
+      action: () => {
+        router.push('/agency?tab=ai')
+        toast.success('Gerando previsões...')
+      },
+      badge: 'ML'
+    },
+    {
+      id: 'automate-reports',
+      title: 'Automatizar Relatórios',
+      description: 'Configurar automação',
+      icon: <Workflow className="h-5 w-5" />,
+      color: 'bg-gradient-to-r from-orange-500 to-red-500',
+      action: () => {
+        router.push('/agency?tab=ai')
+        toast.success('Configurando automação...')
+      },
+      badge: 'Auto'
+    },
+    {
+      id: 'smart-insights',
+      title: 'Insights Inteligentes',
+      description: 'Análise profunda IA',
+      icon: <Brain className="h-5 w-5" />,
+      color: 'bg-gradient-to-r from-yellow-500 to-orange-500',
+      action: () => {
+        router.push('/agency?tab=ai')
+        toast.success('Gerando insights...')
+      },
+      badge: 'IA'
     },
     {
       id: 'ai-assistant',
@@ -425,8 +492,35 @@ function QuickActions({ onCreateProject }: { onCreateProject: () => void }) {
       description: 'Chat inteligente',
       icon: <Brain className="h-5 w-5" />,
       color: 'bg-gradient-to-r from-indigo-500 to-purple-500',
-      action: () => toast.info('Assistente IA em breve!'),
-      badge: 'Novo'
+      action: () => router.push('/workstation?tab=ai_assistant'),
+      badge: 'Chat'
+    },
+    {
+      id: 'smart-recommendations',
+      title: 'Recomendações IA',
+      description: 'Insights personalizados',
+      icon: <Sparkles className="h-5 w-5" />,
+      color: 'bg-gradient-to-r from-pink-500 to-rose-500',
+      action: () => router.push('/workstation?tab=recommendations'),
+      badge: 'Tips'
+    },
+    {
+      id: 'predictive-analysis',
+      title: 'Análise Preditiva',
+      description: 'Predição de riscos',
+      icon: <TrendingUp className="h-5 w-5" />,
+      color: 'bg-gradient-to-r from-emerald-500 to-teal-500',
+      action: () => router.push('/workstation?tab=predictive'),
+      badge: 'ML'
+    },
+    {
+      id: 'smart-templates',
+      title: 'Templates Inteligentes',
+      description: 'Biblioteca com IA',
+      icon: <Layout className="h-5 w-5" />,
+      color: 'bg-gradient-to-r from-violet-500 to-purple-500',
+      action: () => router.push('/workstation?tab=templates'),
+      badge: 'Smart'
     }
   ]
 
@@ -438,29 +532,75 @@ function QuickActions({ onCreateProject }: { onCreateProject: () => void }) {
           Ações Rápidas
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {actions.map((action) => (
+      <CardContent className="space-y-6">
+        {/* Destaque: IA Avançada da Agência */}
+        <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 p-6 text-white">
+          <div className="relative z-10">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-white/20 rounded-lg backdrop-blur-sm">
+                  <Brain className="h-8 w-8" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold mb-1">IA Avançada da Agência</h3>
+                  <p className="text-purple-100 text-sm">
+                    Sistema completo com ações inteligentes, automação e análise preditiva
+                  </p>
+                </div>
+              </div>
+              <Button
+                onClick={() => router.push('/agency?tab=ai')}
+                className="bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm"
+                variant="outline"
+              >
+                Acessar <Sparkles className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          <div className="absolute -top-6 -right-6 opacity-10">
+            <Brain className="h-32 w-32" />
+          </div>
+        </div>
+
+        {/* Grid de Ações Rápidas */}
+        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {actions.filter(action => action.id !== 'agency-ai-hub').map((action) => (
             <Button
               key={action.id}
               variant="outline"
-              className="h-auto p-4 justify-start hover:scale-105 transition-transform"
+              className="h-auto p-3 md:p-4 justify-center md:justify-start hover:scale-105 transition-transform group"
               onClick={action.action}
+              title={`${action.title} - ${action.description}`} // Tooltip para mobile
             >
-              <div className="flex items-center gap-3 w-full">
+              {/* Layout Mobile - Apenas ícone */}
+              <div className="flex md:hidden flex-col items-center gap-2 w-full">
                 <div className={`p-2 rounded-lg text-white ${action.color}`}>
                   {action.icon}
                 </div>
+                {action.badge && (
+                  <Badge variant="secondary" className="text-xs">
+                    {action.badge}
+                  </Badge>
+                )}
+              </div>
+
+              {/* Layout Desktop - Ícone + texto completo */}
+              <div className="hidden md:flex items-center gap-3 w-full">
+                <div className={`p-2 rounded-lg text-white ${action.color} flex-shrink-0`}>
+                  {action.icon}
+                </div>
                 <div className="flex-1 text-left">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm">{action.title}</span>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-medium text-sm whitespace-nowrap overflow-hidden text-ellipsis">
+                      {action.title}
+                    </span>
                     {action.badge && (
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary" className="text-xs flex-shrink-0">
                         {action.badge}
                       </Badge>
                     )}
                   </div>
-                  <span className="text-xs text-gray-600 dark:text-gray-400">
+                  <span className="text-xs text-gray-600 dark:text-gray-400 block">
                     {action.description}
                   </span>
                 </div>
@@ -481,7 +621,7 @@ function PerformanceMetrics() {
       value: 94,
       trend: '+5%',
       icon: <Users className="h-4 w-4" />,
-      color: 'text-green-600'
+      color: 'text-[#01b86c]'
     },
     {
       label: 'Tempo Médio de Entrega',
@@ -512,15 +652,15 @@ function PerformanceMetrics() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Gauge className="h-5 w-5 text-green-500" />
+          <Gauge className="h-5 w-5 text-[#01b86c]" />
           Performance em Tempo Real
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {metrics.map((metric, index) => (
-            <div key={index} className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <div className={`inline-flex p-2 rounded-full bg-gray-100 dark:bg-gray-700 mb-2 ${metric.color}`}>
+            <div key={index} className="text-center p-4 bg-white/90 dark:bg-[#171717]/60 border border-gray-200 dark:border-[#272727] rounded-lg hover:shadow-md hover:scale-105 hover:border-[#01b86c]/40 transition-all duration-200 cursor-pointer">
+              <div className={`inline-flex p-2 rounded-full bg-gray-100 dark:bg-[#1e1e1e]/80 mb-2 ${metric.color}`}>
                 {metric.icon}
               </div>
               <div className="text-2xl font-bold">
@@ -686,8 +826,20 @@ function AnalyticsView({ userId }: { userId: string }) {
 export function IntelligentWorkstation() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showWizard, setShowWizard] = useState(false)
-  const [currentView, setCurrentView] = useState<'dashboard' | 'kanban' | 'timeline' | 'analytics'>('dashboard')
+  const [currentView, setCurrentView] = useState<'dashboard' | 'kanban' | 'timeline' | 'analytics' | 'recommendations' | 'predictive' | 'ai_assistant' | 'automation' | 'templates'>('dashboard')
   const { user } = useUser()
+  const router = useRouter()
+
+  // Verificar se há uma aba específica na URL
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search)
+      const tabParam = urlParams.get('tab')
+      if (tabParam && ['dashboard', 'kanban', 'timeline', 'analytics', 'recommendations', 'predictive', 'ai_assistant', 'automation', 'templates'].includes(tabParam)) {
+        setCurrentView(tabParam as any)
+      }
+    }
+  }, [])
 
   const handleProjectCreated = (projectId: string) => {
     toast.success('Projeto criado com sucesso! Redirecionando...')
@@ -719,7 +871,7 @@ export function IntelligentWorkstation() {
 
             {/* Navigation Tabs */}
             <Tabs value={currentView} onValueChange={(value: any) => setCurrentView(value)} className="mb-6">
-              <TabsList className="grid grid-cols-4 w-full lg:w-96">
+              <TabsList className="grid grid-cols-4 lg:grid-cols-8 w-full">
                 <TabsTrigger value="dashboard" className="flex items-center gap-2">
                   <Activity className="h-4 w-4" />
                   <span className="hidden sm:inline">Dashboard</span>
@@ -736,7 +888,38 @@ export function IntelligentWorkstation() {
                   <BarChart3 className="h-4 w-4" />
                   <span className="hidden sm:inline">Analytics</span>
                 </TabsTrigger>
+                <TabsTrigger value="recommendations" className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  <span className="hidden lg:inline">Recomendações</span>
+                </TabsTrigger>
+                <TabsTrigger value="predictive" className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4" />
+                  <span className="hidden lg:inline">Preditiva</span>
+                </TabsTrigger>
+                <TabsTrigger value="ai_assistant" className="flex items-center gap-2">
+                  <Brain className="h-4 w-4" />
+                  <span className="hidden lg:inline">IA</span>
+                </TabsTrigger>
+                <TabsTrigger value="automation" className="flex items-center gap-2">
+                  <Zap className="h-4 w-4" />
+                  <span className="hidden lg:inline">Automação</span>
+                </TabsTrigger>
               </TabsList>
+              
+              {/* Dropdown para mais opções em telas menores */}
+              <div className="lg:hidden mt-4">
+                <select 
+                  value={currentView} 
+                  onChange={(e) => setCurrentView(e.target.value as any)}
+                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#171717] text-gray-900 dark:text-gray-100"
+                >
+                  <option value="recommendations">🌟 Recomendações IA</option>
+                  <option value="predictive">📊 Análise Preditiva</option>
+                  <option value="ai_assistant">🤖 Assistente IA</option>
+                  <option value="automation">⚡ Central de Automação</option>
+                  <option value="templates">📝 Templates Inteligentes</option>
+                </select>
+              </div>
 
               {/* Dashboard View */}
               <TabsContent value="dashboard" className="space-y-6">
@@ -788,6 +971,31 @@ export function IntelligentWorkstation() {
               {/* Analytics View */}
               <TabsContent value="analytics" className="space-y-6">
                 <AnalyticsView userId={user.id} />
+              </TabsContent>
+
+              {/* Recomendações Inteligentes */}
+              <TabsContent value="recommendations" className="space-y-6">
+                <IntelligentTaskRecommendations />
+              </TabsContent>
+
+              {/* Análise Preditiva */}
+              <TabsContent value="predictive" className="space-y-6">
+                <PredictiveAnalytics />
+              </TabsContent>
+
+              {/* Assistente IA */}
+              <TabsContent value="ai_assistant" className="space-y-6">
+                <AIAssistant />
+              </TabsContent>
+
+              {/* Central de Automação */}
+              <TabsContent value="automation" className="space-y-6">
+                <IntelligentAutomation />
+              </TabsContent>
+
+              {/* Templates Inteligentes */}
+              <TabsContent value="templates" className="space-y-6">
+                <IntelligentTemplates />
               </TabsContent>
             </Tabs>
           </div>

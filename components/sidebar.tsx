@@ -314,7 +314,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
 
       <div
         className={cn(
-          "fixed top-0 bottom-0 left-0 z-50 w-64 bg-white dark:bg-[#171717] border-r border-gray-200 dark:border-[#272727] transition-transform duration-500 ease-in-out lg:translate-x-0 overflow-y-auto backdrop-blur-xl",
+          "fixed top-0 bottom-0 left-0 z-50 w-64 bg-white dark:bg-[#171717] border-r border-gray-200 dark:border-[#272727] transition-transform duration-500 ease-in-out lg:translate-x-0 overflow-y-auto backdrop-blur-xl [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-track]:dark:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:dark:bg-[#272727] [&::-webkit-scrollbar-thumb]:dark:border [&::-webkit-scrollbar-thumb]:dark:border-[#3f3f3f] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb:hover]:bg-gray-400 [&::-webkit-scrollbar-thumb:hover]:dark:bg-[#1a1a1a]",
           open ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -344,7 +344,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
             variant="ghost"
             size="icon"
             onClick={() => setOpen(false)}
-            className="lg:hidden text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#1e1e1e]/80"
+            className="lg:hidden text-gray-600 dark:text-white hover:text-gray-900 dark:hover:text-gray-200 hover:border-[#01b86c]/40 border-[0.5px] border-transparent transition-all duration-200"
           >
             <X className="h-5 w-5" />
             <span className="sr-only">Fechar sidebar</span>
@@ -401,18 +401,18 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
               <NavItem href="/agency-manager" icon={Users}>Gestão da Agência</NavItem>
             )}
             
-            {/* Social Media - para todos os usuários (exceto free_user) */}
-            {user?.role && user.role !== 'free_user' && (
+            {/* Social Media - para todos os usuários individuais (incluindo free) */}
+            {user?.role && ['admin', 'agency_client', 'independent_client', 'independent_producer', 'influencer', 'free_user', 'agency_owner', 'agency_manager', 'agency_staff'].includes(user.role) && (
               <div className="space-y-0.5">
                 <button
                   onClick={() => setSocialMediaExpanded(!socialMediaExpanded)}
                   className={cn(
                     "group w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 font-inter",
-                    "text-gray-600 dark:text-[#737373] hover:text-gray-900 dark:hover:text-gray-200 hover:bg-slate-50 dark:hover:bg-[#1e1e1e]/80"
+                    "text-gray-600 dark:text-white hover:text-gray-900 dark:hover:text-gray-200 hover:border-[#01b86c]/40 border-[0.5px] border-transparent transition-all duration-200"
                   )}
                 >
                   <div className="flex items-center">
-                    <MessageCircle className="h-5 w-5 mr-3 text-gray-400 dark:text-[#6b7280] group-hover:text-slate-600 dark:group-hover:text-gray-300" />
+                    <MessageCircle className="h-5 w-5 mr-3 text-gray-400 dark:text-white group-hover:text-[#01b86c] dark:group-hover:text-[#01b86c]" />
                     <span>Social Media</span>
                   </div>
                   {socialMediaExpanded ? (
@@ -441,6 +441,9 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
                     </NavSubItem>
                     <NavSubItem href="/social-media/leads" icon={UserPlus} tooltip="Integração com RD Station e CRMs - gestão de leads e funis">
                       Leads e CRM
+                    </NavSubItem>
+                    <NavSubItem href="/social-media/api-integrations" icon={Zap} tooltip="Gerencie integrações com Meta Ads, Google Ads, TikTok, LinkedIn e outras APIs">
+                      Integrações
                     </NavSubItem>
                     <NavSubItem href="/social-media/settings" icon={UserCog} tooltip="Configure suas chaves de API para Instagram, Facebook, LinkedIn, TikTok e outras integrações">
                       Configurações
@@ -472,7 +475,10 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
             
             {/* Admin - apenas para administradores */}
             {isAdmin && (
-              <NavItem href="/admin" icon={UserCog}>Administração</NavItem>
+              <div className="space-y-0.5">
+                <NavItem href="/admin" icon={UserCog}>Administração</NavItem>
+                <NavItem href="/admin/api-integrations" icon={Zap}>Admin - Integrações</NavItem>
+              </div>
             )}
             
             {/* Notificações - para todos */}
@@ -602,7 +608,7 @@ function Section({ title, children, titleColor }: { title: string; children: Rea
     <div className="mb-6">
       <h3 className={cn(
         "text-xs font-medium uppercase tracking-wider px-3 mb-3 font-inter",
-        titleColor || "text-gray-400 dark:text-[#737373]"
+        titleColor || "text-gray-400 dark:text-white"
       )}>
         {title}
       </h3>
@@ -616,7 +622,7 @@ function SectionToggle({ expanded, onToggle }: { expanded: boolean; onToggle: ()
     <Button
       variant="ghost"
       size="sm"
-      className="w-full justify-start mt-2 text-xs text-gray-400 dark:text-[#737373] hover:text-slate-700 dark:hover:text-gray-300 hover:bg-slate-50 dark:hover:bg-[#1e1e1e]/80 transition-colors font-inter"
+      className="w-full justify-start mt-2 text-xs text-gray-400 dark:text-gray-400 hover:text-[#01b86c] dark:hover:text-[#01b86c] hover:border-[#01b86c]/40 border-[0.5px] border-transparent transition-all duration-200 font-inter"
       onClick={onToggle}
     >
       {expanded ? "Menos" : "Ver todos"}
@@ -651,18 +657,16 @@ function NavItem({
       className={cn(
         "group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 font-inter",
         isActive 
-          ? "text-slate-800 border-r-2 border-slate-600 dark:bg-[#64f481]/10 dark:text-[#64f481] dark:border-[#64f481]" 
-          : "text-gray-600 dark:text-[#737373] hover:text-gray-900 dark:hover:text-gray-200 hover:bg-slate-50 dark:hover:bg-[#1e1e1e]/80",
-        // Aplicar gradient apenas quando ativo (será sobrescrito no dark)
-        isActive && "bg-gradient-to-r from-slate-100 to-slate-200"
+          ? "text-[#01b86c] bg-[#01b86c]/5 dark:bg-[#01b86c]/10 dark:text-[#01b86c]" 
+          : "text-gray-600 dark:text-white hover:text-[#01b86c] dark:hover:text-[#01b86c] hover:border-[#01b86c]/40 border-[0.5px] border-transparent transition-all duration-200",
       )}
       onClick={onClick}
     >
       <Icon className={cn(
         "h-5 w-5 mr-3 transition-colors", 
         isActive 
-          ? "text-slate-700 dark:text-[#64f481]" 
-          : "text-gray-400 dark:text-[#6b7280] group-hover:text-slate-600 dark:group-hover:text-gray-300"
+          ? "text-[#01b86c]" 
+          : "text-gray-400 dark:text-gray-400 group-hover:text-[#01b86c] dark:group-hover:text-[#01b86c]"
       )} />
       {children}
     </Link>
@@ -672,9 +676,9 @@ function NavItem({
 function ProjectItem({ project }: { project: Project }) {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-500/20 text-green-600 dark:bg-green-500/20 dark:text-green-400';
+      case 'active': return 'bg-[#01b86c]/20 text-[#01b86c] dark:bg-[#01b86c]/20 dark:text-[#01b86c]';
       case 'on_hold': return 'bg-amber-500/20 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400';
-      case 'completed': return 'bg-slate-500/20 text-slate-700 dark:bg-[#64f481]/20 dark:text-[#64f481]';
+      case 'completed': return 'bg-[#01b86c]/20 text-[#01b86c] dark:bg-[#01b86c]/20 dark:text-[#01b86c]';
       case 'draft': return 'bg-slate-500/20 text-slate-600 dark:bg-slate-500/20 dark:text-slate-400';
       default: return 'bg-blue-500/20 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400';
     }
@@ -693,7 +697,7 @@ function ProjectItem({ project }: { project: Project }) {
   return (
     <Link
       href={`/projects/${project.id}`}
-      className="flex items-center px-3 py-2.5 text-sm rounded-lg text-gray-600 dark:text-[#737373] hover:text-gray-900 dark:hover:text-gray-200 hover:bg-slate-50 dark:hover:bg-[#1e1e1e]/80 transition-colors font-inter"
+      className="flex items-center px-3 py-2.5 text-sm rounded-lg text-gray-600 dark:text-white hover:text-gray-900 dark:hover:text-gray-200 hover:border-[#01b86c]/40 border-[0.5px] border-transparent transition-all duration-200 font-inter"
     >
       <span className={`h-2 w-2 rounded-full mr-3`} style={{ backgroundColor: project.color }} />
       <div className="flex-1 min-w-0">
@@ -733,7 +737,7 @@ function UrgentTaskItem({ task }: { task: Task }) {
   return (
     <Link
       href={`/client/${task.project.id}/tasks`}
-      className="flex items-center px-3 py-2.5 text-sm rounded-lg text-gray-600 dark:text-[#737373] hover:text-gray-900 dark:hover:text-gray-200 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors font-inter border-l-2 border-red-500"
+      className="flex items-center px-3 py-2.5 text-sm rounded-lg text-gray-600 dark:text-white hover:text-gray-900 dark:hover:text-gray-200 hover:border-[#01b86c]/40 border-[0.5px] border-transparent transition-all duration-200 font-inter border-l-2 border-l-red-500"
     >
       <AlertTriangle className="h-4 w-4 mr-3 text-red-500" />
       <div className="flex-1 min-w-0">
@@ -772,7 +776,7 @@ function SystemNotificationItem({ notification }: { notification: SystemNotifica
       case 'maintenance': return 'text-blue-600 dark:text-blue-400';
       case 'security': return 'text-red-600 dark:text-red-400';
       case 'system_urgent': return 'text-red-600 dark:text-red-400';
-      case 'update': return 'text-green-600 dark:text-green-400';
+      case 'update': return 'text-[#01b86c] dark:text-[#01b86c]';
       default: return 'text-amber-600 dark:text-amber-400';
     }
   };
@@ -836,16 +840,16 @@ function NavSubItem({
       className={cn(
         "group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 font-inter relative",
         isActive 
-          ? "text-slate-800 bg-slate-100 dark:bg-[#64f481]/10 dark:text-[#64f481]" 
-          : "text-gray-500 dark:text-[#9ca3af] hover:text-gray-700 dark:hover:text-gray-300 hover:bg-slate-50 dark:hover:bg-[#1e1e1e]/60"
+          ? "text-[#01b86c] bg-[#01b86c]/5 dark:bg-[#01b86c]/10 dark:text-[#01b86c]" 
+          : "text-gray-500 dark:text-white hover:text-[#01b86c] dark:hover:text-[#01b86c] hover:border-[#01b86c]/40 border-[0.5px] border-transparent transition-all duration-200"
       )}
       title={tooltip}
     >
       <Icon className={cn(
         "h-4 w-4 mr-3 transition-colors", 
         isActive 
-          ? "text-slate-700 dark:text-[#64f481]" 
-          : "text-gray-400 dark:text-[#6b7280] group-hover:text-slate-600 dark:group-hover:text-gray-400"
+          ? "text-[#01b86c]" 
+          : "text-gray-400 dark:text-gray-400 group-hover:text-[#01b86c] dark:group-hover:text-[#01b86c]"
       )} />
       {children}
       
@@ -865,7 +869,7 @@ function NotificationItem({ notification }: { notification: Notification }) {
     switch (type) {
       case 'error': return 'text-red-600 dark:text-red-400';
       case 'warning': return 'text-amber-600 dark:text-amber-400';
-      case 'success': return 'text-green-600 dark:text-green-400';
+      case 'success': return 'text-[#01b86c] dark:text-[#01b86c]';
       default: return 'text-blue-600 dark:text-blue-400';
     }
   };
@@ -886,7 +890,7 @@ function NotificationItem({ notification }: { notification: Notification }) {
   return (
     <Link
       href="/notifications"
-      className="flex items-center px-3 py-2.5 rounded-lg text-gray-600 dark:text-[#737373] hover:text-gray-900 dark:hover:text-gray-200 hover:bg-slate-50 dark:hover:bg-[#1e1e1e]/80 transition-colors font-inter"
+      className="flex items-center px-3 py-2.5 rounded-lg text-gray-600 dark:text-[#737373] hover:text-gray-900 dark:hover:text-gray-200 hover:border-[#01b86c]/40 border-[0.5px] border-transparent transition-all duration-200 font-inter"
     >
       <Bell className={cn("h-4 w-4 mr-3", getTypeColor(notification.type))} />
       <div className="flex-1 min-w-0">
@@ -907,7 +911,7 @@ function NotificationItem({ notification }: { notification: Notification }) {
           </p>
         )}
       </div>
-      {!notification.read && <span className="h-2 w-2 bg-slate-600 dark:bg-[#64f481] rounded-full ml-2" />}
+      {!notification.read && <span className="h-2 w-2 bg-slate-600 dark:bg-[#01b86c] rounded-full ml-2" />}
     </Link>
   );
 }

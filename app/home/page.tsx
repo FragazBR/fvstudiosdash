@@ -140,7 +140,7 @@ function HomeContent() {
 function StatsCard({ title, value, icon: Icon, color, trend }: any) {
   const colorClasses = {
     blue: 'text-blue-500',
-    green: 'text-green-500', 
+    green: 'text-[#01b86c]', 
     purple: 'text-purple-500',
     orange: 'text-orange-500',
     red: 'text-red-500'
@@ -154,7 +154,7 @@ function StatsCard({ title, value, icon: Icon, color, trend }: any) {
             <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
             <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{value}</p>
             {trend && (
-              <p className={`text-sm ${trend.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
+              <p className={`text-sm ${trend.startsWith('+') ? 'text-[#01b86c]' : 'text-red-600'}`}>
                 {trend} vs mês anterior
               </p>
             )}
@@ -170,11 +170,11 @@ function QuickActionButton({ icon: Icon, label, onClick }: any) {
   return (
     <Button
       variant="outline"
-      className="h-20 flex flex-col items-center justify-center gap-2"
+      className="h-20 flex flex-col items-center justify-center gap-2 hover:text-[#01b86c] hover:border-[#01b86c]/40 border-[0.5px] border-gray-200 dark:border-gray-700 hover:bg-transparent dark:hover:bg-transparent transition-all duration-200"
       onClick={onClick}
     >
-      <Icon className="h-6 w-6" />
-      <span className="text-sm">{label}</span>
+      <Icon className="h-6 w-6 transition-colors duration-200" />
+      <span className="text-sm transition-colors duration-200">{label}</span>
     </Button>
   )
 }
@@ -292,14 +292,14 @@ function AgencyHomeContent() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5 text-green-500" />
+              <Activity className="h-5 w-5 text-[#01b86c]" />
               Atividade Recente
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               <div className="flex items-start gap-3">
-                <div className="h-2 w-2 rounded-full mt-2 bg-green-600" />
+                <div className="h-2 w-2 rounded-full mt-2 bg-[#01b86c]" />
                 <div className="flex-1">
                   <p className="text-sm text-gray-900 dark:text-gray-100">Projeto 'Campanha Verão' foi aprovado pelo cliente</p>
                   <p className="text-xs text-gray-500">há 1 hora</p>
@@ -540,15 +540,15 @@ function ClientHomeContent() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <Button className="w-full" variant="outline">
+            <Button className="w-full hover:text-[#01b86c] hover:border-[#01b86c]/40 border-[0.5px] border-gray-200 dark:border-gray-700 hover:bg-transparent dark:hover:bg-transparent transition-all duration-200" variant="outline">
               <MessageCircle className="h-4 w-4 mr-2" />
               Chat com a Agência
             </Button>
-            <Button className="w-full" variant="outline">
+            <Button className="w-full hover:text-[#01b86c] hover:border-[#01b86c]/40 border-[0.5px] border-gray-200 dark:border-gray-700 hover:bg-transparent dark:hover:bg-transparent transition-all duration-200" variant="outline">
               <Calendar className="h-4 w-4 mr-2" />
               Agendar Reunião
             </Button>
-            <Button className="w-full" variant="outline">
+            <Button className="w-full hover:text-[#01b86c] hover:border-[#01b86c]/40 border-[0.5px] border-gray-200 dark:border-gray-700 hover:bg-transparent dark:hover:bg-transparent transition-all duration-200" variant="outline">
               <BarChart3 className="h-4 w-4 mr-2" />
               Ver Relatórios
             </Button>
@@ -581,7 +581,7 @@ function FreeUserHomeContent() {
                 </span>
               </div>
             </div>
-            <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+            <Button size="lg" className="bg-[#01b86c] hover:bg-[#01b86c]/90 border-[0.5px] border-transparent hover:border-[#01b86c]/40 transition-all duration-200">
               <Crown className="h-4 w-4 mr-2" />
               Fazer Upgrade
             </Button>
@@ -608,7 +608,7 @@ function FreeUserHomeContent() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-green-500" />
+              <Users className="h-5 w-5 text-[#01b86c]" />
               Colaboradores
             </CardTitle>
           </CardHeader>

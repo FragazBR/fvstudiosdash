@@ -53,7 +53,7 @@ export default function Dashboard({ userMode = false }: DashboardProps) {
                   </p>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="hover:text-[#01b86c] hover:border-[#01b86c]/40 border-[0.5px] border-gray-200 dark:border-gray-700 hover:bg-transparent dark:hover:bg-transparent transition-all duration-200">
                     <Calendar className="h-4 w-4 mr-2" />
                     Este mês
                   </Button>
@@ -91,11 +91,11 @@ export default function Dashboard({ userMode = false }: DashboardProps) {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Concluídas</p>
-                          <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                          <p className="text-2xl font-bold text-[#01b86c] dark:text-[#01b86c]">
                             {analytics?.analytics.tasks.completed || 0}
                           </p>
                         </div>
-                        <CheckCircle className="h-8 w-8 text-green-500" />
+                        <CheckCircle className="h-8 w-8 text-[#01b86c]" />
                       </div>
                     </CardContent>
                   </Card>
@@ -139,26 +139,26 @@ export default function Dashboard({ userMode = false }: DashboardProps) {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <Link href="/my-tasks">
-                    <Button className="w-full justify-start" variant="outline">
+                    <Button className="w-full justify-start hover:text-[#01b86c] hover:border-[#01b86c]/40 border-[0.5px] border-gray-200 dark:border-gray-700 hover:bg-transparent dark:hover:bg-transparent transition-all duration-200" variant="outline">
                       <Briefcase className="h-4 w-4 mr-2" />
                       Ver Minhas Tarefas
                     </Button>
                   </Link>
                   <Link href="/projects">
-                    <Button className="w-full justify-start" variant="outline">
+                    <Button className="w-full justify-start hover:text-[#01b86c] hover:border-[#01b86c]/40 border-[0.5px] border-gray-200 dark:border-gray-700 hover:bg-transparent dark:hover:bg-transparent transition-all duration-200" variant="outline">
                       <BarChart3 className="h-4 w-4 mr-2" />
                       Ver Projetos
                     </Button>
                   </Link>
                   <Link href="/calendar">
-                    <Button className="w-full justify-start" variant="outline">
+                    <Button className="w-full justify-start hover:text-[#01b86c] hover:border-[#01b86c]/40 border-[0.5px] border-gray-200 dark:border-gray-700 hover:bg-transparent dark:hover:bg-transparent transition-all duration-200" variant="outline">
                       <Calendar className="h-4 w-4 mr-2" />
                       Abrir Calendário
                     </Button>
                   </Link>
                   {user?.role && ['agency_owner', 'agency_manager'].includes(user.role) && (
                     <Link href="/agency?tab=team">
-                      <Button className="w-full justify-start" variant="outline">
+                      <Button className="w-full justify-start hover:text-[#01b86c] hover:border-[#01b86c]/40 border-[0.5px] border-gray-200 dark:border-gray-700 hover:bg-transparent dark:hover:bg-transparent transition-all duration-200" variant="outline">
                         <Users className="h-4 w-4 mr-2" />
                         Gerenciar Equipe
                       </Button>
@@ -213,7 +213,7 @@ export default function Dashboard({ userMode = false }: DashboardProps) {
                     Suas próximas entregas organizadas por prioridade
                   </p>
                   <Link href="/my-tasks">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="hover:text-[#01b86c] hover:border-[#01b86c]/40 border-[0.5px] border-gray-200 dark:border-gray-700 hover:bg-transparent dark:hover:bg-transparent transition-all duration-200">
                       Ver Timeline Completa
                     </Button>
                   </Link>

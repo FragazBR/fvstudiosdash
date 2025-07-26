@@ -53,6 +53,7 @@ import { useUser } from "@/hooks/useUser";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { TeamManagement } from "./team-management";
+import { IntelligentAgencyInterface } from "./intelligent-agency-interface";
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 
 // Real data interfaces
@@ -116,12 +117,12 @@ const calculateProjectProgress = (project: any): number => {
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case 'active': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+    case 'active': return 'bg-[#01b86c]/10 text-[#01b86c] dark:bg-[#01b86c]/20 dark:text-[#01b86c]';
     case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
     case 'expired': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
-    case 'up_to_date': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+    case 'up_to_date': return 'bg-[#01b86c]/10 text-[#01b86c] dark:bg-[#01b86c]/20 dark:text-[#01b86c]';
     case 'overdue': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
-    case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
+    case 'completed': return 'bg-[#01b86c]/10 text-[#01b86c] dark:bg-[#01b86c]/20 dark:text-[#01b86c]';
     case 'in_progress': return 'bg-slate-100 text-slate-800 dark:bg-slate-900/20 dark:text-slate-400';
     case 'review': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
     case 'planning': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400';
@@ -133,7 +134,7 @@ const getPriorityColor = (priority: string) => {
   switch (priority) {
     case 'high': return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
     case 'medium': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
-    case 'low': return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
+    case 'low': return 'bg-[#01b86c]/10 text-[#01b86c] dark:bg-[#01b86c]/20 dark:text-[#01b86c]';
     default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
   }
 };
@@ -281,7 +282,7 @@ export function AgencyDashboard() {
   // Set initial tab from URL parameter
   useEffect(() => {
     const tabParam = searchParams.get('tab');
-    if (tabParam && ['dashboard', 'contracts', 'financial', 'team', 'analytics', 'management'].includes(tabParam)) {
+    if (tabParam && ['dashboard', 'contracts', 'financial', 'team', 'analytics', 'management', 'ai'].includes(tabParam)) {
       setSelectedTab(tabParam);
     }
   }, [searchParams]);
@@ -397,7 +398,7 @@ export function AgencyDashboard() {
                     <DialogTrigger asChild>
                       <Button 
                         variant="outline"
-                        className="text-green-600 border-green-200 hover:bg-green-50 dark:text-green-400 dark:border-green-800 dark:hover:bg-green-900/20"
+                        className="text-[#01b86c] border-[#01b86c]/20 hover:bg-[#01b86c]/5 dark:text-[#01b86c] dark:border-[#01b86c]/30 dark:hover:bg-[#01b86c]/10"
                       >
                         <Plus className="h-4 w-4 mr-2" />
                         Colaborador
@@ -417,7 +418,7 @@ export function AgencyDashboard() {
                             {inviteForm.mode === 'direct' ? (
                               <UserPlus className="h-4 w-4 text-blue-500" />
                             ) : (
-                              <Mail className="h-4 w-4 text-green-500" />
+                              <Mail className="h-4 w-4 text-[#01b86c]" />
                             )}
                             <span className="text-sm font-medium">
                               {inviteForm.mode === 'direct' ? 'Criar usuário direto' : 'Enviar convite por email'}
@@ -525,42 +526,48 @@ export function AgencyDashboard() {
 
             {/* Tabs Navigation */}
             <Tabs value={selectedTab} onValueChange={handleTabChange} className="w-full">
-              <TabsList className="grid w-full grid-cols-6 mb-6 bg-transparent p-0 gap-2">
+              <TabsList className="grid w-full grid-cols-7 mb-6 bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727] rounded-lg p-1">
                 <TabsTrigger 
                   value="dashboard" 
-                  className="border border-gray-200 dark:border-gray-700 hover:border-[#64f481]/60 data-[state=active]:border-[#64f481] data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none transition-all duration-200"
+                  className="flex items-start justify-center pt-1 text-gray-900 dark:text-white hover:text-[#01b86c] dark:hover:text-[#01b86c] data-[state=active]:bg-transparent data-[state=active]:text-[#01b86c] data-[state=active]:shadow-none transition-colors duration-200"
                 >
                   Dashboard
                 </TabsTrigger>
                 <TabsTrigger 
                   value="contracts" 
-                  className="border border-gray-200 dark:border-gray-700 hover:border-[#64f481]/60 data-[state=active]:border-[#64f481] data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none transition-all duration-200"
+                  className="flex items-start justify-center pt-1 text-gray-900 dark:text-white hover:text-[#01b86c] dark:hover:text-[#01b86c] data-[state=active]:bg-transparent data-[state=active]:text-[#01b86c] data-[state=active]:shadow-none transition-colors duration-200"
                 >
                   Contratos
                 </TabsTrigger>
                 <TabsTrigger 
                   value="financial" 
-                  className="border border-gray-200 dark:border-gray-700 hover:border-[#64f481]/60 data-[state=active]:border-[#64f481] data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none transition-all duration-200"
+                  className="flex items-start justify-center pt-1 text-gray-900 dark:text-white hover:text-[#01b86c] dark:hover:text-[#01b86c] data-[state=active]:bg-transparent data-[state=active]:text-[#01b86c] data-[state=active]:shadow-none transition-colors duration-200"
                 >
                   Controle Financeiro
                 </TabsTrigger>
                 <TabsTrigger 
                   value="team" 
-                  className="border border-gray-200 dark:border-gray-700 hover:border-[#64f481]/60 data-[state=active]:border-[#64f481] data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none transition-all duration-200"
+                  className="flex items-start justify-center pt-1 text-gray-900 dark:text-white hover:text-[#01b86c] dark:hover:text-[#01b86c] data-[state=active]:bg-transparent data-[state=active]:text-[#01b86c] data-[state=active]:shadow-none transition-colors duration-200"
                 >
                   Equipe
                 </TabsTrigger>
                 <TabsTrigger 
                   value="analytics" 
-                  className="border border-gray-200 dark:border-gray-700 hover:border-[#64f481]/60 data-[state=active]:border-[#64f481] data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none transition-all duration-200"
+                  className="flex items-start justify-center pt-1 text-gray-900 dark:text-white hover:text-[#01b86c] dark:hover:text-[#01b86c] data-[state=active]:bg-transparent data-[state=active]:text-[#01b86c] data-[state=active]:shadow-none transition-colors duration-200"
                 >
                   Analytics
                 </TabsTrigger>
                 <TabsTrigger 
                   value="management" 
-                  className="border border-gray-200 dark:border-gray-700 hover:border-[#64f481]/60 data-[state=active]:border-[#64f481] data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none transition-all duration-200"
+                  className="flex items-start justify-center pt-1 text-gray-900 dark:text-white hover:text-[#01b86c] dark:hover:text-[#01b86c] data-[state=active]:bg-transparent data-[state=active]:text-[#01b86c] data-[state=active]:shadow-none transition-colors duration-200"
                 >
                   Gestão
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="ai" 
+                  className="flex items-start justify-center pt-1 text-gray-900 dark:text-white hover:text-[#01b86c] dark:hover:text-[#01b86c] data-[state=active]:bg-transparent data-[state=active]:text-[#01b86c] data-[state=active]:shadow-none transition-colors duration-200"
+                >
+                  IA Avançada
                 </TabsTrigger>
               </TabsList>
 
@@ -711,10 +718,10 @@ export function AgencyDashboard() {
                           <>
                             <div className="flex items-center justify-between p-3 rounded-lg border border-gray-100 dark:border-[#1f1f1f]">
                               <div className="flex items-center space-x-2">
-                                <CheckCircle className="h-4 w-4 text-green-500" />
+                                <CheckCircle className="h-4 w-4 text-[#01b86c]" />
                                 <span className="text-sm text-gray-600 dark:text-gray-400">Concluídas</span>
                               </div>
-                              <span className="font-semibold text-green-600">{analytics?.analytics.tasks.completed || 0}</span>
+                              <span className="font-semibold text-[#01b86c]">{analytics?.analytics.tasks.completed || 0}</span>
                             </div>
                             
                             <div className="flex items-center justify-between p-3 rounded-lg border border-gray-100 dark:border-[#1f1f1f]">
@@ -884,7 +891,7 @@ export function AgencyDashboard() {
                       <Download className="h-4 w-4 mr-2" />
                       Exportar
                     </Button>
-                    <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                    <Button className="bg-[#01b86c] hover:bg-[#01b86c]/90 text-white border-[0.5px] border-transparent hover:border-[#01b86c]/40 transition-all duration-200">
                       <Plus className="h-4 w-4 mr-2" />
                       Novo Contrato
                     </Button>
@@ -900,12 +907,12 @@ export function AgencyDashboard() {
                           <p className="text-sm text-gray-600 dark:text-gray-400">Receita Mensal</p>
                           <p className="text-2xl font-semibold">{formatCurrency(agencyMetrics?.financial.monthlyRevenue || 0)}</p>
                           <div className="flex items-center gap-1 mt-1">
-                            <TrendingUp className="h-3 w-3 text-green-500" />
-                            <span className="text-xs text-green-600">+{agencyMetrics?.financial.growthRate || 0}%</span>
+                            <TrendingUp className="h-3 w-3 text-[#01b86c]" />
+                            <span className="text-xs text-[#01b86c]">+{agencyMetrics?.financial.growthRate || 0}%</span>
                           </div>
                         </div>
-                        <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                          <DollarSign className="h-5 w-5 text-green-600 dark:text-green-400" />
+                        <div className="p-2 bg-[#01b86c]/10 dark:bg-[#01b86c]/20 rounded-lg">
+                          <DollarSign className="h-5 w-5 text-[#01b86c]" />
                         </div>
                       </div>
                     </CardContent>
@@ -918,8 +925,8 @@ export function AgencyDashboard() {
                           <p className="text-sm text-gray-600 dark:text-gray-400">MRR (Receita Recorrente)</p>
                           <p className="text-2xl font-semibold">{formatCurrency(agencyMetrics?.financial.recurringRevenue || 0)}</p>
                           <div className="flex items-center gap-1 mt-1">
-                            <ArrowUp className="h-3 w-3 text-green-500" />
-                            <span className="text-xs text-green-600">+8.4%</span>
+                            <ArrowUp className="h-3 w-3 text-[#01b86c]" />
+                            <span className="text-xs text-[#01b86c]">+8.4%</span>
                           </div>
                         </div>
                         <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
@@ -936,8 +943,8 @@ export function AgencyDashboard() {
                           <p className="text-sm text-gray-600 dark:text-gray-400">Margem de Lucro</p>
                           <p className="text-2xl font-semibold">{agencyMetrics?.financial.profitMargin || 0}%</p>
                           <div className="flex items-center gap-1 mt-1">
-                            <TrendingUp className="h-3 w-3 text-green-500" />
-                            <span className="text-xs text-green-600">+2.1%</span>
+                            <TrendingUp className="h-3 w-3 text-[#01b86c]" />
+                            <span className="text-xs text-[#01b86c]">+2.1%</span>
                           </div>
                         </div>
                         <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
@@ -1057,7 +1064,7 @@ export function AgencyDashboard() {
                     <CardContent className="space-y-4">
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600 dark:text-gray-400">Novos este Mês</span>
-                        <span className="font-semibold text-green-600">+{agencyMetrics?.clients.newThisMonth || 0}</span>
+                        <span className="font-semibold text-[#01b86c]">+{agencyMetrics?.clients.newThisMonth || 0}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600 dark:text-gray-400">Perdidos este Mês</span>
@@ -1081,7 +1088,7 @@ export function AgencyDashboard() {
                     <CardContent className="space-y-4">
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600 dark:text-gray-400">Taxa de Crescimento</span>
-                        <span className="font-semibold text-green-600">+{agencyMetrics?.financial.growthRate || 0}%</span>
+                        <span className="font-semibold text-[#01b86c]">+{agencyMetrics?.financial.growthRate || 0}%</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600 dark:text-gray-400">Pendências</span>
@@ -1163,12 +1170,12 @@ export function AgencyDashboard() {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                        <div className="p-4 bg-[#01b86c]/5 dark:bg-[#01b86c]/10 rounded-lg border border-[#01b86c]/20 dark:border-[#01b86c]/30">
                           <div className="flex items-center space-x-2 mb-2">
-                            <CheckCircle className="h-5 w-5 text-green-600" />
-                            <h4 className="font-semibold text-green-900 dark:text-green-100">Performance Positiva</h4>
+                            <CheckCircle className="h-5 w-5 text-[#01b86c]" />
+                            <h4 className="font-semibold text-[#01b86c]">Performance Positiva</h4>
                           </div>
-                          <p className="text-sm text-green-800 dark:text-green-200">
+                          <p className="text-sm text-[#01b86c]/80">
                             A agência está com crescimento de {agencyMetrics?.financial.growthRate || 0}% e margem de lucro saudável de {agencyMetrics?.financial.profitMargin || 0}%.
                           </p>
                         </div>
@@ -1197,6 +1204,11 @@ export function AgencyDashboard() {
                     </CardContent>
                   </Card>
                 </div>
+              </TabsContent>
+
+              {/* AI Advanced Tab */}
+              <TabsContent value="ai" className="space-y-6">
+                <IntelligentAgencyInterface />
               </TabsContent>
             </Tabs>
           </div>
