@@ -199,28 +199,115 @@ export default function Dashboard({ userMode = false }: DashboardProps) {
               </Card>
             </div>
 
-            {/* Role-specific message */}
-            {user?.role && ['admin', 'agency_owner', 'agency_manager', 'independent_producer'].includes(user.role) && (
-              <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-                <CardContent className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <TrendingUp className="h-6 w-6 text-blue-600 dark:text-blue-400 mt-1" />
-                    <div>
-                      <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                        Dashboard Avançado Disponível
-                      </h3>
-                      <p className="text-blue-800 dark:text-blue-200 text-sm mb-3">
-                        Como {user.role === 'admin' ? 'administrador' : user.role === 'agency_owner' ? 'dono de agência' : 'produtor independente'}, você tem acesso ao dashboard avançado com métricas detalhadas de gestão.
-                      </p>
-                      <Link href="/agency">
-                        <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
-                          Acessar Dashboard da Agência
-                        </Button>
-                      </Link>
+            {/* Timeline das Tarefas */}
+            <Card className="bg-white/90 dark:bg-[#171717]/60 border-gray-200 dark:border-[#272727]">
+              <CardHeader>
+                <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  Timeline de Entrega das Tarefas
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Suas próximas entregas organizadas por prioridade
+                  </p>
+                  <Link href="/my-tasks">
+                    <Button variant="outline" size="sm">
+                      Ver Timeline Completa
+                    </Button>
+                  </Link>
+                </div>
+                
+                {loading ? (
+                  <div className="space-y-3">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
+                        <Skeleton className="h-4 w-4" />
+                        <div className="flex-1">
+                          <Skeleton className="h-4 w-2/3 mb-1" />
+                          <Skeleton className="h-3 w-1/2" />
+                        </div>
+                        <Skeleton className="h-6 w-16" />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {/* Próximas 5 tarefas - será implementado com dados reais */}
+                    <div className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                      <Clock className="h-4 w-4 text-blue-500" />
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">
+                          Implementar sistema de tarefas
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Projeto Dashboard • Cliente FV Studios
+                        </p>
+                      </div>
+                      <Badge className="bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 text-xs">
+                        Hoje
+                      </Badge>
+                    </div>
+                    
+                    <div className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                      <AlertCircle className="h-4 w-4 text-purple-500" />
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">
+                          Revisar interface do usuário
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Projeto Web App • Cliente TechCorp
+                        </p>
+                      </div>
+                      <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-xs">
+                        Amanhã
+                      </Badge>
+                    </div>
+                    
+                    <div className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">
+                          Finalizar documentação
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Projeto API • Cliente StartupX
+                        </p>
+                      </div>
+                      <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-xs">
+                        Concluída
+                      </Badge>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Role-specific message */}
+            {user?.role && ['admin', 'agency_owner', 'agency_manager', 'independent_producer'].includes(user.role) && (
+              <div className="mt-8">
+                <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+                  <CardContent className="p-6">
+                    <div className="flex items-start space-x-4">
+                      <TrendingUp className="h-6 w-6 text-blue-600 dark:text-blue-400 mt-1" />
+                      <div>
+                        <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                          Dashboard Avançado Disponível
+                        </h3>
+                        <p className="text-blue-800 dark:text-blue-200 text-sm mb-3">
+                          Como {user.role === 'admin' ? 'administrador' : user.role === 'agency_owner' ? 'dono de agência' : 'produtor independente'}, você tem acesso ao dashboard avançado com métricas detalhadas de gestão.
+                        </p>
+                        <Link href="/agency">
+                          <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                            Acessar Dashboard da Agência
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             )}
           </div>
         </main>
