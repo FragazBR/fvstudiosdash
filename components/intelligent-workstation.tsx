@@ -726,7 +726,7 @@ export function IntelligentWorkstation() {
                 </TabsTrigger>
                 <TabsTrigger value="kanban" className="flex items-center gap-2">
                   <FolderKanban className="h-4 w-4" />
-                  <span className="hidden sm:inline">Kanban</span>
+                  <span className="hidden sm:inline">Tarefas</span>
                 </TabsTrigger>
                 <TabsTrigger value="timeline" className="flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
@@ -775,7 +775,7 @@ export function IntelligentWorkstation() {
                 </div>
               </TabsContent>
 
-              {/* Kanban View */}
+              {/* Tarefas View */}
               <TabsContent value="kanban" className="space-y-6">
                 <PersonalTaskBoard />
               </TabsContent>
