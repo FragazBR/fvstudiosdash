@@ -56,6 +56,12 @@ export default async function HomePage() {
         redirect("/dashboard")  // Default para dashboard
     }
   } catch (error) {
+    // Se for um erro de redirect do Next.js, deixa ele passar
+    if (error && typeof error === 'object' && 'digest' in error && 
+        typeof error.digest === 'string' && error.digest.includes('NEXT_REDIRECT')) {
+      throw error
+    }
+    
     console.error("Error in HomePage:", error)
     redirect("/login")
   }
