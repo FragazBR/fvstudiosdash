@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Sidebar from "./sidebar";
 import Topbar from "./Shared/Topbar";
 import { StatCard } from "./stat-card";
@@ -139,6 +139,7 @@ const getPriorityColor = (priority: string) => {
 };
 
 export function AgencyDashboard() {
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState('dashboard');
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
@@ -252,10 +253,19 @@ export function AgencyDashboard() {
   // Set initial tab from URL parameter
   useEffect(() => {
     const tabParam = searchParams.get('tab');
-    if (tabParam && ['dashboard', 'contracts', 'team', 'analytics', 'management'].includes(tabParam)) {
+    if (tabParam && ['dashboard', 'contracts', 'financial', 'team', 'analytics', 'management'].includes(tabParam)) {
       setSelectedTab(tabParam);
     }
   }, [searchParams]);
+
+  // Handle tab change with financial redirect
+  const handleTabChange = (value: string) => {
+    if (value === 'financial') {
+      router.push('/agency/financial');
+      return;
+    }
+    setSelectedTab(value);
+  };
 
   // Handle invite form submission
   const handleInviteSubmit = async (e: React.FormEvent) => {
@@ -486,10 +496,11 @@ export function AgencyDashboard() {
             </div>
 
             {/* Tabs Navigation */}
-            <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-5 mb-6">
+            <Tabs value={selectedTab} onValueChange={handleTabChange} className="w-full">
+              <TabsList className="grid w-full grid-cols-6 mb-6">
                 <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
                 <TabsTrigger value="contracts">Contratos</TabsTrigger>
+                <TabsTrigger value="financial">Controle Financeiro</TabsTrigger>
                 <TabsTrigger value="team">Equipe</TabsTrigger>
                 <TabsTrigger value="analytics">Analytics</TabsTrigger>
                 <TabsTrigger value="management">Gestão</TabsTrigger>

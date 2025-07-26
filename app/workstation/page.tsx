@@ -1,7 +1,14 @@
-'use client'
+import { PermissionGuard } from '@/components/permission-guard'
+import { IntelligentWorkstation } from '@/components/intelligent-workstation'
 
-import { WorkstationPage } from '@/components/workstation-page'
+function WorkstationContent() {
+  return <IntelligentWorkstation />
+}
 
-export default function Workstation() {
-  return <WorkstationPage />
+export default function WorkstationPage() {
+  return (
+    <PermissionGuard allowedRoles={['admin', 'agency_owner', 'agency_manager', 'agency_staff', 'independent_producer']} showUnauthorized>
+      <WorkstationContent />
+    </PermissionGuard>
+  )
 }
