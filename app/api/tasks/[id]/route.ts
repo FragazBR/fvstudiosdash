@@ -188,6 +188,85 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   }
 }
 
+// PATCH - Atualizar tarefa parcialmente
+export async function PATCH(request: NextRequest, { params }: RouteParams) {
+  try {
+    const { id } = await params;
+    const supabase = await supabaseServer();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    
+    // Buscar dados atuais da tarefa
+    const { data: currentTask } = await supabase
+      .from('tasks')
+      .select('status, progress, assigned_to, due_date, project_id, title')
+      .eq('id', id)
+      .single();
+
+    if (!currentTask) {
+      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+    }
+
+    const updates: any = { ...body };
+
+    // Se marcou como completed, adicionar timestamp
+    if (body.status === 'completed' && currentTask.status !== 'completed') {
+      updates.completed_at = new Date().toISOString();
+      if (!updates.progress) updates.progress = 100;
+    }
+
+    // Se desmarcou completed, remover timestamp
+    if (body.status && body.status !== 'completed' && currentTask.status === 'completed') {
+      updates.completed_at = null;
+    }
+
+    const { data: task, error } = await supabase
+      .from('tasks')
+      .update(updates)
+      .eq('id', id)
+      .select(`
+        *,
+        project:project_id(id, name, client_id),
+        assigned_to:assigned_to(id, name, email, avatar_url),
+        creator:created_by(id, name)
+      `)
+      .single();
+      
+    if (error) {
+      console.error('Error updating task:', error);
+      return NextResponse.json({ error: 'Failed to update task' }, { status: 500 });
+    }
+
+    // Notificações se tarefa foi completada
+    if (body.status === 'completed' && currentTask.status !== 'completed') {
+      // Notificar cliente do projeto se existe
+      if (task.project?.client_id) {
+        await supabase
+          .from('notifications')
+          .insert({
+            user_id: task.project.client_id,
+            title: `Tarefa concluída: ${task.title}`,
+            message: `Uma tarefa do seu projeto foi finalizada.`,
+            type: 'success',
+            category: 'task',
+            related_id: id,
+            related_type: 'task'
+          });
+      }
+    }
+    
+    return NextResponse.json({ task });
+  } catch (error) {
+    console.error('Task PATCH error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
 // DELETE - Deletar tarefa
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {

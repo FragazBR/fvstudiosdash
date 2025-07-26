@@ -99,6 +99,28 @@ BEGIN
     END IF;
 END $$;
 
+-- 1.2. Verificar e adicionar colunas necessárias na tabela user_profiles
+DO $$
+BEGIN
+    -- Adicionar avatar_url se não existir
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='user_profiles' AND column_name='avatar_url') THEN
+        ALTER TABLE user_profiles ADD COLUMN avatar_url TEXT;
+        RAISE NOTICE 'Coluna avatar_url adicionada à tabela user_profiles';
+    END IF;
+    
+    -- Adicionar department_id se não existir
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='user_profiles' AND column_name='department_id') THEN
+        ALTER TABLE user_profiles ADD COLUMN department_id UUID;
+        RAISE NOTICE 'Coluna department_id adicionada à tabela user_profiles';
+    END IF;
+    
+    -- Adicionar specialization_id se não existir
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='user_profiles' AND column_name='specialization_id') THEN
+        ALTER TABLE user_profiles ADD COLUMN specialization_id UUID;
+        RAISE NOTICE 'Coluna specialization_id adicionada à tabela user_profiles';
+    END IF;
+END $$;
+
 -- 2. Atualizar tarefas existentes com agency_id
 UPDATE tasks 
 SET agency_id = (
