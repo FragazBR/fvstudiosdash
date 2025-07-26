@@ -18,17 +18,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Buscar contact básico primeiro
     const { data: contact, error } = await supabase
       .from('contacts')
-      .select(`
-        *,
-        creator:created_by(id, name, email),
-        projects:projects(id, name, status, created_at, budget_total),
-        interactions:contact_interactions(
-          id, type, date, notes, outcome, next_action, 
-          created_at, created_by(id, name)
-        )
-      `)
+      .select('*')
       .eq('id', id)
       .single();
       
@@ -36,8 +29,30 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       console.error('Error fetching contact:', error);
       return NextResponse.json({ error: 'Contact not found' }, { status: 404 });
     }
+
+    // Buscar dados relacionados opcionalmente
+    const { data: creator } = await supabase
+      .from('user_profiles')
+      .select('id, name, email')
+      .eq('id', contact.created_by)
+      .single();
+
+    // Buscar projetos relacionados (se existir client_id)
+    const { data: projects } = await supabase
+      .from('projects')
+      .select('id, name, status, created_at')
+      .eq('client_id', id)
+      .limit(10);
+
+    // Montar resposta com dados disponíveis
+    const contactWithRelations = {
+      ...contact,
+      creator: creator || null,
+      projects: projects || [],
+      interactions: [] // Por enquanto vazio até criar tabela contact_interactions
+    };
     
-    return NextResponse.json({ contact });
+    return NextResponse.json({ contact: contactWithRelations });
   } catch (error) {
     console.error('Contact GET error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -110,25 +125,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Failed to update contact' }, { status: 500 });
     }
 
-    // Criar interação automática se status ou tipo mudou
-    const statusChanged = status !== currentContact?.status;
-    const typeChanged = type !== currentContact?.type;
-    
-    if (statusChanged || typeChanged) {
-      let notes = 'Contato atualizado: ';
-      if (statusChanged) notes += `Status: ${currentContact?.status} → ${status}. `;
-      if (typeChanged) notes += `Tipo: ${currentContact?.type} → ${type}.`;
-
-      await supabase
-        .from('contact_interactions')
-        .insert({
-          contact_id: id,
-          type: 'note',
-          notes,
-          outcome: 'completed',
-          created_by: user.id
-        });
-    }
+    // TODO: Criar interação automática quando implementar contact_interactions
+    // const statusChanged = status !== currentContact?.status;
+    // const typeChanged = type !== currentContact?.type;
     
     return NextResponse.json({ contact });
   } catch (error) {

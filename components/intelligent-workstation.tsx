@@ -542,6 +542,221 @@ function PerformanceMetrics() {
   )
 }
 
+// Timeline View com dados reais
+function TimelineView({ userId }: { userId: string }) {
+  const { user } = useUser()
+  const [tasks, setTasks] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const loadTimelineData = async () => {
+      if (!user?.agency_id) return
+      
+      try {
+        const supabase = supabaseBrowser()
+        const { data, error } = await supabase
+          .from('tasks')
+          .select(`
+            *,
+            project:projects(name, client:contacts(name))
+          `)
+          .eq('agency_id', user.agency_id)
+          .order('created_at', { ascending: false })
+          .limit(20)
+
+        if (error) throw error
+        setTasks(data || [])
+      } catch (error) {
+        console.error('Erro ao carregar timeline:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (user) loadTimelineData()
+  }, [user])
+
+  if (loading) {
+    return <div className="flex justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Calendar className="h-5 w-5 text-blue-500" />
+          Timeline de Atividades
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {tasks.map((task) => (
+            <div key={task.id} className="flex items-start gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="w-3 h-3 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+              <div className="flex-1">
+                <h4 className="font-medium">{task.title}</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {task.project?.name} - {task.project?.client?.name}
+                </p>
+                <div className="flex items-center gap-2 mt-2">
+                  <Badge variant={task.status === 'concluido' ? 'default' : 'secondary'}>
+                    {task.status}
+                  </Badge>
+                  <span className="text-xs text-gray-500">
+                    {format(new Date(task.created_at), 'dd/MM/yyyy', { locale: ptBR })}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+          {tasks.length === 0 && (
+            <div className="text-center py-8">
+              <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600 dark:text-gray-400">Nenhuma atividade recente</p>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+// Analytics View com dados reais
+function AnalyticsView({ userId }: { userId: string }) {
+  const { user } = useUser()
+  const [analytics, setAnalytics] = useState<any>({
+    totalProjects: 0,
+    completedTasks: 0,
+    pendingTasks: 0,
+    clients: 0,
+    projectsByStatus: {}
+  })
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const loadAnalytics = async () => {
+      if (!user?.agency_id) return
+      
+      try {
+        const supabase = supabaseBrowser()
+        const [projectsResult, tasksResult, clientsResult] = await Promise.all([
+          supabase.from('projects').select('status').eq('agency_id', user.agency_id),
+          supabase.from('tasks').select('status').eq('agency_id', user.agency_id),
+          supabase.from('contacts').select('id').eq('agency_id', user.agency_id)
+        ])
+
+        const projects = projectsResult.data || []
+        const tasks = tasksResult.data || []
+        const clients = clientsResult.data || []
+
+        const projectsByStatus = projects.reduce((acc: any, project) => {
+          acc[project.status] = (acc[project.status] || 0) + 1
+          return acc
+        }, {})
+
+        setAnalytics({
+          totalProjects: projects.length,
+          completedTasks: tasks.filter(t => t.status === 'concluido').length,
+          pendingTasks: tasks.filter(t => t.status === 'a_fazer').length,
+          clients: clients.length,
+          projectsByStatus
+        })
+      } catch (error) {
+        console.error('Erro ao carregar analytics:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (user) loadAnalytics()
+  }, [user])
+
+  if (loading) {
+    return <div className="flex justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total de Projetos</p>
+                <p className="text-2xl font-bold">{analytics.totalProjects}</p>
+              </div>
+              <Briefcase className="h-8 w-8 text-blue-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Tarefas Concluídas</p>
+                <p className="text-2xl font-bold">{analytics.completedTasks}</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-green-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Tarefas Pendentes</p>
+                <p className="text-2xl font-bold">{analytics.pendingTasks}</p>
+              </div>
+              <Clock className="h-8 w-8 text-orange-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Clientes</p>
+                <p className="text-2xl font-bold">{analytics.clients}</p>
+              </div>
+              <Users className="h-8 w-8 text-purple-500" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5 text-blue-500" />
+            Status dos Projetos
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {Object.entries(analytics.projectsByStatus).map(([status, count]: [string, any]) => (
+              <div key={status} className="flex items-center justify-between">
+                <span className="capitalize">{status}</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-32 bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-blue-500 h-2 rounded-full" 
+                      style={{ width: `${(count / analytics.totalProjects) * 100}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-sm font-medium">{count}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
 // ==================================================
 // COMPONENTE PRINCIPAL
 // ==================================================
@@ -645,32 +860,12 @@ export function IntelligentWorkstation() {
 
               {/* Timeline View */}
               <TabsContent value="timeline" className="space-y-6">
-                <Card>
-                  <CardContent className="p-12 text-center">
-                    <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                      Timeline View
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Visualização em timeline será implementada em breve
-                    </p>
-                  </CardContent>
-                </Card>
+                <TimelineView userId={user.id} />
               </TabsContent>
 
               {/* Analytics View */}
               <TabsContent value="analytics" className="space-y-6">
-                <Card>
-                  <CardContent className="p-12 text-center">
-                    <BarChart3 className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                      Analytics Avançados
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Relatórios e métricas detalhadas em desenvolvimento
-                    </p>
-                  </CardContent>
-                </Card>
+                <AnalyticsView userId={user.id} />
               </TabsContent>
             </Tabs>
           </div>

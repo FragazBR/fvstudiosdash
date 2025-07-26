@@ -81,7 +81,7 @@ function useRealtimeNotifications(userId: string) {
   const loadNotifications = useCallback(async () => {
     try {
       const { data, error } = await supabase
-        .from('project_notifications')
+        .from('notifications')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
@@ -109,7 +109,7 @@ function useRealtimeNotifications(userId: string) {
         {
           event: '*',
           schema: 'public',
-          table: 'project_notifications',
+          table: 'notifications',
           filter: `user_id=eq.${userId}`
         },
         (payload) => {
@@ -146,7 +146,7 @@ function useRealtimeNotifications(userId: string) {
   const markAsRead = useCallback(async (notificationId: string) => {
     try {
       const { error } = await supabase
-        .from('project_notifications')
+        .from('notifications')
         .update({ is_read: true, read_at: new Date().toISOString() })
         .eq('id', notificationId)
 
@@ -160,7 +160,7 @@ function useRealtimeNotifications(userId: string) {
   const markAllAsRead = useCallback(async () => {
     try {
       const { error } = await supabase
-        .from('project_notifications')
+        .from('notifications')
         .update({ is_read: true, read_at: new Date().toISOString() })
         .eq('user_id', userId)
         .eq('is_read', false)
@@ -178,7 +178,7 @@ function useRealtimeNotifications(userId: string) {
   const deleteNotification = useCallback(async (notificationId: string) => {
     try {
       const { error } = await supabase
-        .from('project_notifications')
+        .from('notifications')
         .delete()
         .eq('id', notificationId)
 
@@ -801,7 +801,7 @@ export function useNotifications() {
     try {
       const supabase = supabaseBrowser()
       const { error } = await supabase
-        .from('project_notifications')
+        .from('notifications')
         .insert(notification)
 
       if (error) throw error
