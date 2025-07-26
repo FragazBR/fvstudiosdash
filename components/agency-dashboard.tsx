@@ -615,7 +615,7 @@ export function AgencyDashboard() {
                           recentProjects.map((project) => {
                             const progress = calculateProjectProgress(project);
                             return (
-                              <div key={project.id} className="p-4 rounded-lg border border-gray-100 dark:border-[#1f1f1f] hover:border-gray-200 dark:hover:border-[#64f481]/20 transition-all duration-200">
+                              <div key={project.id} className="p-4 rounded-lg border border-gray-100 dark:border-[#1f1f1f] hover:border-[#64f481]/20 dark:hover:border-[#64f481]/20 transition-all duration-200">
                                 <div className="flex items-start justify-between mb-3">
                                   <div className="flex-1">
                                     <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
@@ -801,7 +801,7 @@ export function AgencyDashboard() {
                         ))
                       ) : (recentClients && recentClients.length > 0) ? (
                         recentClients.map((client) => (
-                          <div key={client.id} className="flex items-center justify-between p-4 rounded-lg border border-gray-100 dark:border-[#1f1f1f] hover:border-gray-200 dark:hover:border-[#64f481]/20 transition-all duration-200">
+                          <div key={client.id} className="flex items-center justify-between p-4 rounded-lg border border-gray-100 dark:border-[#1f1f1f] hover:border-[#64f481]/20 dark:hover:border-[#64f481]/20 transition-all duration-200">
                             <div className="flex items-center space-x-4">
                               <Avatar>
                                 <AvatarFallback>{client.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
@@ -945,7 +945,7 @@ export function AgencyDashboard() {
                   <CardContent>
                     <div className="space-y-4">
                       {contracts.map((contract) => (
-                        <div key={contract.id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                        <div key={contract.id} className="flex items-center justify-between p-4 border border-gray-100 dark:border-[#1f1f1f] rounded-lg hover:border-[#64f481]/20 dark:hover:border-[#64f481]/20 transition-all duration-200">
                           <div className="flex items-center space-x-4">
                             <Avatar>
                               <AvatarFallback>{contract.clientName.split(' ').map(n => n[0]).join('')}</AvatarFallback>

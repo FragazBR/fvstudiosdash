@@ -89,7 +89,7 @@ const Topbar = ({ name, sidebarOpen, setSidebarOpen }: topbarPropsT) => {
 
           {/* Right: Notifications, New Project Button and Profile */}
           <div className="flex items-center space-x-4">
-            <Link href="/notifications" className="relative text-gray-700 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white">
+            <Link href="/notifications" className="relative text-gray-700 dark:text-gray-500 hover:text-[#01b86c] dark:hover:text-[#01b86c] transition-colors duration-200">
               <Bell className="h-5 w-5" />
               <span className="absolute top-[-6px] -right-1 h-2 w-2 bg-green-500 rounded-full"></span>
               <span className="sr-only">Notifications</span>
@@ -122,14 +122,14 @@ const Topbar = ({ name, sidebarOpen, setSidebarOpen }: topbarPropsT) => {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-gray-200 dark:bg-white/10" />
                 <DropdownMenuItem asChild>
-                  <Link href="/profile" className="cursor-pointer text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-white/5">
+                  <Link href="/profile" className="cursor-pointer text-gray-700 dark:text-gray-200 hover:text-white dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors duration-200">
                     <User className="mr-2 h-4 w-4" />
                     <span>Perfil</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   onClick={() => setSettingsOpen(true)}
-                  className="cursor-pointer text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-white/5"
+                  className="cursor-pointer text-gray-700 dark:text-gray-200 hover:text-white dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors duration-200"
                 >
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Configurações</span>
