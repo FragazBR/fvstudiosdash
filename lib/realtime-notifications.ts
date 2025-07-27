@@ -1,10 +1,5 @@
-'use client'
-
-// ==================================================
-// FVStudios Dashboard - Real-time Notifications System
-// Sistema de notificações em tempo real via WebSocket
-// ==================================================
-
+import { EventEmitter } from 'events';
+import { createServerSupabaseClient } from './supabase';
 import { supabaseBrowser } from './supabaseBrowser'
 import { toast } from 'sonner'
 
@@ -509,7 +504,283 @@ class RealtimeNotificationManager {
   }
 }
 
-// Instância global
+// Types para o sistema de notificações push
+export interface PushNotificationSubscription {
+  id: string;
+  user_id: string;
+  agency_id?: string;
+  endpoint: string;
+  p256dh_key: string;
+  auth_key: string;
+  device_type: 'desktop' | 'mobile' | 'tablet';
+  browser_name?: string;
+  os_name?: string;
+  user_agent?: string;
+  enabled: boolean;
+  notification_types: string[];
+  quiet_hours_start?: string;
+  quiet_hours_end?: string;
+  timezone: string;
+  is_active: boolean;
+}
+
+export interface PushNotificationPayload {
+  title: string;
+  body?: string;
+  icon?: string;
+  badge?: string;
+  image?: string;
+  data?: Record<string, any>;
+  actions?: Array<{
+    action: string;
+    title: string;
+    icon?: string;
+  }>;
+  requireInteraction?: boolean;
+  silent?: boolean;
+  tag?: string;
+  renotify?: boolean;
+  vibrate?: number[];
+  timestamp?: number;
+}
+
+export type NotificationEventType = 
+  | 'project_created' | 'project_updated' | 'project_completed'
+  | 'task_assigned' | 'task_due_soon' | 'task_overdue' | 'task_completed'
+  | 'payment_received' | 'payment_overdue' | 'invoice_created'
+  | 'message_received' | 'comment_added' | 'mention_received'
+  | 'report_generated' | 'system_alert' | 'maintenance_scheduled'
+  | 'user_joined' | 'user_left' | 'permission_changed'
+  | 'ai_insight_generated' | 'backup_completed' | 'backup_failed';
+
+export type ChannelType = 'web' | 'push' | 'email' | 'sms' | 'whatsapp' | 'slack';
+export type EventPriority = 'low' | 'normal' | 'high' | 'urgent' | 'critical';
+
+// Interface para dados de subscription push
+export interface SubscriptionData {
+  endpoint: string;
+  keys: {
+    p256dh: string;
+    auth: string;
+  };
+}
+
+// Classe avançada para gerenciamento de push notifications
+export class PushNotificationManager extends EventEmitter {
+  private static instance: PushNotificationManager;
+  private vapidKeys?: {
+    publicKey: string;
+    privateKey: string;
+    subject: string;
+  };
+
+  private constructor() {
+    super();
+    this.setupVapidKeys();
+  }
+
+  public static getInstance(): PushNotificationManager {
+    if (!PushNotificationManager.instance) {
+      PushNotificationManager.instance = new PushNotificationManager();
+    }
+    return PushNotificationManager.instance;
+  }
+
+  private setupVapidKeys(): void {
+    this.vapidKeys = {
+      publicKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '',
+      privateKey: process.env.VAPID_PRIVATE_KEY || '',
+      subject: process.env.VAPID_SUBJECT || 'mailto:admin@fvstudios.com'
+    };
+  }
+
+  // Registrar subscription de push notification
+  async registerPushSubscription(
+    userId: string,
+    agencyId: string | null,
+    subscriptionData: SubscriptionData,
+    deviceInfo?: {
+      deviceType?: 'desktop' | 'mobile' | 'tablet';
+      browserName?: string;
+      osName?: string;
+      userAgent?: string;
+    }
+  ): Promise<string | null> {
+    try {
+      const supabase = createServerSupabaseClient();
+
+      const { data, error } = await supabase.rpc('register_push_subscription', {
+        p_user_id: userId,
+        p_agency_id: agencyId,
+        p_endpoint: subscriptionData.endpoint,
+        p_p256dh_key: subscriptionData.keys.p256dh,
+        p_auth_key: subscriptionData.keys.auth,
+        p_device_type: deviceInfo?.deviceType || 'desktop',
+        p_browser_name: deviceInfo?.browserName,
+        p_os_name: deviceInfo?.osName,
+        p_user_agent: deviceInfo?.userAgent
+      });
+
+      if (error) {
+        console.error('Erro ao registrar push subscription:', error);
+        return null;
+      }
+
+      this.emit('subscription_registered', {
+        userId,
+        agencyId,
+        subscriptionId: data
+      });
+
+      return data;
+
+    } catch (error) {
+      console.error('Erro no registerPushSubscription:', error);
+      return null;
+    }
+  }
+
+  // Criar evento de notificação em tempo real
+  async createRealtimeEvent(
+    userId: string,
+    eventType: NotificationEventType,
+    eventData: Record<string, any>,
+    options: {
+      agencyId?: string;
+      deliveryChannels?: ChannelType[];
+      priority?: EventPriority;
+    } = {}
+  ): Promise<string | null> {
+    try {
+      const supabase = createServerSupabaseClient();
+
+      const { data, error } = await supabase.rpc('process_realtime_notification_event', {
+        p_user_id: userId,
+        p_agency_id: options.agencyId || null,
+        p_event_type: eventType,
+        p_event_data: eventData,
+        p_delivery_channels: options.deliveryChannels || ['web', 'push'],
+        p_priority: options.priority || 'normal'
+      });
+
+      if (error) {
+        console.error('Erro ao criar evento:', error);
+        return null;
+      }
+
+      this.emit('realtime_event_created', {
+        eventId: data,
+        userId,
+        eventType,
+        eventData,
+        ...options
+      });
+
+      return data;
+
+    } catch (error) {
+      console.error('Erro no createRealtimeEvent:', error);
+      return null;
+    }
+  }
+
+  // Obter subscriptions do usuário
+  async getUserSubscriptions(userId: string): Promise<PushNotificationSubscription[]> {
+    try {
+      const supabase = createServerSupabaseClient();
+
+      const { data, error } = await supabase
+        .from('notification_subscriptions')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Erro ao buscar subscriptions:', error);
+        return [];
+      }
+
+      return data || [];
+
+    } catch (error) {
+      console.error('Erro no getUserSubscriptions:', error);
+      return [];
+    }
+  }
+
+  // Obter estatísticas de push notifications
+  async getPushNotificationStats(
+    agencyId?: string,
+    daysBack: number = 30
+  ): Promise<any> {
+    try {
+      const supabase = createServerSupabaseClient();
+
+      const { data, error } = await supabase.rpc('get_push_notification_stats', {
+        p_agency_id: agencyId || null,
+        p_days_back: daysBack
+      });
+
+      if (error) {
+        console.error('Erro ao buscar estatísticas:', error);
+        return null;
+      }
+
+      return data?.[0] || null;
+
+    } catch (error) {
+      console.error('Erro no getPushNotificationStats:', error);
+      return null;
+    }
+  }
+
+  // Métodos de conveniência para eventos específicos
+  async notifyTaskAssigned(userId: string, taskData: any, agencyId?: string): Promise<void> {
+    await this.createRealtimeEvent(userId, 'task_assigned', taskData, { agencyId });
+  }
+
+  async notifyTaskDueSoon(userId: string, taskData: any, agencyId?: string): Promise<void> {
+    await this.createRealtimeEvent(userId, 'task_due_soon', taskData, { 
+      agencyId, 
+      priority: 'high' 
+    });
+  }
+
+  async notifyTaskOverdue(userId: string, taskData: any, agencyId?: string): Promise<void> {
+    await this.createRealtimeEvent(userId, 'task_overdue', taskData, { 
+      agencyId, 
+      priority: 'urgent' 
+    });
+  }
+
+  async notifyProjectCompleted(userId: string, projectData: any, agencyId?: string): Promise<void> {
+    await this.createRealtimeEvent(userId, 'project_completed', projectData, { agencyId });
+  }
+
+  async notifyPaymentReceived(userId: string, paymentData: any, agencyId?: string): Promise<void> {
+    await this.createRealtimeEvent(userId, 'payment_received', paymentData, { agencyId });
+  }
+
+  async notifyAIInsightGenerated(userId: string, insightData: any, agencyId?: string): Promise<void> {
+    await this.createRealtimeEvent(userId, 'ai_insight_generated', insightData, { 
+      agencyId,
+      priority: 'high'
+    });
+  }
+
+  async notifySystemAlert(userId: string, alertData: any, agencyId?: string): Promise<void> {
+    await this.createRealtimeEvent(userId, 'system_alert', alertData, { 
+      agencyId,
+      priority: 'critical'
+    });
+  }
+}
+
+// Instância singleton
+export const pushNotificationManager = PushNotificationManager.getInstance();
+
+// Instância global do sistema existente
 export const realtimeNotifications = new RealtimeNotificationManager()
 
 // Hook React para notificações em tempo real
@@ -526,5 +797,34 @@ export function useRealtimeNotifications(userId?: string, agencyId?: string) {
     updateSettings: realtimeNotifications.updateSettings.bind(realtimeNotifications),
     getStats: (period?: number) => 
       agencyId ? realtimeNotifications.getNotificationStats(agencyId, period) : Promise.resolve(null)
+  }
+}
+
+// Hook para push notifications
+export function usePushNotifications(userId?: string, agencyId?: string) {
+  return {
+    registerSubscription: (subscriptionData: SubscriptionData, deviceInfo?: any) =>
+      userId ? pushNotificationManager.registerPushSubscription(userId, agencyId || null, subscriptionData, deviceInfo) : Promise.resolve(null),
+    createEvent: (eventType: NotificationEventType, eventData: any, options?: any) =>
+      userId ? pushNotificationManager.createRealtimeEvent(userId, eventType, eventData, { agencyId, ...options }) : Promise.resolve(null),
+    getUserSubscriptions: () =>
+      userId ? pushNotificationManager.getUserSubscriptions(userId) : Promise.resolve([]),
+    getStats: (daysBack?: number) =>
+      pushNotificationManager.getPushNotificationStats(agencyId, daysBack),
+    // Métodos de conveniência
+    notifyTaskAssigned: (taskData: any) =>
+      userId ? pushNotificationManager.notifyTaskAssigned(userId, taskData, agencyId) : Promise.resolve(),
+    notifyTaskDueSoon: (taskData: any) =>
+      userId ? pushNotificationManager.notifyTaskDueSoon(userId, taskData, agencyId) : Promise.resolve(),
+    notifyTaskOverdue: (taskData: any) =>
+      userId ? pushNotificationManager.notifyTaskOverdue(userId, taskData, agencyId) : Promise.resolve(),
+    notifyProjectCompleted: (projectData: any) =>
+      userId ? pushNotificationManager.notifyProjectCompleted(userId, projectData, agencyId) : Promise.resolve(),
+    notifyPaymentReceived: (paymentData: any) =>
+      userId ? pushNotificationManager.notifyPaymentReceived(userId, paymentData, agencyId) : Promise.resolve(),
+    notifyAIInsightGenerated: (insightData: any) =>
+      userId ? pushNotificationManager.notifyAIInsightGenerated(userId, insightData, agencyId) : Promise.resolve(),
+    notifySystemAlert: (alertData: any) =>
+      userId ? pushNotificationManager.notifySystemAlert(userId, alertData, agencyId) : Promise.resolve()
   }
 }

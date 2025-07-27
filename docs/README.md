@@ -24,7 +24,7 @@ Documentação detalhada dos sistemas de monitoramento, analytics, backup, compl
 ### 🔗 **Integrações**
 - **[Guia de Integrações API](API_INTEGRATIONS.md)** _(em breve)_
 - **[WhatsApp Business](ENTERPRISE_SYSTEMS.md#whatsapp-business-integrado)**
-- **[Sistema de Webhooks](WEBHOOKS.md)** _(em breve)_
+- **[Sistema de Webhooks e Configurações](WEBHOOKS_AND_SETTINGS.md)**
 
 ### 🤖 **Sistema Inteligente**
 - **[Sistema Inteligente](INTELLIGENT_SYSTEM.md)** _(em breve)_
@@ -40,6 +40,8 @@ Documentação detalhada dos sistemas de monitoramento, analytics, backup, compl
 - **[Cache Redis](ENTERPRISE_SYSTEMS.md#cache-redis-distribuído)**
 - **[Backup & Recovery](ENTERPRISE_SYSTEMS.md#backup--recovery)**
 - **[Sistema de Logs](ENTERPRISE_SYSTEMS.md#monitoramento-de-sistema)**
+- **[Sistema de Webhooks](ENTERPRISE_SYSTEMS.md#sistema-de-webhooks)**
+- **[Configurações Globais](ENTERPRISE_SYSTEMS.md#configurações-globais)**
 
 ---
 
@@ -110,6 +112,7 @@ Documentação detalhada dos sistemas de monitoramento, analytics, backup, compl
 ### ✅ **Completo**
 - [x] **[README Principal](../README.md)**
 - [x] **[Sistemas Empresariais](ENTERPRISE_SYSTEMS.md)**
+- [x] **[Sistema de Webhooks e Configurações Globais](WEBHOOKS_AND_SETTINGS.md)**
 
 ### 🚧 **Em Desenvolvimento**
 - [ ] **Guia de Instalação Completo**

@@ -361,6 +361,14 @@ WHATSAPP_ACCESS_TOKEN=your_access_token
 # Backup
 BACKUP_ENCRYPTION_KEY=your_backup_key
 BACKUP_RETENTION_DAYS=90
+
+# Webhooks
+WEBHOOK_SIGNATURE_SECRET=your_webhook_secret
+ENABLE_WEBHOOK_LOGGING=true
+
+# Global Settings
+ENABLE_GLOBAL_SETTINGS=true
+SETTINGS_ENCRYPTION_KEY=your_settings_key
 ```
 
 ### Scripts de Migração
@@ -371,6 +379,8 @@ psql $DATABASE_URL -f database/backup_system.sql
 psql $DATABASE_URL -f database/compliance_system.sql
 psql $DATABASE_URL -f database/logging_system.sql
 psql $DATABASE_URL -f database/client_notifications.sql
+psql $DATABASE_URL -f database/global_settings_system.sql
+psql $DATABASE_URL -f database/webhook_system.sql
 ```
 
 ### Monitoramento de Deploy
@@ -383,6 +393,127 @@ curl -f http://localhost:3000/api/cache/metrics
 
 # Testar WhatsApp
 curl -f http://localhost:3000/api/whatsapp/health
+
+# Verificar webhooks
+curl -f http://localhost:3000/api/webhooks/stats
+
+# Testar configurações globais
+curl -f http://localhost:3000/api/settings/global
+```
+
+---
+
+## 🔗 Sistema de Webhooks
+
+### Visão Geral
+Sistema completo de webhooks para integrações externas com 15+ tipos de eventos predefinidos.
+
+**URL:** `/settings/webhooks`
+**Acesso:** Administradores
+
+### Recursos Principais
+
+#### 📋 **Configuração de Webhooks**
+- **CRUD completo** de webhooks
+- **Múltiplos métodos HTTP** (GET, POST, PUT, PATCH, DELETE)
+- **Headers personalizáveis** por webhook
+- **Timeout configurável** (1-300 segundos)
+- **Retry automático** com delay configurável
+
+#### 🔐 **Segurança**
+```typescript
+// Assinatura HMAC SHA-256
+const signature = crypto
+  .createHmac('sha256', secret_token)
+  .update(payload)
+  .digest('hex')
+  
+headers['X-FVStudios-Signature'] = signature
+```
+
+#### 🎯 **Tipos de Eventos**
+- **Projeto:** created, updated, completed, deleted
+- **Tarefa:** created, updated, completed
+- **Cliente:** created, updated
+- **Usuário:** created, login
+- **Pagamento:** received, failed
+- **Sistema:** backup_completed, alert_triggered
+
+#### 📊 **Monitoramento**
+- **Dashboard em tempo real** com estatísticas
+- **Taxa de sucesso** por webhook
+- **Histórico completo** de execuções
+- **Logs detalhados** de requests/responses
+- **Métricas de performance** (duração, status codes)
+
+### APIs Disponíveis
+```typescript
+GET /api/webhooks                    // Listar webhooks
+POST /api/webhooks                   // Criar webhook
+GET /api/webhooks/[id]              // Buscar webhook específico
+PUT /api/webhooks/[id]              // Atualizar webhook
+DELETE /api/webhooks/[id]           // Deletar webhook
+POST /api/webhooks/[id]/test        // Testar webhook
+GET /api/webhooks/events            // Histórico de eventos
+POST /api/webhooks/events           // Disparar evento manual
+POST /api/webhooks/events/[id]/retry // Repetir evento
+GET /api/webhooks/event-types       // Tipos de eventos
+GET /api/webhooks/stats             // Estatísticas
+```
+
+---
+
+## ⚙️ Configurações Globais
+
+### Visão Geral
+Sistema centralizado de configurações com hierarquia agência/global e interface administrativa.
+
+**URL:** `/settings/global`
+**Acesso:** Administradores
+
+### Recursos Principais
+
+#### 🏗️ **Hierarquia de Configurações**
+```typescript
+// Sistema de precedência
+const finalValue = getAgencySetting(key) || getGlobalSetting(key) || defaultValue
+```
+
+#### 📝 **Categorias de Settings**
+- **Sistema:** Configurações técnicas (timeouts, limits)
+- **Integração:** APIs, webhooks, tokens
+- **Notificação:** Templates, canais, frequência  
+- **Backup:** Retenção, frequência, criptografia
+- **Compliance:** GDPR/LGPD, auditoria, logs
+
+#### 🔄 **Templates Reutilizáveis**
+```json
+{
+  "template_name": "Standard Agency Setup",
+  "category": "agency_defaults",
+  "settings": {
+    "max_projects": 50,
+    "notification_channels": ["email", "whatsapp"],
+    "backup_frequency": "daily"
+  }
+}
+```
+
+#### 📊 **Auditoria Completa**
+- **Histórico de alterações** com timestamps
+- **Usuário responsável** por cada mudança
+- **Valores anteriores** para rollback
+- **Justificativa** opcional para alterações
+
+### APIs Disponíveis
+```typescript
+GET /api/settings/global             // Configurações globais
+POST /api/settings/global            // Criar/atualizar global
+GET /api/settings/agency/[id]        // Configurações da agência
+POST /api/settings/agency/[id]       // Atualizar agência
+GET /api/settings/templates          // Templates disponíveis
+POST /api/settings/templates/apply   // Aplicar template
+GET /api/settings/history            // Histórico de alterações
 ```
 
 ---
@@ -390,9 +521,9 @@ curl -f http://localhost:3000/api/whatsapp/health
 ## 📈 Próximos Passos
 
 ### Sistemas Pendentes
-1. **Sistema de configuração global** - Centralizar settings
-2. **Sistema de webhooks** - APIs personalizadas 
-3. **Integração com Slack** - Notificações em canais
+1. **Integração com Slack** - Notificações em canais específicos
+2. **Sistema de Templates Avançados** - Builder visual de workflows
+3. **Analytics Preditivo** - Machine Learning para previsões
 
 ### Melhorias Planejadas
 1. **Machine Learning** para predição de alertas

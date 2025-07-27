@@ -35,7 +35,10 @@ import {
   Database,
   Settings,
   MessageSquare,
-  Shield
+  Shield,
+  Webhook,
+  Activity,
+  Brain
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { SearchModal } from "./search-modal";
@@ -490,6 +493,10 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
                 <NavItem href="/monitoring" icon={BarChart3}>Monitoramento</NavItem>
                 <NavItem href="/compliance" icon={Shield}>Compliance</NavItem>
                 <NavItem href="/executive" icon={TrendingUp}>Analytics Executivo</NavItem>
+                <NavItem href="/ml/analytics" icon={Brain}>ML Analytics</NavItem>
+                <NavItem href="/settings/global" icon={Settings}>Configurações Globais</NavItem>
+                <NavItem href="/settings/webhooks" icon={Webhook}>Sistema de Webhooks</NavItem>
+                <NavItem href="/settings/job-queue" icon={Activity}>Job Queue System</NavItem>
               </div>
             )}
             
@@ -498,6 +505,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
               <div className="space-y-0.5">
                 <NavItem href="/whatsapp/config" icon={Settings}>Config WhatsApp</NavItem>
                 <NavItem href="/whatsapp/templates" icon={MessageSquare}>Templates WhatsApp</NavItem>
+                <NavItem href="/settings/slack" icon={MessageSquare}>Integração Slack</NavItem>
               </div>
             )}
             
