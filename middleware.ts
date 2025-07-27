@@ -4,17 +4,122 @@ import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
 import { type NextRequest, NextResponse } from 'next/server'
 import { type Database } from './types/supabase-simple'
 import { createClient } from '@supabase/supabase-js'
+import { redisCache } from './lib/redis-cache'
+
+// Rate limiting configurations
+const rateLimitConfigs: Record<string, { requests: number; windowMs: number }> = {
+  '/api/ai/': { requests: 30, windowMs: 60000 }, // 30 req/min
+  '/api/openai/': { requests: 20, windowMs: 60000 }, // 20 req/min
+  '/api/whatsapp/': { requests: 100, windowMs: 60000 }, // 100 req/min
+  '/api/realtime-notifications': { requests: 200, windowMs: 60000 }, // 200 req/min
+  '/api/auth/': { requests: 20, windowMs: 60000 }, // 20 req/min
+  default: { requests: 100, windowMs: 60000 } // 100 req/min
+}
+
+async function applyRateLimit(req: NextRequest): Promise<NextResponse | null> {
+  if (!req.nextUrl.pathname.startsWith('/api/')) return null
+  
+  try {
+    const ip = req.ip || req.headers.get('x-forwarded-for') || 'anonymous'
+    const pathname = req.nextUrl.pathname
+    
+    // Find applicable config
+    let config = rateLimitConfigs.default
+    for (const [route, routeConfig] of Object.entries(rateLimitConfigs)) {
+      if (route !== 'default' && pathname.startsWith(route)) {
+        config = routeConfig
+        break
+      }
+    }
+    
+    const key = `rate_limit:${ip}:${pathname}`
+    const window = Math.floor(Date.now() / config.windowMs)
+    const windowKey = `${key}:${window}`
+    
+    const current = await redisCache.get(windowKey) as number || 0
+    
+    if (current >= config.requests) {
+      return new NextResponse(
+        JSON.stringify({
+          error: 'Rate limit exceeded',
+          limit: config.requests,
+          window: config.windowMs,
+          retryAfter: config.windowMs / 1000
+        }),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-RateLimit-Limit': config.requests.toString(),
+            'X-RateLimit-Remaining': '0',
+            'Retry-After': (config.windowMs / 1000).toString()
+          }
+        }
+      )
+    }
+    
+    await redisCache.set(windowKey, current + 1, { ttl: Math.ceil(config.windowMs / 1000) })
+    return null
+  } catch (error) {
+    console.warn('Rate limiting failed:', error)
+    return null
+  }
+}
+
+function addSecurityHeaders(response: NextResponse): NextResponse {
+  const headers = new Headers(response.headers)
+  
+  headers.set('X-Content-Type-Options', 'nosniff')
+  headers.set('X-Frame-Options', 'DENY')
+  headers.set('X-XSS-Protection', '1; mode=block')
+  
+  if (process.env.NODE_ENV === 'production') {
+    headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+  }
+  
+  const csp = [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://va.vercel-scripts.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com",
+    "img-src 'self' data: https: blob:",
+    "connect-src 'self' https: wss: ws:",
+    "media-src 'self' data:",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+  ].join('; ')
+  
+  headers.set('Content-Security-Policy', csp)
+  headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+  
+  return new NextResponse(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers
+  })
+}
 
 export async function middleware(req: NextRequest) {
-  const res = NextResponse.next()
+  const start = Date.now()
+  
+  // Apply rate limiting first
+  const rateLimitResponse = await applyRateLimit(req)
+  if (rateLimitResponse) {
+    return addSecurityHeaders(rateLimitResponse)
+  }
+  
+  let res = NextResponse.next()
   const path = req.nextUrl.pathname
 
-  // Rotas públicas
+  // Public routes
   const skipRoutes = [
     '/login', '/signup', '/', '/clear-cookies', '/favicon.ico', '/_next', '/images', '/api', '/unauthorized'
   ]
   if (skipRoutes.some(route => path.startsWith(route))) {
-    return res
+    res.headers.set('X-Response-Time', `${Date.now() - start}ms`)
+    return addSecurityHeaders(res)
   }
 
   try {
@@ -80,10 +185,12 @@ export async function middleware(req: NextRequest) {
       }
     }
 
-    return res
+    res.headers.set('X-Response-Time', `${Date.now() - start}ms`)
+    return addSecurityHeaders(res)
   } catch (error) {
     console.error('Middleware error:', error)
-    return res
+    res.headers.set('X-Response-Time', `${Date.now() - start}ms`)
+    return addSecurityHeaders(res)
   }
 }
 

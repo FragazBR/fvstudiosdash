@@ -481,6 +481,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
               <div className="space-y-0.5">
                 <NavItem href="/admin" icon={UserCog}>Administração</NavItem>
                 <NavItem href="/admin/api-integrations" icon={Zap}>Admin - Integrações</NavItem>
+                <NavItem href="/cache/performance" icon={Database}>Performance Cache</NavItem>
               </div>
             )}
             
