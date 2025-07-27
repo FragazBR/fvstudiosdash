@@ -388,7 +388,10 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
             
             {/* IA Agents - baseado em permissões */}
             {permissions?.canAccessAIAgents && (
-              <NavItem href="/ai-agents" icon={Bot}>IA Agents</NavItem>
+              <div className="space-y-0.5">
+                <NavItem href="/ai-agents" icon={Bot}>IA Agents</NavItem>
+                <NavItem href="/ai/metrics" icon={BarChart3}>Métricas IA</NavItem>
+              </div>
             )}
             
             {/* Agência - para proprietários e produtores independentes */}
