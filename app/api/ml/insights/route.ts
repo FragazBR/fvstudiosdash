@@ -1,10 +1,10 @@
-import { createServerSupabaseClient } from '@/lib/supabase'
+import { supabaseServer } from '@/lib/supabaseServer'
 import { NextRequest, NextResponse } from 'next/server'
 import { getMLEngine } from '@/lib/ml-prediction-engine'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerSupabaseClient()
+    const supabase = supabaseServer()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerSupabaseClient()
+    const supabase = supabaseServer()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
