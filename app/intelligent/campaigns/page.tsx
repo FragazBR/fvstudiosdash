@@ -58,6 +58,9 @@ import {
 } from 'recharts'
 import { useUser } from '@/hooks/useUser'
 import { supabaseBrowser } from '@/lib/supabaseBrowser'
+import { useGoogleAdsAPI } from '@/hooks/useGoogleAdsAPI'
+import { MetaAPIStatus } from '@/components/meta-api-status'
+import { GoogleAdsStatus } from '@/components/google-ads-status'
 
 // Interfaces
 interface Campaign {
@@ -418,77 +421,142 @@ export default function IntelligentCampaignsPage() {
   const loadCampaignData = async () => {
     try {
       setLoading(true)
+      let allCampaigns: Campaign[] = []
+      let allInsights: CampaignInsight[] = []
       
-      // Buscar campanhas reais da Meta Marketing API
-      const response = await fetch('/api/meta/campaigns', {
-        headers: {
-          'Authorization': `Bearer ${user?.access_token || ''}`
-        }
-      })
-
-      if (!response.ok) {
-        throw new Error('Erro ao buscar campanhas')
-      }
-
-      const data = await response.json()
-      
-      if (data.success && data.campaigns) {
-        // Converter dados da Meta API para formato local
-        const metaCampaigns: Campaign[] = data.campaigns.map((metaCampaign: any) => ({
-          id: metaCampaign.id,
-          name: metaCampaign.name,
-          platform: 'facebook' as const,
-          status: metaCampaign.status.toLowerCase() as 'active' | 'paused' | 'draft' | 'completed',
-          budget: parseFloat(metaCampaign.daily_budget || metaCampaign.lifetime_budget || '0') / 100,
-          spent: parseFloat(metaCampaign.insights?.spend || '0'),
-          impressions: parseInt(metaCampaign.insights?.impressions || '0'),
-          clicks: parseInt(metaCampaign.insights?.clicks || '0'),
-          conversions: metaCampaign.insights?.actions?.find((a: any) => a.action_type === 'purchase')?.value || 0,
-          ctr: parseFloat(metaCampaign.insights?.ctr || '0'),
-          cpc: parseFloat(metaCampaign.insights?.cpc || '0'),
-          roas: calculateRoas(metaCampaign.insights),
-          created_at: new Date(metaCampaign.created_time),
-          updated_at: new Date(metaCampaign.updated_time || metaCampaign.created_time)
-        }))
-
-        setCampaigns(metaCampaigns)
-
-        // Buscar insights de IA
-        const insightsResponse = await fetch('/api/meta/insights', {
+      // 1. Buscar campanhas da Meta Marketing API
+      try {
+        const response = await fetch('/api/meta/campaigns', {
           headers: {
             'Authorization': `Bearer ${user?.access_token || ''}`
           }
         })
 
-        if (insightsResponse.ok) {
-          const insightsData = await insightsResponse.json()
+        if (response.ok) {
+          const data = await response.json()
           
-          if (insightsData.success && insightsData.aiInsights) {
-            const formattedInsights: CampaignInsight[] = insightsData.aiInsights.map((insight: any) => ({
-              id: insight.id || Math.random().toString(),
-              campaign_id: metaCampaigns[0]?.id || '1', // Associar ao primeiro ou usar default
-              type: insight.impact_level === 'high' && insight.category.includes('optimization') ? 'warning' : 
-                    insight.impact_level === 'high' && insight.category.includes('opportunity') ? 'success' : 'recommendation',
-              title: insight.title,
-              description: insight.description,
-              impact: insight.impact_level as 'high' | 'medium' | 'low',
-              action_required: insight.impact_level === 'high',
-              suggested_actions: insight.suggested_actions || [],
-              created_at: new Date()
+          if (data.success && data.campaigns) {
+            // Converter dados da Meta API para formato local
+            const metaCampaigns: Campaign[] = data.campaigns.map((metaCampaign: any) => ({
+              id: metaCampaign.id,
+              name: metaCampaign.name,
+              platform: 'facebook' as const,
+              status: metaCampaign.status.toLowerCase() as 'active' | 'paused' | 'draft' | 'completed',
+              budget: parseFloat(metaCampaign.daily_budget || metaCampaign.lifetime_budget || '0') / 100,
+              spent: parseFloat(metaCampaign.insights?.spend || '0'),
+              impressions: parseInt(metaCampaign.insights?.impressions || '0'),
+              clicks: parseInt(metaCampaign.insights?.clicks || '0'),
+              conversions: metaCampaign.insights?.actions?.find((a: any) => a.action_type === 'purchase')?.value || 0,
+              ctr: parseFloat(metaCampaign.insights?.ctr || '0'),
+              cpc: parseFloat(metaCampaign.insights?.cpc || '0'),
+              roas: calculateRoas(metaCampaign.insights),
+              created_at: new Date(metaCampaign.created_time),
+              updated_at: new Date(metaCampaign.updated_time || metaCampaign.created_time)
             }))
 
-            setInsights(formattedInsights)
+            allCampaigns = [...allCampaigns, ...metaCampaigns]
+
+            // Buscar insights da Meta
+            const insightsResponse = await fetch('/api/meta/insights', {
+              headers: {
+                'Authorization': `Bearer ${user?.access_token || ''}`
+              }
+            })
+
+            if (insightsResponse.ok) {
+              const insightsData = await insightsResponse.json()
+              
+              if (insightsData.success && insightsData.aiInsights) {
+                const metaInsights: CampaignInsight[] = insightsData.aiInsights.map((insight: any) => ({
+                  id: insight.id || Math.random().toString(),
+                  campaign_id: metaCampaigns[0]?.id || '1',
+                  type: insight.impact_level === 'high' && insight.category.includes('optimization') ? 'warning' : 
+                        insight.impact_level === 'high' && insight.category.includes('opportunity') ? 'success' : 'recommendation',
+                  title: insight.title,
+                  description: insight.description,
+                  impact: insight.impact_level as 'high' | 'medium' | 'low',
+                  action_required: insight.impact_level === 'high',
+                  suggested_actions: insight.suggested_actions || [],
+                  created_at: new Date()
+                }))
+
+                allInsights = [...allInsights, ...metaInsights]
+              }
+            }
           }
         }
-      } else {
-        // Fallback para dados mock se a API não estiver configurada
-        toast.info('Configure a Meta Marketing API em /intelligent/settings para ver dados reais')
-        loadMockData()
+      } catch (error) {
+        console.log('Meta API não configurada ou erro na conexão:', error)
       }
+
+      // 2. Buscar campanhas do Google Ads API
+      try {
+        const googleResponse = await fetch('/api/google-ads/campaigns', {
+          headers: {
+            'Authorization': `Bearer ${user?.access_token || ''}`
+          }
+        })
+
+        if (googleResponse.ok) {
+          const googleData = await googleResponse.json()
+          
+          if (googleData.success && googleData.campaigns) {
+            // Converter dados do Google Ads para formato local
+            const googleCampaigns: Campaign[] = googleData.campaigns.map((googleCampaign: any) => ({
+              id: `google_${googleCampaign.id}`,
+              name: googleCampaign.name,
+              platform: 'google' as const,
+              status: googleCampaign.status === 'ENABLED' ? 'active' : 
+                     googleCampaign.status === 'PAUSED' ? 'paused' : 'draft',
+              budget: parseFloat(googleCampaign.metrics?.cost || '0') / 1000000 * 30, // Estimativa mensal
+              spent: parseFloat(googleCampaign.metrics?.cost || '0') / 1000000,
+              impressions: parseInt(googleCampaign.metrics?.impressions || '0'),
+              clicks: parseInt(googleCampaign.metrics?.clicks || '0'),
+              conversions: parseFloat(googleCampaign.metrics?.conversions || '0'),
+              ctr: googleCampaign.metrics?.ctr || 0,
+              cpc: parseFloat(googleCampaign.metrics?.averageCpc || '0') / 1000000,
+              roas: calculateGoogleRoas(googleCampaign.metrics),
+              created_at: new Date(googleCampaign.startDate),
+              updated_at: new Date()
+            }))
+
+            allCampaigns = [...allCampaigns, ...googleCampaigns]
+
+            // Insights do Google Ads
+            if (googleData.insights) {
+              const googleInsights: CampaignInsight[] = googleData.insights.map((insight: any) => ({
+                id: `google_${Math.random().toString()}`,
+                campaign_id: `google_${insight.performanceInsights.campaign_id}`,
+                type: insight.performanceInsights.wasted_spend_estimate > 100 ? 'warning' : 'recommendation',
+                title: 'Análise Google Ads',
+                description: `Impressões ${insight.performanceInsights.impressions_trend}, CTR médio: ${insight.performanceInsights.impression_share * 100}%`,
+                impact: insight.performanceInsights.wasted_spend_estimate > 200 ? 'high' : 'medium',
+                action_required: insight.performanceInsights.wasted_spend_estimate > 200,
+                suggested_actions: insight.performanceInsights.suggested_optimizations,
+                created_at: new Date()
+              }))
+
+              allInsights = [...allInsights, ...googleInsights]
+            }
+          }
+        }
+      } catch (error) {
+        console.log('Google Ads API não configurada ou erro na conexão:', error)
+      }
+
+      // 3. Se não temos campanhas de nenhuma API, usar dados mock
+      if (allCampaigns.length === 0) {
+        toast.info('Configure as APIs (Meta/Google Ads) em /intelligent/settings para ver dados reais')
+        loadMockData()
+        return
+      }
+
+      setCampaigns(allCampaigns)
+      setInsights(allInsights)
 
     } catch (error) {
       console.error('Erro ao carregar dados das campanhas:', error)
-      toast.error('Erro ao carregar campanhas. Verifique a configuração da API.')
+      toast.error('Erro ao carregar campanhas. Verifique a configuração das APIs.')
       loadMockData() // Fallback para dados mock
     } finally {
       setLoading(false)
@@ -503,6 +571,16 @@ export default function IntelligentCampaignsPage() {
     
     if (spend === 0) return 0
     return revenue / spend
+  }
+
+  const calculateGoogleRoas = (metrics: any): number => {
+    if (!metrics) return 0
+    
+    const cost = parseFloat(metrics.cost || '0') / 1000000
+    const conversionValue = parseFloat(metrics.conversionValue || '0') / 1000000
+    
+    if (cost === 0) return 0
+    return conversionValue / cost
   }
 
   const loadMockData = () => {
@@ -705,15 +783,125 @@ export default function IntelligentCampaignsPage() {
               </div>
             </div>
 
+            {/* APIs Status */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <MetaAPIStatus showFullCard={false} />
+              <GoogleAdsStatus showFullCard={false} />
+            </div>
+
             {/* Overview */}
             <CampaignOverview campaigns={campaigns} />
 
-            {/* Campanhas List */}
-            <CampaignsList 
-              campaigns={campaigns}
-              insights={insights}
-              onOptimize={handleOptimizeCampaign}
-            />
+            {/* Platform Performance */}
+            <Tabs defaultValue="all" className="w-full">
+              <TabsList>
+                <TabsTrigger value="all">Todas as Plataformas</TabsTrigger>
+                <TabsTrigger value="facebook">Meta (Facebook/Instagram)</TabsTrigger>
+                <TabsTrigger value="google">Google Ads</TabsTrigger>
+                <TabsTrigger value="comparison">Comparativo</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="all">
+                <CampaignsList 
+                  campaigns={campaigns}
+                  insights={insights}
+                  onOptimize={handleOptimizeCampaign}
+                />
+              </TabsContent>
+              
+              <TabsContent value="facebook">
+                <CampaignsList 
+                  campaigns={campaigns.filter(c => c.platform === 'facebook' || c.platform === 'instagram')}
+                  insights={insights.filter(i => !i.campaign_id.startsWith('google_'))}
+                  onOptimize={handleOptimizeCampaign}
+                />
+              </TabsContent>
+              
+              <TabsContent value="google">
+                <CampaignsList 
+                  campaigns={campaigns.filter(c => c.platform === 'google')}
+                  insights={insights.filter(i => i.campaign_id.startsWith('google_'))}
+                  onOptimize={handleOptimizeCampaign}
+                />
+              </TabsContent>
+              
+              <TabsContent value="comparison">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Comparativo de Performance por Plataforma</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {/* Meta Performance */}
+                      <div className="p-4 border rounded-lg">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-2xl">📘</span>
+                          <h3 className="font-semibold">Meta (Facebook/Instagram)</h3>
+                        </div>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span>Campanhas:</span>
+                            <span className="font-medium">{campaigns.filter(c => c.platform === 'facebook' || c.platform === 'instagram').length}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Gasto Total:</span>
+                            <span className="font-medium">R$ {campaigns.filter(c => c.platform === 'facebook' || c.platform === 'instagram').reduce((sum, c) => sum + c.spent, 0).toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>ROAS Médio:</span>
+                            <span className="font-medium">{(campaigns.filter(c => c.platform === 'facebook' || c.platform === 'instagram').reduce((sum, c) => sum + c.roas, 0) / Math.max(campaigns.filter(c => c.platform === 'facebook' || c.platform === 'instagram').length, 1)).toFixed(2)}x</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Google Performance */}
+                      <div className="p-4 border rounded-lg">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-2xl">🔍</span>
+                          <h3 className="font-semibold">Google Ads</h3>
+                        </div>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span>Campanhas:</span>
+                            <span className="font-medium">{campaigns.filter(c => c.platform === 'google').length}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Gasto Total:</span>
+                            <span className="font-medium">R$ {campaigns.filter(c => c.platform === 'google').reduce((sum, c) => sum + c.spent, 0).toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>ROAS Médio:</span>
+                            <span className="font-medium">{(campaigns.filter(c => c.platform === 'google').reduce((sum, c) => sum + c.roas, 0) / Math.max(campaigns.filter(c => c.platform === 'google').length, 1)).toFixed(2)}x</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Overall Performance */}
+                      <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-2xl">📊</span>
+                          <h3 className="font-semibold">Performance Geral</h3>
+                        </div>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span>Total Campanhas:</span>
+                            <span className="font-medium">{campaigns.length}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Investimento Total:</span>
+                            <span className="font-medium">R$ {campaigns.reduce((sum, c) => sum + c.spent, 0).toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>ROAS Geral:</span>
+                            <span className="font-medium">{(campaigns.reduce((sum, c) => sum + c.roas, 0) / Math.max(campaigns.length, 1)).toFixed(2)}x</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </div>
         </main>
       </div>
