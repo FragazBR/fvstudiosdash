@@ -30,6 +30,7 @@ import {
   RefreshCw,
   Download,
   Filter,
+  Settings,
   Calendar,
   Star,
   AlertTriangle,
@@ -418,115 +419,149 @@ export default function IntelligentCampaignsPage() {
     try {
       setLoading(true)
       
-      // Simular dados de campanhas (integração real viria das APIs das plataformas)
-      const mockCampaigns: Campaign[] = [
-        {
-          id: '1',
-          name: 'Black Friday - Produtos Premium',
-          platform: 'facebook',
-          status: 'active',
-          budget: 5000,
-          spent: 3200,
-          impressions: 45000,
-          clicks: 890,
-          conversions: 67,
-          ctr: 1.98,
-          cpc: 3.60,
-          roas: 4.2,
-          created_at: new Date('2024-01-15'),
-          updated_at: new Date()
-        },
-        {
-          id: '2',
-          name: 'Instagram Stories - Jovem Público',
-          platform: 'instagram',
-          status: 'active',
-          budget: 2500,
-          spent: 1800,
-          impressions: 28000,
-          clicks: 420,
-          conversions: 23,
-          ctr: 1.50,
-          cpc: 4.29,
-          roas: 2.1,
-          created_at: new Date('2024-01-10'),
-          updated_at: new Date()
-        },
-        {
-          id: '3',
-          name: 'Google Ads - Palavras-chave Premium',
-          platform: 'google',
-          status: 'active',
-          budget: 8000,
-          spent: 6200,
-          impressions: 15000,
-          clicks: 340,
-          conversions: 89,
-          ctr: 2.27,
-          cpc: 18.24,
-          roas: 3.8,
-          created_at: new Date('2024-01-05'),
-          updated_at: new Date()
+      // Buscar campanhas reais da Meta Marketing API
+      const response = await fetch('/api/meta/campaigns', {
+        headers: {
+          'Authorization': `Bearer ${user?.access_token || ''}`
         }
-      ]
+      })
 
-      const mockInsights: CampaignInsight[] = [
-        {
-          id: '1',
-          campaign_id: '2',
-          type: 'warning',
-          title: 'ROAS Baixo Detectado',
-          description: 'ROAS de 2.1x está abaixo da meta de 3x. IA sugere otimização de público.',
-          impact: 'high',
-          action_required: true,
-          suggested_actions: [
-            'Ajustar targeting para público mais qualificado',
-            'Testar novos criativos',
-            'Reduzir budget temporariamente'
-          ],
-          created_at: new Date()
-        },
-        {
-          id: '2',
-          campaign_id: '1',
-          type: 'success',
-          title: 'Performance Excelente',
-          description: 'ROAS de 4.2x superou a meta. Considere aumentar o investimento.',
-          impact: 'high',
-          action_required: false,
-          suggested_actions: [
-            'Aumentar budget em 20%',
-            'Expandir para públicos similares',
-            'Criar campanhas similares'
-          ],
-          created_at: new Date()
-        },
-        {
-          id: '3',
-          campaign_id: '3',
-          type: 'recommendation',
-          title: 'Otimização de Palavras-chave',
-          description: 'IA identificou 5 palavras-chave com baixa performance que podem ser pausadas.',
-          impact: 'medium',
-          action_required: false,
-          suggested_actions: [
-            'Pausar palavras-chave com QS < 5',
-            'Aumentar lances em termos de alta conversão',
-            'Adicionar palavras-chave negativas'
-          ],
-          created_at: new Date()
+      if (!response.ok) {
+        throw new Error('Erro ao buscar campanhas')
+      }
+
+      const data = await response.json()
+      
+      if (data.success && data.campaigns) {
+        // Converter dados da Meta API para formato local
+        const metaCampaigns: Campaign[] = data.campaigns.map((metaCampaign: any) => ({
+          id: metaCampaign.id,
+          name: metaCampaign.name,
+          platform: 'facebook' as const,
+          status: metaCampaign.status.toLowerCase() as 'active' | 'paused' | 'draft' | 'completed',
+          budget: parseFloat(metaCampaign.daily_budget || metaCampaign.lifetime_budget || '0') / 100,
+          spent: parseFloat(metaCampaign.insights?.spend || '0'),
+          impressions: parseInt(metaCampaign.insights?.impressions || '0'),
+          clicks: parseInt(metaCampaign.insights?.clicks || '0'),
+          conversions: metaCampaign.insights?.actions?.find((a: any) => a.action_type === 'purchase')?.value || 0,
+          ctr: parseFloat(metaCampaign.insights?.ctr || '0'),
+          cpc: parseFloat(metaCampaign.insights?.cpc || '0'),
+          roas: calculateRoas(metaCampaign.insights),
+          created_at: new Date(metaCampaign.created_time),
+          updated_at: new Date(metaCampaign.updated_time || metaCampaign.created_time)
+        }))
+
+        setCampaigns(metaCampaigns)
+
+        // Buscar insights de IA
+        const insightsResponse = await fetch('/api/meta/insights', {
+          headers: {
+            'Authorization': `Bearer ${user?.access_token || ''}`
+          }
+        })
+
+        if (insightsResponse.ok) {
+          const insightsData = await insightsResponse.json()
+          
+          if (insightsData.success && insightsData.aiInsights) {
+            const formattedInsights: CampaignInsight[] = insightsData.aiInsights.map((insight: any) => ({
+              id: insight.id || Math.random().toString(),
+              campaign_id: metaCampaigns[0]?.id || '1', // Associar ao primeiro ou usar default
+              type: insight.impact_level === 'high' && insight.category.includes('optimization') ? 'warning' : 
+                    insight.impact_level === 'high' && insight.category.includes('opportunity') ? 'success' : 'recommendation',
+              title: insight.title,
+              description: insight.description,
+              impact: insight.impact_level as 'high' | 'medium' | 'low',
+              action_required: insight.impact_level === 'high',
+              suggested_actions: insight.suggested_actions || [],
+              created_at: new Date()
+            }))
+
+            setInsights(formattedInsights)
+          }
         }
-      ]
-
-      setCampaigns(mockCampaigns)
-      setInsights(mockInsights)
+      } else {
+        // Fallback para dados mock se a API não estiver configurada
+        toast.info('Configure a Meta Marketing API em /intelligent/settings para ver dados reais')
+        loadMockData()
+      }
 
     } catch (error) {
       console.error('Erro ao carregar dados das campanhas:', error)
-      toast.error('Erro ao carregar campanhas')
+      toast.error('Erro ao carregar campanhas. Verifique a configuração da API.')
+      loadMockData() // Fallback para dados mock
     } finally {
       setLoading(false)
     }
+  }
+
+  const calculateRoas = (insights: any): number => {
+    if (!insights) return 0
+    
+    const spend = parseFloat(insights.spend || '0')
+    const revenue = insights.actions?.find((a: any) => a.action_type === 'purchase')?.value || 0
+    
+    if (spend === 0) return 0
+    return revenue / spend
+  }
+
+  const loadMockData = () => {
+    // Dados mock como fallback
+    const mockCampaigns: Campaign[] = [
+      {
+        id: '1',
+        name: 'Black Friday - Produtos Premium',
+        platform: 'facebook',
+        status: 'active',
+        budget: 5000,
+        spent: 3200,
+        impressions: 45000,
+        clicks: 890,
+        conversions: 67,
+        ctr: 1.98,
+        cpc: 3.60,
+        roas: 4.2,
+        created_at: new Date('2024-01-15'),
+        updated_at: new Date()
+      },
+      {
+        id: '2',
+        name: 'Instagram Stories - Jovem Público',
+        platform: 'instagram',
+        status: 'active',
+        budget: 2500,
+        spent: 1800,
+        impressions: 28000,
+        clicks: 420,
+        conversions: 23,
+        ctr: 1.50,
+        cpc: 4.29,
+        roas: 2.1,
+        created_at: new Date('2024-01-10'),
+        updated_at: new Date()
+      }
+    ]
+
+    const mockInsights: CampaignInsight[] = [
+      {
+        id: '1',
+        campaign_id: '2',
+        type: 'warning',
+        title: 'ROAS Baixo Detectado',
+        description: 'ROAS de 2.1x está abaixo da meta de 3x. Configure a Meta API para análises reais.',
+        impact: 'high',
+        action_required: true,
+        suggested_actions: [
+          'Configurar Meta Marketing API em /intelligent/settings',
+          'Verificar credenciais de acesso',
+          'Testar conexão com Facebook/Instagram'
+        ],
+        created_at: new Date()
+      }
+    ]
+
+    setCampaigns(mockCampaigns)
+    setInsights(mockInsights)
   }
 
   const handleOptimizeCampaign = async (campaignId: string) => {
@@ -535,12 +570,46 @@ export default function IntelligentCampaignsPage() {
 
     toast.success(`Iniciando otimização IA para "${campaign.name}"...`)
     
-    // Aqui seria feita a integração real com as APIs das plataformas
-    // Por exemplo: Meta Marketing API, Google Ads API, etc.
-    
-    setTimeout(() => {
-      toast.success('Otimização concluída! Campanhas atualizadas.')
-    }, 3000)
+    try {
+      // Otimização real via Meta Marketing API
+      const response = await fetch('/api/meta/campaigns', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user?.access_token || ''}`
+        },
+        body: JSON.stringify({
+          action: 'optimize',
+          campaignId: campaignId,
+          optimizations: [
+            'budget_adjustment',
+            'audience_expansion', 
+            'creative_rotation'
+          ]
+        })
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        if (result.success) {
+          toast.success('Otimização aplicada com sucesso!')
+          // Recarregar dados atualizados
+          await loadCampaignData()
+        } else {
+          throw new Error('Erro na otimização')
+        }
+      } else {
+        throw new Error('Erro na requisição')
+      }
+    } catch (error) {
+      console.error('Erro na otimização:', error)
+      toast.error('Otimização via API não disponível. Configure a Meta API em /intelligent/settings')
+      
+      // Simular otimização para demonstração
+      setTimeout(() => {
+        toast.success('Simulação de otimização concluída!')
+      }, 2000)
+    }
   }
 
   const handleRefresh = async () => {
@@ -624,6 +693,14 @@ export default function IntelligentCampaignsPage() {
                 <Button variant="outline">
                   <Download className="h-4 w-4 mr-2" />
                   Exportar
+                </Button>
+                
+                <Button 
+                  variant="outline"
+                  onClick={() => router.push('/intelligent/settings')}
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Configurar APIs
                 </Button>
               </div>
             </div>
