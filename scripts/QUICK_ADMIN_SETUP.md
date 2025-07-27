@@ -15,10 +15,8 @@
 ## Passo 2: Executar SQL no Supabase
 
 1. **Vá em SQL Editor** no dashboard do Supabase
-2. **Execute este comando** (substitua o UUID):
+2. **Cole e execute este comando** (substitua o UUID):
 
-```sql
--- SUBSTITUA O UUID ABAIXO PELO UUID DO USUÁRIO CRIADO NO PASSO 1
 INSERT INTO user_profiles (
     id,
     email,
@@ -29,37 +27,25 @@ INSERT INTO user_profiles (
     created_at,
     updated_at
 ) VALUES (
-    'COLE-O-UUID-AQUI', -- ← SUBSTITUA PELO UUID DO PASSO 1
-    'admin@fvstudios.com', -- ← SUBSTITUA PELO EMAIL USADO
+    'COLE-SEU-UUID-AQUI',
+    'admin@fvstudios.com',
     'Administrador FVStudios',
     'admin',
     'enterprise',
     'active',
     NOW(),
     NOW()
-) ON CONFLICT (id) DO UPDATE SET
-    role = 'admin',
-    subscription_plan = 'enterprise',
-    subscription_status = 'active',
-    updated_at = NOW();
-```
+);
+
+**⚠️ IMPORTANTE:** Substitua `COLE-SEU-UUID-AQUI` pelo UUID que você copiou no Passo 1
 
 ## Passo 3: Verificar se funcionou
 
-Execute este SQL para verificar:
+Cole e execute este comando:
 
-```sql
-SELECT 
-    up.id,
-    up.email,
-    up.full_name,
-    up.role,
-    up.subscription_plan,
-    au.email_confirmed_at
-FROM user_profiles up
-JOIN auth.users au ON up.id = au.id
-WHERE up.role = 'admin';
-```
+SELECT id, email, full_name, role FROM user_profiles WHERE role = 'admin';
+
+**Deve aparecer uma linha com seus dados!**
 
 ## Passo 4: Testar login
 
@@ -69,39 +55,34 @@ WHERE up.role = 'admin';
 
 ---
 
-## ⚠️ Troubleshooting
+## ⚠️ Se der erro na criação do perfil
 
-### Se der erro "Bad Request" no login:
+Se aparecer erro tipo "table user_profiles doesn't exist", execute esta migração primeiro:
 
-1. **Verifique se o usuário existe** na tabela `auth.users`
-2. **Verifique se o perfil foi criado** na tabela `user_profiles` 
-3. **Confirme que o email está confirmado** (email_confirmed_at não é null)
+**Vá em SQL Editor e cole todo este código:**
 
-### Comando para debugar problemas:
+CREATE TABLE IF NOT EXISTS user_profiles (
+    id UUID PRIMARY KEY,
+    agency_id UUID,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    full_name VARCHAR(255) NOT NULL,
+    role VARCHAR(50) NOT NULL DEFAULT 'free_user',
+    avatar_url TEXT,
+    phone VARCHAR(50),
+    subscription_plan VARCHAR(50) DEFAULT 'free',
+    subscription_status VARCHAR(50) DEFAULT 'active',
+    stripe_customer_id VARCHAR(255),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    
+    CONSTRAINT valid_roles CHECK (role IN (
+        'admin', 'agency_owner', 'agency_manager', 'agency_staff', 
+        'agency_client', 'independent_producer', 'independent_client', 
+        'influencer', 'free_user'
+    ))
+);
 
-```sql
--- Verificar usuário na auth.users
-SELECT id, email, email_confirmed_at, created_at 
-FROM auth.users 
-WHERE email = 'admin@fvstudios.com';
-
--- Verificar perfil criado
-SELECT id, email, full_name, role, created_at
-FROM user_profiles
-WHERE email = 'admin@fvstudios.com';
-
--- Se não aparecer nada, o usuário não foi criado corretamente
-```
-
-### Se precisar recriar tudo:
-
-```sql
--- Deletar da user_profiles primeiro
-DELETE FROM user_profiles WHERE email = 'admin@fvstudios.com';
-
--- Depois deletar da auth.users (via dashboard do Supabase)
--- E começar novamente do Passo 1
-```
+**Depois volte pro Passo 2 acima!**
 
 ---
 
@@ -113,4 +94,4 @@ Após seguir estes passos, você deve conseguir:
 - ✅ Ver todos os menus administrativos na sidebar
 - ✅ Acessar `/executive`, `/monitoring`, `/backup`, etc.
 
-Se ainda houver problemas, verifique o console do navegador para erros específicos!
+Se ainda houver problemas, me avise com a mensagem de erro específica!
