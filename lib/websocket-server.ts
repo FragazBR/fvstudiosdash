@@ -1,7 +1,7 @@
 import { Server } from 'socket.io';
 import { createServer } from 'http';
 import { parse } from 'url';
-import { createServerSupabaseClient } from './supabase';
+import { supabaseServer } from './supabaseServer';
 import { pushNotificationManager } from './realtime-notifications';
 
 // Types para WebSocket

@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { createServerSupabaseClient } from './supabase';
+import { supabaseServer } from './supabaseServer';
 import { supabaseBrowser } from './supabaseBrowser'
 import { toast } from 'sonner'
 

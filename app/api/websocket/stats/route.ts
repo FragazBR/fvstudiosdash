@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from '@/lib/supabase'
+import { createServerSupabaseClient } from '@/lib/supabaseServer'
 import { NextRequest, NextResponse } from 'next/server'
 import { webSocketManager } from '@/lib/websocket-server'
 
