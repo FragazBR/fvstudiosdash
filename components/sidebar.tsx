@@ -31,7 +31,11 @@ import {
   History,
   PieChart,
   UserPlus,
-  Zap
+  Zap,
+  Database,
+  Settings,
+  MessageSquare,
+  Shield
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { SearchModal } from "./search-modal";
@@ -482,6 +486,10 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
                 <NavItem href="/admin" icon={UserCog}>Administração</NavItem>
                 <NavItem href="/admin/api-integrations" icon={Zap}>Admin - Integrações</NavItem>
                 <NavItem href="/cache/performance" icon={Database}>Performance Cache</NavItem>
+                <NavItem href="/backup" icon={Shield}>Backup & Recovery</NavItem>
+                <NavItem href="/monitoring" icon={BarChart3}>Monitoramento</NavItem>
+                <NavItem href="/compliance" icon={Shield}>Compliance</NavItem>
+                <NavItem href="/executive" icon={TrendingUp}>Analytics Executivo</NavItem>
               </div>
             )}
             

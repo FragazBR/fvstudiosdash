@@ -520,7 +520,7 @@ export function CreditsRecharge({
                     <>
                       <Zap className="h-4 w-4 mr-2" />
                       Comprar Créditos
-                    </Button>
+                    </>
                   )}
                 </Button>
               </DialogFooter>
