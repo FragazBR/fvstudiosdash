@@ -481,9 +481,12 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
               </div>
             )}
             
-            {/* WhatsApp Templates - para agências */}
+            {/* WhatsApp - para agências */}
             {canAccessAgency && (
-              <NavItem href="/whatsapp/templates" icon={MessageSquare}>Templates WhatsApp</NavItem>
+              <div className="space-y-0.5">
+                <NavItem href="/whatsapp/config" icon={Settings}>Config WhatsApp</NavItem>
+                <NavItem href="/whatsapp/templates" icon={MessageSquare}>Templates WhatsApp</NavItem>
+              </div>
             )}
             
             {/* Notificações - para todos */}
