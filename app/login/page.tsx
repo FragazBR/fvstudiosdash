@@ -42,7 +42,7 @@ export default function LoginPage() {
       try {
         const result = await supabase
           .from('user_profiles')
-          .select('role, id, full_name, email, agency_id')
+          .select('role, id, name, email, agency_id')
           .eq('id', data.user.id)
           .single();
         profile = result.data;
@@ -70,12 +70,10 @@ export default function LoginPage() {
           .insert({
             id: data.user.id,
             email: data.user.email,
-            full_name: defaultName,
+            name: defaultName,
             role: defaultRole,
-            subscription_plan: defaultPlan,
-            subscription_status: 'active',
           })
-          .select('role, id, full_name, email')
+          .select('role, id, name, email')
           .single();
           
         if (createError) {

@@ -1,21 +1,21 @@
-# 🔧 Setup Rápido do Usuário Admin
+# Setup Rapido do Usuario Admin
 
-## Passo 1: Criar usuário na autenticação do Supabase
+## Passo 1: Criar usuario na autenticacao do Supabase
 
-1. **Acesse o Dashboard do Supabase**: https://supabase.com/dashboard
-2. **Vá em Authentication > Users**
-3. **Clique em "Add user"**
-4. **Preencha:**
-   - Email: `admin@fvstudios.com` (ou outro email de sua escolha)
+1. Acesse o Dashboard do Supabase: https://supabase.com/dashboard
+2. Va em Authentication > Users
+3. Clique em "Add user"
+4. Preencha:
+   - Email: admin@fvstudios.com
    - Password: Sua senha
-   - **Marque "Email Confirm"** para pular confirmação
-5. **Clique em "Create user"**
-6. **Copie o UUID** que foi gerado para o usuário
+   - Marque "Email Confirm" para pular confirmacao
+5. Clique em "Create user"
+6. Copie o UUID que foi gerado para o usuario
 
 ## Passo 2: Executar SQL no Supabase
 
-1. **Vá em SQL Editor** no dashboard do Supabase
-2. **Cole e execute este comando** (substitua o UUID):
+1. Va em SQL Editor no dashboard do Supabase
+2. Cole e execute este comando (substitua o UUID):
 
 INSERT INTO user_profiles (
     id,
@@ -27,9 +27,9 @@ INSERT INTO user_profiles (
     created_at,
     updated_at
 ) VALUES (
-    'COLE-SEU-UUID-AQUI',
-    'admin@fvstudios.com',
-    'Administrador FVStudios',
+    '9a8772a1-1387-4b08-81f8-8e2ffdff55cc',
+    'franco@fvstudios.com.br',
+    'Administrador FVSTUDIOS',
     'admin',
     'enterprise',
     'active',
@@ -37,7 +37,7 @@ INSERT INTO user_profiles (
     NOW()
 );
 
-**⚠️ IMPORTANTE:** Substitua `COLE-SEU-UUID-AQUI` pelo UUID que você copiou no Passo 1
+IMPORTANTE: Substitua COLE-SEU-UUID-AQUI pelo UUID que voce copiou no Passo 1
 
 ## Passo 3: Verificar se funcionou
 
@@ -45,21 +45,21 @@ Cole e execute este comando:
 
 SELECT id, email, full_name, role FROM user_profiles WHERE role = 'admin';
 
-**Deve aparecer uma linha com seus dados!**
+Deve aparecer uma linha com seus dados!
 
 ## Passo 4: Testar login
 
-1. **Vá para** `http://localhost:3000/login`
-2. **Use o email e senha** que você criou
-3. **Deve redirecionar** para `/admin`
+1. Va para http://localhost:3000/login
+2. Use o email e senha que voce criou
+3. Deve redirecionar para /admin
 
 ---
 
-## ⚠️ Se der erro na criação do perfil
+## Se der erro na criacao do perfil
 
-Se aparecer erro tipo "table user_profiles doesn't exist", execute esta migração primeiro:
+Se aparecer erro tipo "table user_profiles doesn't exist", execute esta migracao primeiro:
 
-**Vá em SQL Editor e cole todo este código:**
+Va em SQL Editor e cole todo este codigo:
 
 CREATE TABLE IF NOT EXISTS user_profiles (
     id UUID PRIMARY KEY,
@@ -82,16 +82,16 @@ CREATE TABLE IF NOT EXISTS user_profiles (
     ))
 );
 
-**Depois volte pro Passo 2 acima!**
+Depois volte pro Passo 2 acima!
 
 ---
 
-## 🎯 Resultado Esperado
+## Resultado Esperado
 
-Após seguir estes passos, você deve conseguir:
-- ✅ Fazer login com `admin@fvstudios.com`
-- ✅ Ser redirecionado para `/admin`
-- ✅ Ver todos os menus administrativos na sidebar
-- ✅ Acessar `/executive`, `/monitoring`, `/backup`, etc.
+Apos seguir estes passos, voce deve conseguir:
+- Fazer login com admin@fvstudios.com
+- Ser redirecionado para /admin
+- Ver todos os menus administrativos na sidebar
+- Acessar /executive, /monitoring, /backup, etc.
 
-Se ainda houver problemas, me avise com a mensagem de erro específica!
+Se ainda houver problemas, me avise com a mensagem de erro especifica!
