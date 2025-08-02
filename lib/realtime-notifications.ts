@@ -28,7 +28,7 @@ export interface NotificationSubscription {
 }
 
 class RealtimeNotificationManager {
-  private supabase = supabaseBrowser()
+  private supabase: any
   private subscriptions = new Map<string, any>()
   private notificationQueue: RealtimeNotification[] = []
   private isOnline = true
@@ -47,8 +47,12 @@ class RealtimeNotificationManager {
   }
 
   constructor() {
-    this.initializeOnlineStatus()
-    this.initializeBrowserNotifications()
+    // Initialize with browser client for client-side usage
+    if (typeof window !== 'undefined') {
+      this.supabase = supabaseBrowser()
+      this.initializeOnlineStatus()
+      this.initializeBrowserNotifications()
+    }
   }
 
   // Inicializar status online/offline
@@ -607,7 +611,7 @@ export class PushNotificationManager extends EventEmitter {
     }
   ): Promise<string | null> {
     try {
-      const supabase = createServerSupabaseClient();
+      const supabase = await supabaseServer();
 
       const { data, error } = await supabase.rpc('register_push_subscription', {
         p_user_id: userId,
@@ -652,7 +656,7 @@ export class PushNotificationManager extends EventEmitter {
     } = {}
   ): Promise<string | null> {
     try {
-      const supabase = createServerSupabaseClient();
+      const supabase = await supabaseServer();
 
       const { data, error } = await supabase.rpc('process_realtime_notification_event', {
         p_user_id: userId,
@@ -687,7 +691,7 @@ export class PushNotificationManager extends EventEmitter {
   // Obter subscriptions do usuário
   async getUserSubscriptions(userId: string): Promise<PushNotificationSubscription[]> {
     try {
-      const supabase = createServerSupabaseClient();
+      const supabase = await supabaseServer();
 
       const { data, error } = await supabase
         .from('notification_subscriptions')
@@ -715,7 +719,7 @@ export class PushNotificationManager extends EventEmitter {
     daysBack: number = 30
   ): Promise<any> {
     try {
-      const supabase = createServerSupabaseClient();
+      const supabase = await supabaseServer();
 
       const { data, error } = await supabase.rpc('get_push_notification_stats', {
         p_agency_id: agencyId || null,

@@ -1041,4 +1041,3 @@ export async function trainModel(request: TrainingRequest): Promise<TrainingResu
   return await engine.trainModel(request)
 }
 
-export { MLPredictionEngine }

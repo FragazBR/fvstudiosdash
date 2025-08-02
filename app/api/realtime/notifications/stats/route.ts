@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from '@/lib/supabaseServer'
+import { supabaseServer } from '@/lib/supabaseServer'
 import { NextRequest, NextResponse } from 'next/server'
 import { pushNotificationManager } from '@/lib/realtime-notifications'
 

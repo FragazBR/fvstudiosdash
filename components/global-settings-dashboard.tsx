@@ -16,7 +16,7 @@ import {
   Save,
   RefreshCw,
   History,
-  Template,
+  FileTemplate as Template,
   Eye,
   EyeOff,
   Globe,

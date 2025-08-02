@@ -82,7 +82,7 @@ export class WebSocketManager {
         }
 
         // Verificar token com Supabase
-        const supabase = createServerSupabaseClient();
+        const supabase = await supabaseServer();
         const { data: { user }, error } = await supabase.auth.getUser(token);
 
         if (error || !user) {

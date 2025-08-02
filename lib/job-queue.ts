@@ -762,4 +762,3 @@ export function registerJobHandler(jobType: string, handler: JobHandler): void {
   jobQueue.registerHandler(jobType, handler)
 }
 
-export { JobQueueManager }

@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from '@/lib/supabaseServer'
+import { supabaseServer } from '@/lib/supabaseServer'
 import { NextRequest } from 'next/server'
 
 // Server-Sent Events para notificações em tempo real
