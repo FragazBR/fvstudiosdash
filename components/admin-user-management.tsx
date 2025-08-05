@@ -44,8 +44,10 @@ interface CreateUserForm {
   phone: string;
   welcome_message: string;
   password: string;
-  creation_method: 'invite' | 'direct'; // Novo campo
+  creation_method: 'invite' | 'direct';
   send_welcome_email: boolean;
+  create_new_agency: boolean;
+  new_agency_name?: string;
 }
 
 interface User {
@@ -84,7 +86,9 @@ export default function AdminUserManagementPage() {
     welcome_message: '',
     password: '',
     creation_method: 'invite',
-    send_welcome_email: true
+    send_welcome_email: true,
+    create_new_agency: false,
+    new_agency_name: ''
   });
 
   useEffect(() => {
@@ -167,7 +171,9 @@ export default function AdminUserManagementPage() {
         agency_id: formData.agency_id || null,
         company: formData.company || null,
         phone: formData.phone || null,
-        send_welcome_email: formData.send_welcome_email
+        send_welcome_email: formData.send_welcome_email,
+        create_new_agency: formData.create_new_agency,
+        new_agency_name: formData.new_agency_name || null
       })
     });
 
@@ -184,29 +190,33 @@ export default function AdminUserManagementPage() {
   };
 
   const handleCreateInvitation = async () => {
-    const { data, error } = await supabase.rpc('create_user_invitation', {
-      p_email: formData.email,
-      p_name: formData.name,
-      p_role: formData.role,
-      p_agency_id: formData.agency_id || null,
-      p_company: formData.company || null,
-      p_phone: formData.phone || null,
-      p_welcome_message: formData.welcome_message || null
+    const response = await fetch('/api/admin/users/create-invite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: formData.email,
+        name: formData.name,
+        role: formData.role,
+        agency_id: formData.agency_id || null,
+        company: formData.company || null,
+        phone: formData.phone || null,
+        welcome_message: formData.welcome_message || null,
+        create_new_agency: formData.create_new_agency,
+        new_agency_name: formData.new_agency_name || null
+      })
     });
 
-    if (error) throw error;
-
-    const result = typeof data === 'string' ? JSON.parse(data) : data;
+    const data = await response.json();
     
-    if (result.error) {
-      throw new Error(result.error);
+    if (!response.ok) {
+      throw new Error(data.error);
     }
 
-    toast.success('Convite criado com sucesso!');
+    toast.success(data.message || 'Convite criado com sucesso!');
     
     // Copiar link do convite para clipboard
-    if (result.invitation_url) {
-      await navigator.clipboard.writeText(result.invitation_url);
+    if (data.invitation_url) {
+      await navigator.clipboard.writeText(data.invitation_url);
       toast.info('Link do convite copiado para a área de transferência');
     }
 
@@ -226,7 +236,9 @@ export default function AdminUserManagementPage() {
       welcome_message: '',
       password: '',
       creation_method: 'invite',
-      send_welcome_email: true
+      send_welcome_email: true,
+      create_new_agency: false,
+      new_agency_name: ''
     });
   };
 
@@ -418,23 +430,56 @@ export default function AdminUserManagementPage() {
               </div>
 
               {formData.role !== 'admin' && (
-                <div>
-                  <Label htmlFor="agency">Agência</Label>
-                  <Select 
-                    value={formData.agency_id} 
-                    onValueChange={(value) => setFormData({...formData, agency_id: value})}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione uma agência" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {agencies.map((agency) => (
-                        <SelectItem key={agency.id} value={agency.id}>
-                          {agency.name}
+                <div className="space-y-3">
+                  <Label>Agência</Label>
+                  
+                  {/* Seletor de agência existente */}
+                  <div>
+                    <Select 
+                      value={formData.agency_id} 
+                      onValueChange={(value) => {
+                        if (value === 'create_new') {
+                          setFormData({...formData, agency_id: '', create_new_agency: true})
+                        } else {
+                          setFormData({...formData, agency_id: value, create_new_agency: false})
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione uma agência" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {agencies.map((agency) => (
+                          <SelectItem key={agency.id} value={agency.id}>
+                            {agency.name}
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="create_new" className="text-blue-600 font-medium">
+                          ➕ Criar Nova Agência
                         </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Campo para nova agência */}
+                  {formData.create_new_agency && (
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <Label htmlFor="new_agency_name" className="text-blue-900 dark:text-blue-100">
+                        Nome da Nova Agência *
+                      </Label>
+                      <Input
+                        id="new_agency_name"
+                        value={formData.new_agency_name || ''}
+                        onChange={(e) => setFormData({...formData, new_agency_name: e.target.value})}
+                        placeholder="Ex: Marketing Digital LTDA"
+                        className="mt-1"
+                        required
+                      />
+                      <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                        A agência será criada automaticamente junto com o usuário
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 

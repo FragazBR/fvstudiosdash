@@ -24,27 +24,20 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { 
       email, 
-      password, 
       name, 
       role, 
       agency_id, 
       company, 
       phone, 
-      send_welcome_email,
+      welcome_message,
       create_new_agency,
       new_agency_name 
     } = body
 
     // Validações básicas
-    if (!email || !password || !name || !role) {
+    if (!email || !name || !role) {
       return NextResponse.json({ 
-        error: 'Campos obrigatórios: email, password, name, role' 
-      }, { status: 400 })
-    }
-
-    if (password.length < 6) {
-      return NextResponse.json({ 
-        error: 'Senha deve ter pelo menos 6 caracteres' 
+        error: 'Campos obrigatórios: email, name, role' 
       }, { status: 400 })
     }
 
@@ -69,6 +62,21 @@ export async function POST(request: NextRequest) {
       }, { status: 409 })
     }
 
+    // Verificar se já existe convite pendente
+    const { data: existingInvite } = await supabase
+      .from('user_invitations')
+      .select('id')
+      .eq('email', email)
+      .eq('status', 'pending')
+      .gt('expires_at', new Date().toISOString())
+      .single()
+
+    if (existingInvite) {
+      return NextResponse.json({ 
+        error: 'Já existe um convite pendente para este email' 
+      }, { status: 409 })
+    }
+
     let finalAgencyId = agency_id
 
     // Criar nova agência se necessário
@@ -77,7 +85,7 @@ export async function POST(request: NextRequest) {
         .from('agencies')
         .insert({
           name: new_agency_name,
-          email: email, // Email do dono da agência
+          email: email, // Email do futuro dono da agência
           phone: phone || null,
           status: 'active',
           created_by: user.id
@@ -95,59 +103,39 @@ export async function POST(request: NextRequest) {
       finalAgencyId = newAgency.id
     }
 
-    // Criar usuário no Supabase Auth
-    const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true, // Confirmar email automaticamente
-      user_metadata: {
+    // Criar convite
+    const { data: invitation, error: inviteError } = await supabase
+      .from('user_invitations')
+      .insert({
+        email,
         name,
         role,
+        agency_id: finalAgencyId,
         company: company || null,
         phone: phone || null,
-        created_by_admin: true,
-        created_by: user.id
-      }
-    })
+        welcome_message: welcome_message || null,
+        invited_by: user.id,
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 dias
+      })
+      .select()
+      .single()
 
-    if (createError) {
-      console.error('Erro ao criar usuário:', createError)
+    if (inviteError) {
+      console.error('Erro ao criar convite:', inviteError)
       return NextResponse.json({ 
-        error: 'Erro ao criar usuário: ' + createError.message 
+        error: 'Erro ao criar convite: ' + inviteError.message 
       }, { status: 500 })
     }
 
-    if (!newUser.user) {
-      return NextResponse.json({ 
-        error: 'Falha ao criar usuário' 
-      }, { status: 500 })
-    }
-
-    // Criar permissões do usuário se não for admin global
-    if (role !== 'admin' && finalAgencyId) {
-      const { error: permError } = await supabase
-        .from('user_agency_permissions')
-        .insert({
-          user_id: newUser.user.id,
-          agency_id: finalAgencyId,
-          role: role,
-          permissions: getDefaultPermissions(role),
-          granted_by: user.id
-        })
-
-      if (permError) {
-        console.error('Erro ao criar permissões:', permError)
-        // Não falhar a criação do usuário por causa das permissões
-      }
-    }
+    // Gerar URL do convite
+    const invitationUrl = `${request.nextUrl.origin}/accept-invite?token=${invitation.id}`
 
     // Log da ação
     await supabase
       .from('admin_action_logs')
       .insert({
         admin_user_id: user.id,
-        action: 'create_user_directly',
-        target_user_id: newUser.user.id,
+        action: 'create_invitation',
         target_email: email,
         details: {
           name,
@@ -155,6 +143,7 @@ export async function POST(request: NextRequest) {
           agency_id: finalAgencyId,
           company,
           phone,
+          invitation_id: invitation.id,
           created_new_agency: create_new_agency,
           new_agency_name: create_new_agency ? new_agency_name : null
         },
@@ -163,53 +152,20 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      user: {
-        id: newUser.user.id,
-        email: newUser.user.email,
-        name,
-        role,
-        created_at: newUser.user.created_at
-      },
-      message: 'Usuário criado com sucesso!'
+      invitation_id: invitation.id,
+      invitation_url: invitationUrl,
+      expires_at: invitation.expires_at,
+      message: create_new_agency 
+        ? `Convite criado e agência "${new_agency_name}" criada com sucesso!`
+        : 'Convite criado com sucesso!'
     }, { status: 201 })
 
   } catch (error) {
-    console.error('Erro no endpoint de criação direta:', error)
+    console.error('Erro ao criar convite:', error)
     return NextResponse.json({ 
       error: 'Erro interno do servidor' 
     }, { status: 500 })
   }
-}
-
-// Função para obter permissões padrão por role
-function getDefaultPermissions(role: string) {
-  const defaultPermissions = {
-    admin: {
-      manage_users: 'true',
-      manage_agencies: 'true',
-      manage_payments: 'true',
-      view_analytics: 'true',
-      manage_settings: 'true'
-    },
-    agency_owner: {
-      manage_users: 'true',
-      manage_projects: 'true',
-      manage_payments: 'true',
-      view_analytics: 'true',
-      manage_settings: 'true'
-    },
-    agency_staff: {
-      manage_projects: 'true',
-      view_analytics: 'true',
-      manage_clients: 'true'
-    },
-    client: {
-      view_projects: 'true',
-      view_reports: 'true'
-    }
-  }
-
-  return defaultPermissions[role as keyof typeof defaultPermissions] || defaultPermissions.client
 }
 
 // Função para obter IP do cliente
