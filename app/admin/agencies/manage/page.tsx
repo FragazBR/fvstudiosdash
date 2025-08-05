@@ -55,6 +55,16 @@ interface Agency {
   owner_name?: string;
 }
 
+interface Plan {
+  id: string;
+  plan_name: string;
+  monthly_price: number;
+  annual_price: number;
+  max_clients: number;
+  max_projects: number;
+  features: string[];
+}
+
 interface CreateAgencyForm {
   name: string;
   email: string;
@@ -65,6 +75,13 @@ interface CreateAgencyForm {
   zip_code: string;
   website: string;
   description: string;
+  plan_id: string;
+  create_owner: boolean;
+  owner_name: string;
+  owner_email: string;
+  owner_phone: string;
+  owner_password: string;
+  send_owner_invite: boolean;
 }
 
 function AgencyManagementContent() {
@@ -79,6 +96,7 @@ function AgencyManagementContent() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [plans, setPlans] = useState<Plan[]>([]);
   
   const [formData, setFormData] = useState<CreateAgencyForm>({
     name: '',
@@ -89,7 +107,14 @@ function AgencyManagementContent() {
     state: '',
     zip_code: '',
     website: '',
-    description: ''
+    description: '',
+    plan_id: '',
+    create_owner: true,
+    owner_name: '',
+    owner_email: '',
+    owner_phone: '',
+    owner_password: '',
+    send_owner_invite: false
   });
   
   const router = useRouter();
@@ -97,11 +122,30 @@ function AgencyManagementContent() {
 
   useEffect(() => {
     loadAgencies();
+    loadPlans();
   }, []);
 
   useEffect(() => {
     filterAgencies();
   }, [agencies, searchTerm, statusFilter]);
+
+  const loadPlans = async () => {
+    try {
+      const { data: plansData, error } = await supabase
+        .from('plan_limits')
+        .select('*')
+        .order('monthly_price', { ascending: true });
+
+      if (error) {
+        console.error('Error loading plans:', error);
+        return;
+      }
+
+      setPlans(plansData || []);
+    } catch (error) {
+      console.error('Error loading plans:', error);
+    }
+  };
 
   const loadAgencies = async () => {
     try {
@@ -207,7 +251,8 @@ function AgencyManagementContent() {
     setIsCreating(true);
 
     try {
-      const { data, error } = await supabase
+      // 1. Criar a agência
+      const { data: agencyData, error: agencyError } = await supabase
         .from('agencies')
         .insert([{
           name: formData.name,
@@ -224,11 +269,46 @@ function AgencyManagementContent() {
         .select()
         .single();
 
-      if (error) {
-        throw error;
+      if (agencyError) {
+        throw agencyError;
       }
 
-      toast.success('Agência criada com sucesso!');
+      // 2. Criar owner se solicitado
+      if (formData.create_owner && formData.owner_email && formData.owner_name) {
+        try {
+          // Fazer chamada para API de criação de usuário
+          const ownerResponse = await fetch('/api/admin/users/create-direct', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: formData.owner_email,
+              name: formData.owner_name,
+              phone: formData.owner_phone,
+              role: 'agency_owner',
+              agency_id: agencyData.id,
+              plan_id: formData.plan_id,
+              password: formData.owner_password || undefined,
+              send_welcome_email: formData.send_owner_invite,
+              creation_method: formData.owner_password ? 'direct' : 'invite'
+            })
+          });
+
+          const ownerResult = await ownerResponse.json();
+          
+          if (!ownerResponse.ok) {
+            console.warn('Erro ao criar proprietário:', ownerResult.error);
+            toast.error(`Agência criada, mas erro ao criar proprietário: ${ownerResult.error}`);
+          } else {
+            toast.success(`Agência e proprietário criados com sucesso! ${formData.send_owner_invite ? 'Email enviado.' : ''}`);
+          }
+        } catch (ownerError) {
+          console.warn('Erro ao criar proprietário:', ownerError);
+          toast.error('Agência criada, mas erro ao criar proprietário');
+        }
+      } else {
+        toast.success('Agência criada com sucesso!');
+      }
+
       setCreateDialogOpen(false);
       resetForm();
       loadAgencies(); // Recarregar lista
@@ -292,7 +372,14 @@ function AgencyManagementContent() {
       state: '',
       zip_code: '',
       website: '',
-      description: ''
+      description: '',
+      plan_id: '',
+      create_owner: true,
+      owner_name: '',
+      owner_email: '',
+      owner_phone: '',
+      owner_password: '',
+      send_owner_invite: false
     });
   };
 
@@ -375,100 +462,245 @@ function AgencyManagementContent() {
                     </DialogDescription>
                   </DialogHeader>
                   
-                  <form onSubmit={handleCreateAgency} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="col-span-2">
-                        <Label htmlFor="name">Nome da Agência *</Label>
-                        <Input
-                          id="name"
-                          value={formData.name}
-                          onChange={(e) => setFormData({...formData, name: e.target.value})}
-                          placeholder="Ex: Marketing Digital LTDA"
-                          required
-                        />
+                  <form onSubmit={handleCreateAgency} className="space-y-6">
+                    {/* Informações Básicas da Agência */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white border-b pb-2">
+                        📊 Informações da Agência
+                      </h3>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="col-span-2">
+                          <Label htmlFor="name">Nome da Agência *</Label>
+                          <Input
+                            id="name"
+                            value={formData.name}
+                            onChange={(e) => setFormData({...formData, name: e.target.value})}
+                            placeholder="Ex: Marketing Digital LTDA"
+                            required
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="email">Email</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            value={formData.email}
+                            onChange={(e) => setFormData({...formData, email: e.target.value})}
+                            placeholder="contato@agencia.com"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="phone">Telefone</Label>
+                          <Input
+                            id="phone"
+                            value={formData.phone}
+                            onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                            placeholder="(11) 99999-9999"
+                          />
+                        </div>
+                        
+                        <div className="col-span-2">
+                          <Label htmlFor="address">Endereço</Label>
+                          <Input
+                            id="address"
+                            value={formData.address}
+                            onChange={(e) => setFormData({...formData, address: e.target.value})}
+                            placeholder="Rua, Número, Bairro"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="city">Cidade</Label>
+                          <Input
+                            id="city"
+                            value={formData.city}
+                            onChange={(e) => setFormData({...formData, city: e.target.value})}
+                            placeholder="São Paulo"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="state">Estado</Label>
+                          <Input
+                            id="state"
+                            value={formData.state}
+                            onChange={(e) => setFormData({...formData, state: e.target.value})}
+                            placeholder="SP"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="zip_code">CEP</Label>
+                          <Input
+                            id="zip_code"
+                            value={formData.zip_code}
+                            onChange={(e) => setFormData({...formData, zip_code: e.target.value})}
+                            placeholder="00000-000"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="website">Website</Label>
+                          <Input
+                            id="website"
+                            value={formData.website}
+                            onChange={(e) => setFormData({...formData, website: e.target.value})}
+                            placeholder="https://www.agencia.com"
+                          />
+                        </div>
+                        
+                        <div className="col-span-2">
+                          <Label htmlFor="description">Descrição</Label>
+                          <Textarea
+                            id="description"
+                            value={formData.description}
+                            onChange={(e) => setFormData({...formData, description: e.target.value})}
+                            placeholder="Descrição da agência..."
+                            rows={3}
+                          />
+                        </div>
                       </div>
+                    </div>
+
+                    {/* Seleção de Plano */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white border-b pb-2">
+                        💎 Plano de Assinatura
+                      </h3>
                       
                       <div>
-                        <Label htmlFor="email">Email</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) => setFormData({...formData, email: e.target.value})}
-                          placeholder="contato@agencia.com"
-                        />
+                        <Label htmlFor="plan">Plano Inicial *</Label>
+                        <Select 
+                          value={formData.plan_id} 
+                          onValueChange={(value) => setFormData({...formData, plan_id: value})}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione um plano para a agência" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {plans.map((plan) => (
+                              <SelectItem key={plan.id} value={plan.id}>
+                                <div className="flex items-center justify-between w-full">
+                                  <div>
+                                    <span className="font-medium capitalize">{plan.plan_name}</span>
+                                    <span className="text-sm text-gray-500 ml-2">
+                                      até {plan.max_clients} clientes, {plan.max_projects} projetos
+                                    </span>
+                                  </div>
+                                  <div className="text-right ml-4">
+                                    {plan.monthly_price > 0 ? (
+                                      <>
+                                        <div className="text-sm font-semibold">
+                                          R$ {plan.monthly_price.toFixed(2)}/mês
+                                        </div>
+                                        {plan.annual_price > 0 && (
+                                          <div className="text-xs text-green-600">
+                                            R$ {plan.annual_price.toFixed(2)}/ano
+                                          </div>
+                                        )}
+                                      </>
+                                    ) : (
+                                      <span className="text-sm font-semibold text-green-600">Gratuito</span>
+                                    )}
+                                  </div>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
-                      
-                      <div>
-                        <Label htmlFor="phone">Telefone</Label>
-                        <Input
-                          id="phone"
-                          value={formData.phone}
-                          onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                          placeholder="(11) 99999-9999"
-                        />
+                    </div>
+
+                    {/* Criação do Owner */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white border-b pb-2">
+                          👤 Proprietário da Agência
+                        </h3>
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id="create_owner"
+                            checked={formData.create_owner}
+                            onChange={(e) => setFormData({...formData, create_owner: e.target.checked})}
+                            className="w-4 h-4"
+                          />
+                          <Label htmlFor="create_owner" className="text-sm font-normal">
+                            Criar usuário proprietário
+                          </Label>
+                        </div>
                       </div>
-                      
-                      <div className="col-span-2">
-                        <Label htmlFor="address">Endereço</Label>
-                        <Input
-                          id="address"
-                          value={formData.address}
-                          onChange={(e) => setFormData({...formData, address: e.target.value})}
-                          placeholder="Rua, Número, Bairro"
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="city">Cidade</Label>
-                        <Input
-                          id="city"
-                          value={formData.city}
-                          onChange={(e) => setFormData({...formData, city: e.target.value})}
-                          placeholder="São Paulo"
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="state">Estado</Label>
-                        <Input
-                          id="state"
-                          value={formData.state}
-                          onChange={(e) => setFormData({...formData, state: e.target.value})}
-                          placeholder="SP"
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="zip_code">CEP</Label>
-                        <Input
-                          id="zip_code"
-                          value={formData.zip_code}
-                          onChange={(e) => setFormData({...formData, zip_code: e.target.value})}
-                          placeholder="00000-000"
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="website">Website</Label>
-                        <Input
-                          id="website"
-                          value={formData.website}
-                          onChange={(e) => setFormData({...formData, website: e.target.value})}
-                          placeholder="https://www.agencia.com"
-                        />
-                      </div>
-                      
-                      <div className="col-span-2">
-                        <Label htmlFor="description">Descrição</Label>
-                        <Textarea
-                          id="description"
-                          value={formData.description}
-                          onChange={(e) => setFormData({...formData, description: e.target.value})}
-                          placeholder="Descrição da agência..."
-                          rows={3}
-                        />
-                      </div>
+
+                      {formData.create_owner && (
+                        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800 space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="owner_name">Nome do Proprietário *</Label>
+                              <Input
+                                id="owner_name"
+                                value={formData.owner_name}
+                                onChange={(e) => setFormData({...formData, owner_name: e.target.value})}
+                                placeholder="Nome completo"
+                                required={formData.create_owner}
+                              />
+                            </div>
+                            
+                            <div>
+                              <Label htmlFor="owner_email">Email do Proprietário *</Label>
+                              <Input
+                                id="owner_email"
+                                type="email"
+                                value={formData.owner_email}
+                                onChange={(e) => setFormData({...formData, owner_email: e.target.value})}
+                                placeholder="proprietario@agencia.com"
+                                required={formData.create_owner}
+                              />
+                            </div>
+                            
+                            <div>
+                              <Label htmlFor="owner_phone">Telefone do Proprietário</Label>
+                              <Input
+                                id="owner_phone"
+                                value={formData.owner_phone}
+                                onChange={(e) => setFormData({...formData, owner_phone: e.target.value})}
+                                placeholder="(11) 99999-9999"
+                              />
+                            </div>
+
+                            <div>
+                              <Label htmlFor="owner_password">Senha Inicial</Label>
+                              <Input
+                                id="owner_password"
+                                type="password"
+                                value={formData.owner_password}
+                                onChange={(e) => setFormData({...formData, owner_password: e.target.value})}
+                                placeholder="Senha forte (mín. 8 caracteres)"
+                                minLength={8}
+                              />
+                            </div>
+                          </div>
+
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id="send_owner_invite"
+                              checked={formData.send_owner_invite}
+                              onChange={(e) => setFormData({...formData, send_owner_invite: e.target.checked})}
+                              className="w-4 h-4"
+                            />
+                            <Label htmlFor="send_owner_invite" className="text-sm font-normal">
+                              📧 Enviar email de boas-vindas para o proprietário
+                            </Label>
+                          </div>
+
+                          <p className="text-xs text-blue-600 dark:text-blue-400">
+                            💡 Se não definir senha, o proprietário receberá um convite por email para criar a conta
+                          </p>
+                        </div>
+                      )}
                     </div>
                     
                     <div className="flex gap-2">
