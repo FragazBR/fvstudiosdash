@@ -10,7 +10,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { UserPlus, Users, Mail, Clock, Copy, Trash2, Shield, Building2, User } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
+import { UserPlus, Users, Mail, Clock, Copy, Trash2, Shield, Building2, User, Eye, EyeOff, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { toast } from 'sonner';
 import Sidebar from './sidebar';
@@ -41,14 +43,35 @@ interface CreateUserForm {
   company: string;
   phone: string;
   welcome_message: string;
+  password: string;
+  creation_method: 'invite' | 'direct'; // Novo campo
+  send_welcome_email: boolean;
+}
+
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  agency_id?: string;
+  agency_name?: string;
+  company?: string;
+  phone?: string;
+  email_confirmed: boolean;
+  created_at: string;
+  last_sign_in_at?: string;
+  created_by_admin: boolean;
 }
 
 export default function AdminUserManagementPage() {
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [pendingInvitations, setPendingInvitations] = useState<PendingInvitation[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('users'); // users, invitations
+  const [showPassword, setShowPassword] = useState(false);
   const supabase = supabaseBrowser();
 
   const [formData, setFormData] = useState<CreateUserForm>({
@@ -58,7 +81,10 @@ export default function AdminUserManagementPage() {
     agency_id: '',
     company: '',
     phone: '',
-    welcome_message: ''
+    welcome_message: '',
+    password: '',
+    creation_method: 'invite',
+    send_welcome_email: true
   });
 
   useEffect(() => {
@@ -68,18 +94,11 @@ export default function AdminUserManagementPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      // Carregar agências
-      const { data: agenciesData } = await supabase
-        .from('agencies')
-        .select('id, name')
-        .order('name');
-      
-      if (agenciesData) setAgencies(agenciesData);
-
-      // Carregar convites pendentes
-      const { data: invitationsData } = await supabase.rpc('get_pending_invitations');
-      if (invitationsData) setPendingInvitations(invitationsData);
-
+      await Promise.all([
+        loadAgencies(),
+        loadInvitations(),
+        loadUsers()
+      ]);
     } catch (error) {
       console.error('Error loading data:', error);
       toast.error('Erro ao carregar dados');
@@ -88,57 +107,127 @@ export default function AdminUserManagementPage() {
     }
   };
 
-  const handleCreateInvitation = async (e: React.FormEvent) => {
+  const loadAgencies = async () => {
+    const { data: agenciesData } = await supabase
+      .from('agencies')
+      .select('id, name')
+      .order('name');
+    
+    if (agenciesData) setAgencies(agenciesData);
+  };
+
+  const loadInvitations = async () => {
+    const { data: invitationsData } = await supabase.rpc('get_pending_invitations');
+    if (invitationsData) setPendingInvitations(invitationsData);
+  };
+
+  const loadUsers = async () => {
+    try {
+      const response = await fetch('/api/admin/users/list');
+      const data = await response.json();
+      
+      if (response.ok) {
+        setUsers(data.users || []);
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (error) {
+      console.error('Error loading users:', error);
+      toast.error('Erro ao carregar usuários');
+    }
+  };
+
+  const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.rpc('create_user_invitation', {
-        p_email: formData.email,
-        p_name: formData.name,
-        p_role: formData.role,
-        p_agency_id: formData.agency_id || null,
-        p_company: formData.company || null,
-        p_phone: formData.phone || null,
-        p_welcome_message: formData.welcome_message || null
-      });
-
-      if (error) throw error;
-
-      const result = typeof data === 'string' ? JSON.parse(data) : data;
-      
-      if (result.error) {
-        toast.error(result.error);
-        return;
+      if (formData.creation_method === 'direct') {
+        await handleCreateDirectly();
+      } else {
+        await handleCreateInvitation();
       }
-
-      toast.success('Convite criado com sucesso!');
-      
-      // Copiar link do convite para clipboard
-      if (result.invitation_url) {
-        await navigator.clipboard.writeText(result.invitation_url);
-        toast.info('Link do convite copiado para a área de transferência');
-      }
-
-      // Reset form and close dialog
-      setFormData({
-        email: '',
-        name: '',
-        role: 'client',
-        agency_id: '',
-        company: '',
-        phone: '',
-        welcome_message: ''
-      });
-      setDialogOpen(false);
-      loadData(); // Reload data
-
     } catch (error: any) {
-      console.error('Error creating invitation:', error);
-      toast.error('Erro ao criar convite: ' + error.message);
+      console.error('Error creating user:', error);
+      toast.error('Erro ao criar usuário: ' + error.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCreateDirectly = async () => {
+    const response = await fetch('/api/admin/users/create-direct', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: formData.email,
+        password: formData.password,
+        name: formData.name,
+        role: formData.role,
+        agency_id: formData.agency_id || null,
+        company: formData.company || null,
+        phone: formData.phone || null,
+        send_welcome_email: formData.send_welcome_email
+      })
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error);
+    }
+
+    toast.success('Usuário criado com sucesso!');
+    resetForm();
+    setDialogOpen(false);
+    loadData();
+  };
+
+  const handleCreateInvitation = async () => {
+    const { data, error } = await supabase.rpc('create_user_invitation', {
+      p_email: formData.email,
+      p_name: formData.name,
+      p_role: formData.role,
+      p_agency_id: formData.agency_id || null,
+      p_company: formData.company || null,
+      p_phone: formData.phone || null,
+      p_welcome_message: formData.welcome_message || null
+    });
+
+    if (error) throw error;
+
+    const result = typeof data === 'string' ? JSON.parse(data) : data;
+    
+    if (result.error) {
+      throw new Error(result.error);
+    }
+
+    toast.success('Convite criado com sucesso!');
+    
+    // Copiar link do convite para clipboard
+    if (result.invitation_url) {
+      await navigator.clipboard.writeText(result.invitation_url);
+      toast.info('Link do convite copiado para a área de transferência');
+    }
+
+    resetForm();
+    setDialogOpen(false);
+    loadData();
+  };
+
+  const resetForm = () => {
+    setFormData({
+      email: '',
+      name: '',
+      role: 'client',
+      agency_id: '',
+      company: '',
+      phone: '',
+      welcome_message: '',
+      password: '',
+      creation_method: 'invite',
+      send_welcome_email: true
+    });
   };
 
   const handleCancelInvitation = async (invitationId: string) => {
@@ -241,15 +330,52 @@ export default function AdminUserManagementPage() {
             </Button>
           </DialogTrigger>
           
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Convidar Novo Usuário</DialogTitle>
+              <DialogTitle>
+                {formData.creation_method === 'direct' ? 'Criar Usuário Diretamente' : 'Convidar Novo Usuário'}
+              </DialogTitle>
               <DialogDescription>
-                O usuário receberá um email com link para criar sua conta.
+                {formData.creation_method === 'direct' 
+                  ? 'O usuário será criado imediatamente com a senha definida.'
+                  : 'O usuário receberá um link para criar sua conta e definir a senha.'
+                }
               </DialogDescription>
             </DialogHeader>
             
-            <form onSubmit={handleCreateInvitation} className="space-y-4">
+            <form onSubmit={handleCreateUser} className="space-y-4">
+              {/* Método de Criação */}
+              <div className="space-y-2">
+                <Label>Método de Criação</Label>
+                <div className="flex space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="invite"
+                      name="creation_method"
+                      checked={formData.creation_method === 'invite'}
+                      onChange={() => setFormData({...formData, creation_method: 'invite'})}
+                      className="w-4 h-4"
+                    />
+                    <Label htmlFor="invite" className="text-sm font-normal">
+                      📧 Enviar Convite
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="direct"
+                      name="creation_method"
+                      checked={formData.creation_method === 'direct'}
+                      onChange={() => setFormData({...formData, creation_method: 'direct'})}
+                      className="w-4 h-4"
+                    />
+                    <Label htmlFor="direct" className="text-sm font-normal">
+                      🚀 Criar Diretamente
+                    </Label>
+                  </div>
+                </div>
+              </div>
               <div>
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -332,25 +458,77 @@ export default function AdminUserManagementPage() {
                 />
               </div>
 
-              <div>
-                <Label htmlFor="welcome_message">Mensagem de boas-vindas (opcional)</Label>
-                <Textarea
-                  id="welcome_message"
-                  value={formData.welcome_message}
-                  onChange={(e) => setFormData({...formData, welcome_message: e.target.value})}
-                  placeholder="Mensagem personalizada para o novo usuário..."
-                  rows={3}
-                />
-              </div>
+              {/* Campo de senha para criação direta */}
+              {formData.creation_method === 'direct' && (
+                <div>
+                  <Label htmlFor="password">Senha *</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      value={formData.password}
+                      onChange={(e) => setFormData({...formData, password: e.target.value})}
+                      placeholder="Mínimo 6 caracteres"
+                      required
+                      className="pr-10"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    A senha deve ter pelo menos 6 caracteres
+                  </p>
+                </div>
+              )}
+
+              {/* Mensagem de boas-vindas apenas para convites */}
+              {formData.creation_method === 'invite' && (
+                <div>
+                  <Label htmlFor="welcome_message">Mensagem de boas-vindas (opcional)</Label>
+                  <Textarea
+                    id="welcome_message"
+                    value={formData.welcome_message}
+                    onChange={(e) => setFormData({...formData, welcome_message: e.target.value})}
+                    placeholder="Mensagem personalizada para o novo usuário..."
+                    rows={3}
+                  />
+                </div>
+              )}
+
+              {/* Opção de enviar email de boas-vindas para criação direta */}
+              {formData.creation_method === 'direct' && (
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="send_welcome_email"
+                    checked={formData.send_welcome_email}
+                    onCheckedChange={(checked) => setFormData({...formData, send_welcome_email: checked})}
+                  />
+                  <Label htmlFor="send_welcome_email" className="text-sm">
+                    Enviar email de boas-vindas
+                  </Label>
+                </div>
+              )}
 
               <div className="flex gap-2">
                 <Button type="submit" disabled={loading} className="flex-1">
-                  {loading ? 'Criando...' : 'Criar Convite'}
+                  {loading ? 'Processando...' : (
+                    formData.creation_method === 'direct' ? 'Criar Usuário' : 'Criar Convite'
+                  )}
                 </Button>
                 <Button 
                   type="button" 
                   variant="outline" 
-                  onClick={() => setDialogOpen(false)}
+                  onClick={() => {
+                    setDialogOpen(false);
+                    resetForm();
+                  }}
                 >
                   Cancelar
                 </Button>
@@ -360,17 +538,127 @@ export default function AdminUserManagementPage() {
         </Dialog>
             </div>
 
-            {/* Convites Pendentes */}
-            <Card className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727]">
-              <CardHeader>
-                <CardTitle className="flex items-center text-gray-900 dark:text-white">
-                  <Mail className="w-5 h-5 mr-2" />
-                  Convites Pendentes ({pendingInvitations.length})
-                </CardTitle>
-                <CardDescription className="text-gray-600 dark:text-gray-400">
-                  Usuários que foram convidados mas ainda não aceitaram o convite
-                </CardDescription>
-              </CardHeader>
+            {/* Tabs para Usuários e Convites */}
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="users" className="flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  Usuários ({users.length})
+                </TabsTrigger>
+                <TabsTrigger value="invitations" className="flex items-center gap-2">
+                  <Mail className="w-4 h-4" />
+                  Convites ({pendingInvitations.length})
+                </TabsTrigger>
+              </TabsList>
+
+              {/* Aba de Usuários */}
+              <TabsContent value="users">
+                <Card className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727]">
+                  <CardHeader>
+                    <CardTitle className="flex items-center text-gray-900 dark:text-white">
+                      <Users className="w-5 h-5 mr-2" />
+                      Usuários do Sistema ({users.length})
+                    </CardTitle>
+                    <CardDescription className="text-gray-600 dark:text-gray-400">
+                      Todos os usuários criados no sistema
+                    </CardDescription>
+                  </CardHeader>
+                  
+                  <CardContent>
+                    {users.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <p>Nenhum usuário encontrado</p>
+                        <p className="text-sm mt-2">Use o botão "Criar Usuário" para adicionar novos usuários</p>
+                      </div>
+                    ) : (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Usuário</TableHead>
+                            <TableHead>Role</TableHead>
+                            <TableHead>Agência</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Criado em</TableHead>
+                            <TableHead>Último login</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {users.map((user) => (
+                            <TableRow key={user.id}>
+                              <TableCell>
+                                <div>
+                                  <div className="font-medium">{user.name}</div>
+                                  <div className="text-sm text-gray-500">{user.email}</div>
+                                  {user.company && (
+                                    <div className="text-xs text-gray-400">{user.company}</div>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center">
+                                  {getRoleIcon(user.role)}
+                                  <span className="ml-2">{getRoleName(user.role)}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {user.agency_name || '-'}
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant={user.email_confirmed ? "default" : "secondary"}>
+                                  {user.email_confirmed ? (
+                                    <>
+                                      <CheckCircle className="w-3 h-3 mr-1" />
+                                      Ativo
+                                    </>
+                                  ) : (
+                                    <>
+                                      <AlertTriangle className="w-3 h-3 mr-1" />
+                                      Pendente
+                                    </>
+                                  )}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <div className="text-sm">
+                                  {formatDate(user.created_at)}
+                                  {user.created_by_admin && (
+                                    <div className="text-xs text-blue-600">
+                                      Via Admin
+                                    </div>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {user.last_sign_in_at ? (
+                                  <div className="text-sm">
+                                    {formatDate(user.last_sign_in_at)}
+                                  </div>
+                                ) : (
+                                  <span className="text-gray-400 text-sm">Nunca</span>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Aba de Convites */}
+              <TabsContent value="invitations">
+                <Card className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727]">
+                  <CardHeader>
+                    <CardTitle className="flex items-center text-gray-900 dark:text-white">
+                      <Mail className="w-5 h-5 mr-2" />
+                      Convites Pendentes ({pendingInvitations.length})
+                    </CardTitle>
+                    <CardDescription className="text-gray-600 dark:text-gray-400">
+                      Usuários que foram convidados mas ainda não aceitaram o convite
+                    </CardDescription>
+                  </CardHeader>
         
               <CardContent>
           {pendingInvitations.length === 0 ? (
@@ -454,8 +742,10 @@ export default function AdminUserManagementPage() {
               </TableBody>
             </Table>
           )}
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
 
             {/* Como Funciona */}
             <Card className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727]">
