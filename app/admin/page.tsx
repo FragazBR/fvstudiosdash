@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Activity, Users, FolderOpen, Calendar, TrendingUp, Settings, Shield, Plus, UserPlus, Loader2, Building2, UserCog } from "lucide-react";
+import { Activity, Users, FolderOpen, Calendar, TrendingUp, Settings, Shield, Plus, UserPlus, Loader2, Building2, UserCog, Database, AlertTriangle } from "lucide-react";
 import { useAdminStats } from "@/hooks/useAdminStats";
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
@@ -466,31 +466,45 @@ function AdminHomeContent() {
                 </CardContent>
               </Card>
 
-              {/* System Status */}
+              {/* System Management */}
               <Card className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727]">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">Status do Sistema</CardTitle>
+                  <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
+                    <Database className="h-4 w-4 mr-2 inline" />
+                    Sistema & Dados
+                  </CardTitle>
                   <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
-                    Informações sobre o estado atual da plataforma
+                    Gerenciamento do sistema e limpeza de dados
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="space-y-3">
                     <div className="flex items-center justify-between py-2">
                       <span className="text-sm text-gray-600 dark:text-gray-400">Servidor</span>
-                      <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs rounded-md">Online</span>
+                      <span className="px-2 py-1 bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-300 text-xs rounded-md">Online</span>
                     </div>
                     <div className="flex items-center justify-between py-2">
                       <span className="text-sm text-gray-600 dark:text-gray-400">Base de Dados</span>
-                      <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs rounded-md">Conectado</span>
+                      <span className="px-2 py-1 bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-300 text-xs rounded-md">Conectado</span>
                     </div>
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Backup</span>
-                      <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs rounded-md">Última: 02:00</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">RLS Security</span>
+                      <span className="px-2 py-1 bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-300 text-xs rounded-md">Ativo</span>
                     </div>
-                    <div className="flex items-center justify-between py-2">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Performance</span>
-                      <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs rounded-md">Excelente</span>
+                    
+                    <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                      <Button
+                        onClick={() => router.push('/admin/system/cleanup')}
+                        variant="outline"
+                        size="sm"
+                        className="w-full text-red-600 border-red-200 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      >
+                        <AlertTriangle className="h-4 w-4 mr-2" />
+                        Limpeza do Sistema
+                      </Button>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">
+                        Remover dados de teste
+                      </p>
                     </div>
                   </div>
                 </CardContent>
