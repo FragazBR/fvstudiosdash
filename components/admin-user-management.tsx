@@ -23,6 +23,16 @@ interface Agency {
   name: string;
 }
 
+interface Plan {
+  id: string;
+  plan_name: string;
+  monthly_price: number;
+  annual_price: number;
+  max_clients: number;
+  max_projects: number;
+  features: string[];
+}
+
 interface PendingInvitation {
   id: string;
   email: string;
@@ -48,6 +58,7 @@ interface CreateUserForm {
   send_welcome_email: boolean;
   create_new_agency: boolean;
   new_agency_name?: string;
+  plan_id?: string;
 }
 
 interface User {
@@ -67,6 +78,7 @@ interface User {
 
 export default function AdminUserManagementPage() {
   const [agencies, setAgencies] = useState<Agency[]>([]);
+  const [plans, setPlans] = useState<Plan[]>([]);
   const [pendingInvitations, setPendingInvitations] = useState<PendingInvitation[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
@@ -88,7 +100,8 @@ export default function AdminUserManagementPage() {
     creation_method: 'invite',
     send_welcome_email: true,
     create_new_agency: false,
-    new_agency_name: ''
+    new_agency_name: '',
+    plan_id: ''
   });
 
   useEffect(() => {
@@ -100,6 +113,7 @@ export default function AdminUserManagementPage() {
     try {
       await Promise.all([
         loadAgencies(),
+        loadPlans(),
         loadInvitations(),
         loadUsers()
       ]);
@@ -118,6 +132,15 @@ export default function AdminUserManagementPage() {
       .order('name');
     
     if (agenciesData) setAgencies(agenciesData);
+  };
+
+  const loadPlans = async () => {
+    const { data: plansData } = await supabase
+      .from('plan_limits')
+      .select('id, plan_name, monthly_price, annual_price, max_clients, max_projects, features')
+      .order('monthly_price');
+    
+    if (plansData) setPlans(plansData);
   };
 
   const loadInvitations = async () => {
@@ -173,7 +196,8 @@ export default function AdminUserManagementPage() {
         phone: formData.phone || null,
         send_welcome_email: formData.send_welcome_email,
         create_new_agency: formData.create_new_agency,
-        new_agency_name: formData.new_agency_name || null
+        new_agency_name: formData.new_agency_name || null,
+        plan_id: formData.plan_id || null
       })
     });
 
@@ -202,7 +226,8 @@ export default function AdminUserManagementPage() {
         phone: formData.phone || null,
         welcome_message: formData.welcome_message || null,
         create_new_agency: formData.create_new_agency,
-        new_agency_name: formData.new_agency_name || null
+        new_agency_name: formData.new_agency_name || null,
+        plan_id: formData.plan_id || null
       })
     });
 
@@ -238,7 +263,8 @@ export default function AdminUserManagementPage() {
       creation_method: 'invite',
       send_welcome_email: true,
       create_new_agency: false,
-      new_agency_name: ''
+      new_agency_name: '',
+      plan_id: ''
     });
   };
 
@@ -478,6 +504,74 @@ export default function AdminUserManagementPage() {
                       <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
                         A agência será criada automaticamente junto com o usuário
                       </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Seleção de Plano */}
+              {(formData.role === 'agency_owner' || formData.role === 'client') && (
+                <div>
+                  <Label htmlFor="plan">Plano de Assinatura *</Label>
+                  <Select 
+                    value={formData.plan_id || ''} 
+                    onValueChange={(value) => setFormData({...formData, plan_id: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um plano" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {plans.map((plan) => (
+                        <SelectItem key={plan.id} value={plan.id}>
+                          <div className="flex items-center justify-between w-full">
+                            <div>
+                              <span className="font-medium capitalize">{plan.plan_name}</span>
+                              <span className="text-sm text-gray-500 ml-2">
+                                até {plan.max_clients} clientes, {plan.max_projects} projetos
+                              </span>
+                            </div>
+                            <div className="text-right ml-4">
+                              {plan.monthly_price > 0 ? (
+                                <>
+                                  <div className="text-sm font-semibold">
+                                    R$ {plan.monthly_price.toFixed(2)}/mês
+                                  </div>
+                                  {plan.annual_price > 0 && (
+                                    <div className="text-xs text-green-600">
+                                      R$ {plan.annual_price.toFixed(2)}/ano
+                                    </div>
+                                  )}
+                                </>
+                              ) : (
+                                <span className="text-sm font-semibold text-green-600">Gratuito</span>
+                              )}
+                            </div>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {formData.plan_id && (
+                    <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800 rounded text-xs">
+                      {(() => {
+                        const selectedPlan = plans.find(p => p.id === formData.plan_id);
+                        if (!selectedPlan) return null;
+                        
+                        return (
+                          <div>
+                            <p className="font-medium mb-1">Recursos inclusos:</p>
+                            <ul className="text-gray-600 dark:text-gray-400">
+                              <li>• {selectedPlan.max_clients} clientes</li>
+                              <li>• {selectedPlan.max_projects} projetos</li>
+                              {selectedPlan.features && selectedPlan.features.length > 0 && (
+                                selectedPlan.features.slice(0, 3).map((feature, idx) => (
+                                  <li key={idx}>• {feature.replace(/_/g, ' ')}</li>
+                                ))
+                              )}
+                            </ul>
+                          </div>
+                        );
+                      })()}
                     </div>
                   )}
                 </div>

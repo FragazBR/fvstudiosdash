@@ -6,8 +6,14 @@ export async function POST(request: NextRequest) {
     const supabase = await supabaseServer()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+    if (authError) {
+      console.error('Auth error:', authError)
+      return NextResponse.json({ error: 'Erro de autenticação: ' + authError.message }, { status: 401 })
+    }
+    
+    if (!user) {
+      console.error('No user found in auth')
+      return NextResponse.json({ error: 'Usuário não encontrado. Faça login primeiro.' }, { status: 401 })
     }
 
     // Verificar se é admin
@@ -32,7 +38,8 @@ export async function POST(request: NextRequest) {
       phone, 
       send_welcome_email,
       create_new_agency,
-      new_agency_name 
+      new_agency_name,
+      plan_id
     } = body
 
     // Validações básicas
@@ -138,6 +145,27 @@ export async function POST(request: NextRequest) {
       if (permError) {
         console.error('Erro ao criar permissões:', permError)
         // Não falhar a criação do usuário por causa das permissões
+      }
+    }
+
+    // Criar assinatura do plano se fornecido
+    if (plan_id && role !== 'admin') {
+      const { error: subscriptionError } = await supabase
+        .from('user_subscriptions')
+        .insert({
+          user_id: newUser.user.id,
+          agency_id: finalAgencyId,
+          plan_id: plan_id,
+          interval_type: 'monthly',
+          price_paid: 0, // Será definido pelo admin posteriormente
+          status: 'active',
+          starts_at: new Date().toISOString(),
+          auto_renew: false // Admin criado, não renovar automaticamente
+        })
+
+      if (subscriptionError) {
+        console.error('Erro ao criar assinatura:', subscriptionError)
+        // Não falhar a criação do usuário por causa da assinatura
       }
     }
 

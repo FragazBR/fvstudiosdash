@@ -31,7 +31,8 @@ export async function POST(request: NextRequest) {
       phone, 
       welcome_message,
       create_new_agency,
-      new_agency_name 
+      new_agency_name,
+      plan_id
     } = body
 
     // Validações básicas
@@ -114,6 +115,7 @@ export async function POST(request: NextRequest) {
         company: company || null,
         phone: phone || null,
         welcome_message: welcome_message || null,
+        plan_id: plan_id || null,
         invited_by: user.id,
         expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 dias
       })
