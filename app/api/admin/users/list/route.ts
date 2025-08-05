@@ -10,15 +10,27 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
-    // Verificar se é admin
+    // Verificar se é admin - usar first() ao invés de single()
     const { data: permissions } = await supabase
       .from('user_agency_permissions')
       .select('role, agency_id')
       .eq('user_id', user.id)
-      .single()
+      .limit(1)
+      .maybeSingle()
 
-    if (!permissions || !['admin', 'agency_owner'].includes(permissions.role)) {
-      return NextResponse.json({ error: 'Sem permissão de admin' }, { status: 403 })
+    // Verificar se é o admin principal por email OU tem permissões admin
+    const isMainAdmin = user.email === 'franco@fvstudios.com.br'
+    const hasAdminPermissions = permissions && ['admin', 'agency_owner'].includes(permissions.role)
+    
+    if (!isMainAdmin && !hasAdminPermissions) {
+      return NextResponse.json({ 
+        error: 'Acesso negado. Apenas admins podem acessar esta funcionalidade.',
+        debug: {
+          email: user.email,
+          isMainAdmin,
+          permissions: permissions?.role || 'none'
+        }
+      }, { status: 403 })
     }
 
     const url = new URL(request.url)

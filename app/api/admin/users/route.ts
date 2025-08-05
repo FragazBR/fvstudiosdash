@@ -10,16 +10,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
-    // Verificar se é admin
-    const { data: permissions } = await supabase
-      .from('user_agency_permissions')
-      .select('role, permissions')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!permissions || permissions.role !== 'admin') {
+    // Verificar se é o admin principal por email
+    if (user.email !== 'franco@fvstudios.com.br') {
       return NextResponse.json({ 
-        error: 'Acesso negado. Apenas admins podem acessar.' 
+        error: 'Acesso negado. Apenas o admin principal pode acessar.' 
       }, { status: 403 })
     }
 
