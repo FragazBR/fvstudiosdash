@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
+import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,8 +27,9 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Buscar todos os usuários exceto o admin principal
-    const { data: allUsers, error: listError } = await supabase.auth.admin.listUsers()
+    // Buscar todos os usuários exceto o admin principal usando cliente admin
+    const adminClient = supabaseAdmin()
+    const { data: allUsers, error: listError } = await adminClient.auth.admin.listUsers()
     
     if (listError) {
       console.error('Erro ao listar usuários:', listError)
@@ -66,8 +68,8 @@ export async function POST(request: NextRequest) {
           .update({ status: 'cancelled' })
           .eq('invited_by', userToDelete.id)
 
-        // Deletar do Supabase Auth
-        const { error: deleteError } = await supabase.auth.admin.deleteUser(userToDelete.id)
+        // Deletar do Supabase Auth usando cliente admin
+        const { error: deleteError } = await adminClient.auth.admin.deleteUser(userToDelete.id)
         
         if (deleteError) {
           errors.push(`Erro ao deletar ${userToDelete.email}: ${deleteError.message}`)
