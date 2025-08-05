@@ -472,19 +472,42 @@ export default function AdminUserManagementPage() {
                       }}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecione uma agência" />
+                        <SelectValue placeholder={
+                          agencies.length === 0 
+                            ? "Nenhuma agência encontrada - Criar nova?" 
+                            : "Selecione uma agência"
+                        } />
                       </SelectTrigger>
                       <SelectContent>
+                        {agencies.length === 0 && (
+                          <div className="px-2 py-3 text-sm text-gray-500 text-center">
+                            <Building2 className="h-4 w-4 mx-auto mb-2 opacity-50" />
+                            Nenhuma agência cadastrada
+                          </div>
+                        )}
                         {agencies.map((agency) => (
                           <SelectItem key={agency.id} value={agency.id}>
-                            {agency.name}
+                            <div className="flex items-center">
+                              <Building2 className="h-4 w-4 mr-2 text-gray-400" />
+                              {agency.name}
+                            </div>
                           </SelectItem>
                         ))}
-                        <SelectItem value="create_new" className="text-blue-600 font-medium">
-                          ➕ Criar Nova Agência
+                        <SelectItem value="create_new" className="text-blue-600 font-medium border-t">
+                          <div className="flex items-center">
+                            <span className="text-lg mr-2">➕</span>
+                            Criar Nova Agência
+                          </div>
                         </SelectItem>
                       </SelectContent>
                     </Select>
+                    
+                    {agencies.length === 0 && (
+                      <p className="text-xs text-blue-600 mt-1 flex items-center">
+                        <Building2 className="h-3 w-3 mr-1" />
+                        Sistema limpo - Clique em "Criar Nova Agência" para começar
+                      </p>
+                    )}
                   </div>
 
                   {/* Campo para nova agência */}

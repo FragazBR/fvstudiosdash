@@ -255,6 +255,22 @@ function AdminHomeContent() {
                         />
                       </div>
 
+                      {/* Aviso sobre criação de agências */}
+                      <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <div className="flex items-start space-x-2">
+                          <Building2 className="h-4 w-4 text-blue-600 mt-0.5" />
+                          <div className="text-sm">
+                            <p className="font-medium text-blue-900 dark:text-blue-100 mb-1">
+                              💡 Para clientes que precisam de agência:
+                            </p>
+                            <p className="text-blue-700 dark:text-blue-300">
+                              Use <strong>Gerenciar Usuários</strong> para criar usuários com novas agências, 
+                              ou vá em <strong>Agências</strong> para criar a agência primeiro.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
                       <div className="flex justify-end gap-3 pt-4">
                         <Button 
                           type="button" 
