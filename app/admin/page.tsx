@@ -492,18 +492,27 @@ function AdminHomeContent() {
                       <span className="px-2 py-1 bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-300 text-xs rounded-md">Ativo</span>
                     </div>
                     
-                    <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                    <div className="pt-2 border-t border-gray-200 dark:border-gray-700 space-y-2">
                       <Button
-                        onClick={() => router.push('/admin/system/cleanup')}
+                        onClick={() => router.push('/admin/system')}
+                        variant="outline"
+                        size="sm"
+                        className="w-full text-blue-600 border-blue-200 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                      >
+                        <Database className="h-4 w-4 mr-2" />
+                        Administração Sistema
+                      </Button>
+                      <Button
+                        onClick={() => router.push('/admin/system')}
                         variant="outline"
                         size="sm"
                         className="w-full text-red-600 border-red-200 hover:bg-red-50 dark:hover:bg-red-900/20"
                       >
                         <AlertTriangle className="h-4 w-4 mr-2" />
-                        Limpeza do Sistema
+                        Limpeza Nuclear
                       </Button>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">
-                        Remover dados de teste
+                        Gerenciar schemas, RLS e triggers
                       </p>
                     </div>
                   </div>
