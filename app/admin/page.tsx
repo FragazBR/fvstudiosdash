@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Activity, Users, FolderOpen, Calendar, TrendingUp, Settings, Shield, Plus, UserPlus, Loader2 } from "lucide-react";
+import { Activity, Users, FolderOpen, Calendar, TrendingUp, Settings, Shield, Plus, UserPlus, Loader2, Building2, UserCog } from "lucide-react";
 import { useAdminStats } from "@/hooks/useAdminStats";
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
@@ -356,21 +356,21 @@ function AdminHomeContent() {
                     </button>
                     
                     <button 
-                      onClick={() => router.push('/contas')}
+                      onClick={() => router.push('/admin/users/manage')}
                       className="p-3 text-left rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600 transition-all"
                     >
-                      <Users className="h-5 w-5 text-gray-600 dark:text-gray-400 mb-2" />
-                      <p className="font-medium text-sm text-gray-900 dark:text-white">Contas</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Gerenciar clientes</p>
+                      <UserCog className="h-5 w-5 text-gray-600 dark:text-gray-400 mb-2" />
+                      <p className="font-medium text-sm text-gray-900 dark:text-white">Usuários</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Gerenciar usuários</p>
                     </button>
                     
                     <button 
-                      onClick={() => router.push('/projects')}
+                      onClick={() => router.push('/admin/agencies/manage')}
                       className="p-3 text-left rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600 transition-all"
                     >
-                      <FolderOpen className="h-5 w-5 text-gray-600 dark:text-gray-400 mb-2" />
-                      <p className="font-medium text-sm text-gray-900 dark:text-white">Projetos</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Gestão de projetos</p>
+                      <Building2 className="h-5 w-5 text-gray-600 dark:text-gray-400 mb-2" />
+                      <p className="font-medium text-sm text-gray-900 dark:text-white">Agências</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Gerenciar agências</p>
                     </button>
                     
                     <button 
@@ -385,22 +385,22 @@ function AdminHomeContent() {
                 </CardContent>
               </Card>
 
-              {/* Gestão de Clientes */}
+              {/* Gestão de Usuários e Agências */}
               <Card className="bg-white/90 dark:bg-[#171717]/60 backdrop-blur-sm border border-gray-200 dark:border-[#272727]">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
                     <Users className="h-4 w-4 mr-2 text-gray-600 dark:text-gray-400" />
-                    Gestão de Clientes
+                    Gestão de Usuários & Agências
                   </CardTitle>
                   <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
-                    Crie e gerencie contas de clientes
+                    Crie e gerencie usuários, agências e planos
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">Clientes Ativos:</span>
+                        <span className="text-gray-600 dark:text-gray-400">Total Usuários:</span>
                         <span className="font-medium text-gray-900 dark:text-white">
                           {adminStats.isLoading ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -421,33 +421,46 @@ function AdminHomeContent() {
                       </div>
                     </div>
                     
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => setCreateClientOpen(true)}
-                        size="sm"
-                        className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                        disabled={isCreating}
-                      >
-                        {isCreating ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Criando...
-                          </>
-                        ) : (
-                          <>
-                            <UserPlus className="h-4 w-4 mr-2" />
-                            Novo Cliente
-                          </>
-                        )}
-                      </Button>
-                      <Button
-                        onClick={() => router.push('/admin/clients')}
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
-                      >
-                        Ver Todos
-                      </Button>
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => router.push('/admin/users')}
+                          size="sm"
+                          className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          Criar Usuário
+                        </Button>
+                        <Button
+                          onClick={() => router.push('/admin/users/manage')}
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                        >
+                          <UserCog className="h-4 w-4 mr-2" />
+                          Gerenciar
+                        </Button>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => router.push('/admin/agencies/manage')}
+                          size="sm"
+                          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          <Building2 className="h-4 w-4 mr-2" />
+                          Agências
+                        </Button>
+                        <Button
+                          onClick={() => router.push('/admin/api-integrations')}
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                        >
+                          <Settings className="h-4 w-4 mr-2" />
+                          APIs
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
