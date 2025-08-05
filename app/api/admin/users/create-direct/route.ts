@@ -16,15 +16,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Usuário não encontrado. Faça login primeiro.' }, { status: 401 })
     }
 
-    // Verificar se é admin
-    const { data: permissions } = await supabase
-      .from('user_agency_permissions')
-      .select('role')
-      .eq('user_id', user.id)
-      .single()
+    // Verificar se é o admin principal por email OU tem permissões admin
+    const isMainAdmin = user.email === 'franco@fvstudios.com.br'
+    
+    if (!isMainAdmin) {
+      const { data: permissions } = await supabase
+        .from('user_agency_permissions')
+        .select('role')
+        .eq('user_id', user.id)
+        .maybeSingle()
 
-    if (!permissions || !['admin', 'agency_owner'].includes(permissions.role)) {
-      return NextResponse.json({ error: 'Sem permissão de admin' }, { status: 403 })
+      if (!permissions || !['admin', 'agency_owner'].includes(permissions.role)) {
+        return NextResponse.json({ 
+          error: 'Acesso negado. Apenas o admin principal ou usuários com permissões admin podem criar usuários.',
+          debug: {
+            email: user.email,
+            isMainAdmin,
+            permissions: permissions?.role || 'none'
+          }
+        }, { status: 403 })
+      }
     }
 
     const body = await request.json()
