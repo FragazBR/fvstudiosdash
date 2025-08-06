@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
+import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
 export async function GET(request: NextRequest) {
   try {
@@ -40,21 +41,33 @@ export async function GET(request: NextRequest) {
     const role = url.searchParams.get('role') || ''
     const agency_id = url.searchParams.get('agency_id') || ''
 
-    console.log('🔍 Buscando usuários do Supabase Auth...')
+    console.log('🔍 Buscando usuários do Supabase Auth via REST API...')
     
-    // Buscar usuários do Supabase Auth
-    const { data: authUsers, error: usersError } = await supabase.auth.admin.listUsers({
-      page: Math.floor(offset / 50) + 1,
-      perPage: Math.min(limit, 100)
+    // Buscar usuários usando REST API diretamente
+    const adminClient = supabaseAdmin()
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+    
+    const response = await fetch(`${supabaseUrl}/auth/v1/admin/users?page=${Math.floor(offset / 50) + 1}&per_page=${Math.min(limit, 100)}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${serviceRoleKey}`,
+        'apikey': serviceRoleKey,
+        'Content-Type': 'application/json'
+      }
     })
-
-    if (usersError) {
-      console.error('❌ Erro ao buscar usuários do Auth:', usersError)
+    
+    if (!response.ok) {
+      const errorData = await response.json()
+      console.error('❌ Erro ao buscar usuários via API:', errorData)
       return NextResponse.json({ 
         error: 'Erro ao buscar usuários do sistema de autenticação', 
-        details: usersError.message
+        details: errorData
       }, { status: 500 })
     }
+    
+    const authData = await response.json()
+    const authUsers = { users: authData.users || [] }
 
     console.log(`✅ Encontrados ${authUsers.users.length} usuários no Auth`)
 
@@ -62,7 +75,7 @@ export async function GET(request: NextRequest) {
     const userIds = authUsers.users.map(u => u.id)
     console.log(`🔍 Buscando permissões para ${userIds.length} usuários...`)
     
-    const { data: userPermissions, error: permError } = await supabase
+    const { data: userPermissions, error: permError } = await adminClient
       .from('user_agency_permissions')
       .select(`
         user_id,
