@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Se não é admin global, mostrar apenas usuários da mesma agência
-    if (permissions.role === 'agency_owner' && permissions.agency_id) {
+    if (permissions && permissions.role === 'agency_owner' && permissions.agency_id) {
       users = users.filter(user => 
         user.agency_id === permissions.agency_id || user.role === 'admin'
       )
