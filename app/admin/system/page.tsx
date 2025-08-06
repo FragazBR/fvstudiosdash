@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { AlertTriangle, Database, Trash2, Settings, Shield, Zap } from 'lucide-react'
+import { AlertTriangle, Database, Trash2, Settings, Shield, Zap, UserCheck } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
 
@@ -12,6 +12,8 @@ export default function AdminSystemPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
   const [systemConfig, setSystemConfig] = useState<any>(null)
+  const [isRestoringPermissions, setIsRestoringPermissions] = useState(false)
+  const [permissionsResult, setPermissionsResult] = useState<any>(null)
 
   const checkSystemConfig = async () => {
     try {
@@ -52,6 +54,33 @@ export default function AdminSystemPage() {
       })
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const restoreAdminPermissions = async () => {
+    if (!confirm('🔑 Deseja restaurar as permissões administrativas para o usuário principal (franco@fvstudios.com.br)?')) {
+      return
+    }
+
+    setIsRestoringPermissions(true)
+    setPermissionsResult(null)
+
+    try {
+      const response = await fetch('/api/admin/system/restore-permissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+
+      const data = await response.json()
+      setPermissionsResult(data)
+    } catch (error) {
+      setPermissionsResult({
+        success: false,
+        error: 'Erro na comunicação com o servidor',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      })
+    } finally {
+      setIsRestoringPermissions(false)
     }
   }
 
@@ -111,6 +140,97 @@ export default function AdminSystemPage() {
                     <div className="text-red-600">Erro: {systemConfig.serviceRoleTest.error}</div>
                   )}
                 </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Admin Permissions Restore */}
+      <Card className="border-blue-200">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-blue-600">
+            <UserCheck className="h-5 w-5" />
+            Restaurar Permissões Admin
+          </CardTitle>
+          <CardDescription>
+            Restaura as permissões administrativas para o usuário principal em caso de problemas de acesso.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Alert>
+            <UserCheck className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Esta operação irá:</strong>
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>Verificar se franco@fvstudios.com.br existe no sistema</li>
+                <li>Criar/atualizar permissões admin completas</li>
+                <li>Garantir acesso total às funcionalidades administrativas</li>
+                <li>Resolver problemas de erro 403 (Forbidden)</li>
+              </ul>
+            </AlertDescription>
+          </Alert>
+
+          <Button 
+            onClick={restoreAdminPermissions}
+            disabled={isRestoringPermissions}
+            className="w-full gap-2 bg-blue-600 hover:bg-blue-700"
+          >
+            {isRestoringPermissions ? (
+              <>
+                <UserCheck className="h-4 w-4 animate-pulse" />
+                Restaurando Permissões...
+              </>
+            ) : (
+              <>
+                <UserCheck className="h-4 w-4" />
+                🔑 Restaurar Permissões Admin
+              </>
+            )}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Permissions Restore Results */}
+      {permissionsResult && (
+        <Card className={permissionsResult.success ? 'border-green-200' : 'border-red-200'}>
+          <CardHeader>
+            <CardTitle className={permissionsResult.success ? 'text-green-600' : 'text-red-600'}>
+              Resultado da Restauração de Permissões
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {permissionsResult.success ? (
+              <div className="space-y-4">
+                <div className="text-green-600 font-medium">
+                  ✅ {permissionsResult.message}
+                </div>
+                
+                {permissionsResult.details && (
+                  <div className="bg-green-50 p-3 rounded">
+                    <h4 className="font-medium mb-2">Detalhes:</h4>
+                    <div className="text-sm space-y-1">
+                      <div>Email: {permissionsResult.details.email}</div>
+                      <div>Role: {permissionsResult.details.role}</div>
+                      <div>Permissões: {JSON.stringify(permissionsResult.details.permissions, null, 2)}</div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="text-sm text-green-700 bg-green-50 p-2 rounded">
+                  💡 Agora você pode tentar criar usuários novamente sem erro 403.
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="text-red-600 font-medium">
+                  ❌ {permissionsResult.error}
+                </div>
+                {permissionsResult.details && (
+                  <div className="text-sm text-red-700 bg-red-50 p-2 rounded">
+                    {permissionsResult.details}
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
