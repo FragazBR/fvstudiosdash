@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       .limit(limit);
       
     if (unreadOnly) {
-      query = query.eq('read', false);
+      query = query.eq('is_read', false);
     }
     
     const { data: notifications, error } = await query;

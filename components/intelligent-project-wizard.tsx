@@ -83,7 +83,7 @@ interface WizardStep {
 
 interface Client {
   id: string
-  name: string
+  contact_name: string
   company?: string
   email: string
 }
@@ -439,20 +439,46 @@ export function IntelligentProjectWizard({
 
       // Carregar clientes
       const supabase = supabaseBrowser()
-      const { data: clientsData } = await supabase
-        .from('contacts')
-        .select('id, name, company, email')
-        .eq('type', 'client')
-        .order('name')
+      
+      // Primeiro obter o usuário atual e sua agência
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        toast.error('Usuário não autenticado')
+        return
+      }
+
+      const { data: userProfile } = await supabase
+        .from('user_profiles')
+        .select('agency_id')
+        .eq('id', user.id)
+        .single()
+
+      if (!userProfile?.agency_id) {
+        toast.error('Agência não encontrada')
+        return
+      }
+
+      // Carregar clientes da agência
+      const { data: clientsData, error: clientsError } = await supabase
+        .from('clients')
+        .select('id, contact_name, company, email')
+        .eq('agency_id', userProfile.agency_id)
+        .order('contact_name')
+
+      if (clientsError) {
+        console.error('Erro ao carregar clientes:', clientsError)
+        toast.error('Erro ao carregar clientes')
+      }
 
       setClients(clientsData || [])
 
-      // Carregar membros da equipe
+      // Carregar membros da equipe da mesma agência
       const { data: teamData } = await supabase
         .from('user_profiles')
-        .select('id, name, role, avatar_url')
-        .eq('is_active', true)
-        .order('name')
+        .select('id, full_name as name, role, avatar_url')
+        .eq('agency_id', userProfile.agency_id)
+        .eq('status', 'active')
+        .order('full_name')
 
       setTeamMembers(teamData?.map(member => ({
         ...member,
@@ -617,7 +643,7 @@ export function IntelligentProjectWizard({
                     <SelectContent>
                       {clients.map((client) => (
                         <SelectItem key={client.id} value={client.id}>
-                          {client.name} {client.company && `(${client.company})`}
+                          {client.contact_name} {client.company && `(${client.company})`}
                         </SelectItem>
                       ))}
                     </SelectContent>

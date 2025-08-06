@@ -360,16 +360,84 @@ CREATE TABLE IF NOT EXISTS canva_templates (
 );
 
 -- ==================================================
--- 4. EXTENDED API INTEGRATIONS
+-- 4. API INTEGRATIONS TABLE (CREATE IF NOT EXISTS)
 -- ==================================================
 
--- Extensão da tabela existente para novos providers
-ALTER TABLE api_integrations ADD COLUMN IF NOT EXISTS provider_category VARCHAR(100) DEFAULT 'marketing';
-ALTER TABLE api_integrations ADD COLUMN IF NOT EXISTS webhook_url TEXT;
-ALTER TABLE api_integrations ADD COLUMN IF NOT EXISTS webhook_secret TEXT;
-ALTER TABLE api_integrations ADD COLUMN IF NOT EXISTS sync_enabled BOOLEAN DEFAULT true;
-ALTER TABLE api_integrations ADD COLUMN IF NOT EXISTS last_health_check TIMESTAMPTZ;
-ALTER TABLE api_integrations ADD COLUMN IF NOT EXISTS health_status VARCHAR(50) DEFAULT 'unknown';
+-- Criar tabela api_integrations se não existir
+CREATE TABLE IF NOT EXISTS api_integrations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    client_id UUID NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE,
+    agency_id UUID REFERENCES agencies(id) ON DELETE CASCADE,
+    created_by UUID NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE,
+    
+    -- Informações básicas da integração
+    name VARCHAR(255) NOT NULL,
+    provider VARCHAR(100) NOT NULL, -- meta, google, tiktok, linkedin, rdstation, buffer
+    provider_type VARCHAR(100) NOT NULL, -- ads, social_media, analytics, crm, email_marketing
+    description TEXT,
+    
+    -- Configurações de autenticação
+    auth_type VARCHAR(50) NOT NULL DEFAULT 'oauth2',
+    oauth_client_id TEXT, -- OAuth Client ID
+    client_secret_encrypted TEXT,
+    access_token_encrypted TEXT,
+    refresh_token_encrypted TEXT,
+    api_key_encrypted TEXT,
+    
+    -- Metadados da API
+    api_version VARCHAR(20),
+    scopes TEXT[] DEFAULT '{}',
+    permissions JSONB DEFAULT '{}',
+    rate_limits JSONB DEFAULT '{}',
+    
+    -- Status da integração
+    status VARCHAR(50) NOT NULL DEFAULT 'active',
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    last_sync TIMESTAMPTZ,
+    sync_frequency INTERVAL DEFAULT '1 hour',
+    auto_sync BOOLEAN DEFAULT true,
+    
+    -- Configurações de webhook
+    webhook_url TEXT,
+    webhook_secret TEXT,
+    
+    -- Configurações extras
+    configuration JSONB DEFAULT '{}',
+    provider_category VARCHAR(100) DEFAULT 'marketing',
+    sync_enabled BOOLEAN DEFAULT true,
+    last_health_check TIMESTAMPTZ,
+    health_status VARCHAR(50) DEFAULT 'unknown',
+    
+    -- Auditoria
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    
+    -- Constraints
+    CONSTRAINT valid_status CHECK (status IN ('active', 'inactive', 'error', 'pending')),
+    CONSTRAINT valid_auth_type CHECK (auth_type IN ('oauth2', 'api_key', 'basic_auth', 'bearer_token')),
+    CONSTRAINT valid_provider_type CHECK (provider_type IN ('ads', 'social_media', 'analytics', 'crm', 'email_marketing', 'automation'))
+);
+
+-- Índices para api_integrations
+CREATE INDEX IF NOT EXISTS idx_api_integrations_client_id ON api_integrations(client_id);
+CREATE INDEX IF NOT EXISTS idx_api_integrations_agency_id ON api_integrations(agency_id);
+CREATE INDEX IF NOT EXISTS idx_api_integrations_provider ON api_integrations(provider);
+CREATE INDEX IF NOT EXISTS idx_api_integrations_status ON api_integrations(status);
+CREATE INDEX IF NOT EXISTS idx_api_integrations_active ON api_integrations(is_active) WHERE is_active = true;
+
+-- RLS para api_integrations
+ALTER TABLE api_integrations ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "api_integrations_user_access" ON api_integrations
+    FOR ALL USING (
+        client_id = auth.uid() OR 
+        agency_id = (SELECT agency_id FROM user_profiles WHERE id = auth.uid()) OR
+        EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin')
+    );
+
+-- Trigger para updated_at
+CREATE TRIGGER update_api_integrations_updated_at 
+    BEFORE UPDATE ON api_integrations 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Métricas de performance das integrações
 CREATE TABLE IF NOT EXISTS api_integration_metrics (

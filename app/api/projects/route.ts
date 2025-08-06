@@ -23,15 +23,23 @@ export async function GET(request: NextRequest) {
       .eq('id', user.id)
       .single();
 
+    // SCHEMA PADRONIZADO WORKSTATION
     let query = supabase
       .from('projects')
       .select(`
         *,
-        client:client_id(id, name, email, company),
-        creator:created_by(id, name)
+        client:client_id(id, contact_name, email, company),
+        creator:created_by(id, full_name)
       `)
       .order('created_at', { ascending: false })
       .limit(limit);
+      
+    // Filtrar por agência se aplicável
+    if (profile?.agency_id) {
+      query = query.eq('agency_id', profile.agency_id);
+    } else {
+      query = query.eq('created_by', user.id);
+    }
       
     if (status) {
       query = query.eq('status', status);

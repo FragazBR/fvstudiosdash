@@ -37,12 +37,17 @@ import {
   PieChart,
   Instagram,
   Facebook,
-  Linkedin
+  Linkedin,
+  CheckCircle,
+  Clock,
+  Edit,
+  DollarSign,
+  Trash2
 } from 'lucide-react'
 
 interface Contact {
   id: string;
-  name: string;
+  contact_name: string; // SCHEMA PADRONIZADO WORKSTATION
   email: string;
   phone?: string;
   company?: string;
@@ -107,7 +112,7 @@ function ContasContent() {
         
         // Calcular estatísticas
         const totalContacts = data.contacts?.length || 0
-        const activeClients = data.contacts?.filter((c: Contact) => c.status === 'active' && (c.type === 'client' || c.type === 'independent_client')).length || 0
+        const activeClients = data.contacts?.filter((c: Contact) => c.status === 'active').length || 0
         const activeProjects = data.contacts?.reduce((sum: number, c: Contact) => sum + (c.active_projects || 0), 0) || 0
         const totalRevenue = data.contacts?.reduce((sum: number, c: Contact) => sum + (c.total_project_value || 0), 0) || 0
         
@@ -126,13 +131,38 @@ function ContasContent() {
   }
 
   const filteredContacts = contacts.filter(contact =>
-    contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    contact.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contact.contact_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contact.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     contact.company?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const handleViewProjects = (contactId: string) => {
     router.push(`/projects?client=${contactId}`)
+  }
+
+  const handleDeleteClient = async (contactId: string, contactName: string) => {
+    if (!confirm(`Tem certeza que deseja excluir o cliente "${contactName}"? Esta ação não pode ser desfeita.`)) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/contacts?id=${contactId}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        // Atualizar a lista de contatos
+        fetchContacts()
+        // Mostrar mensagem de sucesso (você pode usar toast aqui)
+        alert('Cliente excluído com sucesso!')
+      } else {
+        const error = await response.json()
+        alert(`Erro ao excluir cliente: ${error.error || 'Erro desconhecido'}`)
+      }
+    } catch (error) {
+      console.error('Error deleting client:', error)
+      alert('Erro ao excluir cliente. Tente novamente.')
+    }
   }
 
   return (
@@ -184,7 +214,7 @@ function ContasContent() {
 
             {/* Tabs Navigation */}
             <Tabs defaultValue="accounts" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="accounts" className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
                   Contas
@@ -192,6 +222,18 @@ function ContasContent() {
                 <TabsTrigger value="social-media" className="flex items-center gap-2">
                   <MessageCircle className="h-4 w-4" />
                   Social Media
+                </TabsTrigger>
+                <TabsTrigger value="tasks" className="flex items-center gap-2">
+                  <FolderKanban className="h-4 w-4" />
+                  Tarefas
+                </TabsTrigger>
+                <TabsTrigger value="calendar" className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Calendário
+                </TabsTrigger>
+                <TabsTrigger value="campaigns" className="flex items-center gap-2">
+                  <Target className="h-4 w-4" />
+                  Campanhas
                 </TabsTrigger>
               </TabsList>
 
@@ -307,21 +349,26 @@ function ContasContent() {
                               <div className="flex items-center gap-3">
                                 <Avatar className="h-12 w-12">
                                   <AvatarFallback className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                                    {contact.name.charAt(0).toUpperCase()}
+                                    {(contact.company || contact.contact_name).charAt(0).toUpperCase()}
                                   </AvatarFallback>
                                 </Avatar>
                                 <div>
                                   <CardTitle className="text-lg text-gray-900 dark:text-gray-100">
-                                    {contact.name}
+                                    {contact.company || contact.contact_name}
                                   </CardTitle>
                                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                                    {contact.position || contact.company || 'Cliente'}
+                                    {contact.company ? contact.contact_name : (contact.position || 'Responsável')}
                                   </p>
                                 </div>
                               </div>
-                              <Button variant="ghost" size="icon">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
+                              <div className="flex items-center gap-1">
+                                <Button variant="ghost" size="icon" onClick={() => handleDeleteClient(contact.id, contact.contact_name)}>
+                                  <Trash2 className="h-4 w-4 text-red-500" />
+                                </Button>
+                                <Button variant="ghost" size="icon">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
                           </CardHeader>
 
@@ -334,7 +381,7 @@ function ContasContent() {
                                     {contact.status}
                                   </Badge>
                                   <Badge className={getTypeColor(contact.type)}>
-                                    {contact.type.replace('independent_', '')}
+                                    {contact.type?.replace('independent_', '') || contact.type}
                                   </Badge>
                                 </div>
                                 <span className="text-sm text-gray-500">
@@ -427,6 +474,18 @@ function ContasContent() {
               <TabsContent value="social-media">
                 <SocialMediaTab contacts={contacts} loading={loading} />
               </TabsContent>
+
+              <TabsContent value="tasks" className="space-y-6">
+                <TasksTab contacts={contacts} loading={loading} />
+              </TabsContent>
+
+              <TabsContent value="calendar" className="space-y-6">
+                <CalendarTab contacts={contacts} loading={loading} />
+              </TabsContent>
+
+              <TabsContent value="campaigns" className="space-y-6">
+                <CampaignsTab contacts={contacts} loading={loading} />
+              </TabsContent>
             </Tabs>
           </div>
         </main>
@@ -438,6 +497,554 @@ function ContasContent() {
         onClose={() => setIsNewClientModalOpen(false)}
         onClientCreated={fetchContacts}
       />
+    </div>
+  )
+}
+
+// TasksTab Component - Kanban-style task management
+function TasksTab({ contacts, loading }: { contacts: Contact[], loading: boolean }) {
+  const [tasks, setTasks] = useState([
+    { id: '1', title: 'Criar campanha Instagram', client: 'TechCorp', status: 'todo', priority: 'high', dueDate: '2024-01-15' },
+    { id: '2', title: 'Relatório mensal Facebook', client: 'StartupX', status: 'doing', priority: 'medium', dueDate: '2024-01-20' },
+    { id: '3', title: 'Aprovação de posts', client: 'AgencyY', status: 'review', priority: 'low', dueDate: '2024-01-18' },
+    { id: '4', title: 'Análise de métricas', client: 'TechCorp', status: 'done', priority: 'high', dueDate: '2024-01-10' }
+  ])
+
+  const columns = [
+    { id: 'todo', title: 'A Fazer', color: 'bg-gray-100 dark:bg-gray-800' },
+    { id: 'doing', title: 'Em Andamento', color: 'bg-blue-100 dark:bg-blue-900/30' },
+    { id: 'review', title: 'Revisão', color: 'bg-yellow-100 dark:bg-yellow-900/30' },
+    { id: 'done', title: 'Concluído', color: 'bg-green-100 dark:bg-green-900/30' }
+  ]
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'border-l-red-500 bg-red-50 dark:bg-red-900/20'
+      case 'medium': return 'border-l-yellow-500 bg-yellow-50 dark:bg-yellow-900/20'
+      case 'low': return 'border-l-green-500 bg-green-50 dark:bg-green-900/20'
+      default: return 'border-l-gray-500 bg-gray-50 dark:bg-gray-900/20'
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {[...Array(4)].map((_, i) => (
+          <Card key={i} className="h-96">
+            <CardHeader>
+              <Skeleton className="h-6 w-24" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {[...Array(3)].map((_, j) => (
+                  <Skeleton key={j} className="h-20 w-full" />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header with stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <FolderKanban className="h-5 w-5 text-gray-500" />
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Total de Tarefas</p>
+                <p className="text-xl font-bold">{tasks.length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Activity className="h-5 w-5 text-blue-500" />
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Em Andamento</p>
+                <p className="text-xl font-bold text-blue-600">{tasks.filter(t => t.status === 'doing').length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-yellow-500" />
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Pendentes</p>
+                <p className="text-xl font-bold text-yellow-600">{tasks.filter(t => t.status === 'review').length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-500" />
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Concluídas</p>
+                <p className="text-xl font-bold text-green-600">{tasks.filter(t => t.status === 'done').length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Kanban Board */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {columns.map(column => (
+          <Card key={column.id} className={column.color}>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium flex items-center justify-between">
+                {column.title}
+                <Badge variant="secondary" className="text-xs">
+                  {tasks.filter(t => t.status === column.id).length}
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {tasks.filter(task => task.status === column.id).map(task => (
+                <Card key={task.id} className={`border-l-4 ${getPriorityColor(task.priority)} hover:shadow-md transition-shadow cursor-pointer`}>
+                  <CardContent className="p-3">
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-sm">{task.title}</h4>
+                      <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
+                        <span className="flex items-center gap-1">
+                          <Building2 className="h-3 w-3" />
+                          {task.client}
+                        </span>
+                        <Badge variant="outline" className="text-xs">
+                          {task.priority}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <Calendar className="h-3 w-3" />
+                        {new Date(task.dueDate).toLocaleDateString('pt-BR')}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              <Button variant="ghost" size="sm" className="w-full justify-start text-gray-500">
+                <Plus className="h-4 w-4 mr-2" />
+                Adicionar tarefa
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// CalendarTab Component - Post scheduling calendar
+function CalendarTab({ contacts, loading }: { contacts: Contact[], loading: boolean }) {
+  const [selectedDate, setSelectedDate] = useState(new Date())
+  const [posts, setPosts] = useState([
+    { id: '1', title: 'Post promocional - TechCorp', client: 'TechCorp', platform: 'instagram', time: '09:00', status: 'scheduled' },
+    { id: '2', title: 'Story engagement - StartupX', client: 'StartupX', platform: 'facebook', time: '14:30', status: 'published' },
+    { id: '3', title: 'Vídeo tutorial - AgencyY', client: 'AgencyY', platform: 'linkedin', time: '16:00', status: 'draft' }
+  ])
+
+  const platformIcons = {
+    instagram: <Instagram className="h-4 w-4 text-pink-500" />,
+    facebook: <Facebook className="h-4 w-4 text-blue-600" />,
+    linkedin: <Linkedin className="h-4 w-4 text-blue-700" />
+  }
+
+  const statusColors = {
+    scheduled: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+    published: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+    draft: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
+  }
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <Skeleton className="h-6 w-32" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-80 w-full" />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-24" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {[...Array(4)].map((_, i) => (
+                <Skeleton key={i} className="h-16 w-full" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-blue-500" />
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Posts Agendados</p>
+                <p className="text-xl font-bold text-blue-600">{posts.filter(p => p.status === 'scheduled').length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-500" />
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Publicados</p>
+                <p className="text-xl font-bold text-green-600">{posts.filter(p => p.status === 'published').length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Edit className="h-5 w-5 text-gray-500" />
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Rascunhos</p>
+                <p className="text-xl font-bold">{posts.filter(p => p.status === 'draft').length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-purple-500" />
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Total Posts</p>
+                <p className="text-xl font-bold text-purple-600">{posts.length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Calendar and Posts */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Calendário de Posts
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between mb-4">
+              <Button variant="outline" size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Post
+              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm">Hoje</Button>
+                <Button variant="outline" size="sm">Semana</Button>
+                <Button variant="outline" size="sm">Mês</Button>
+              </div>
+            </div>
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 h-80 flex items-center justify-center">
+              <div className="text-center text-gray-500">
+                <Calendar className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                <p>Calendário interativo em desenvolvimento</p>
+                <p className="text-sm">Use os botões acima para navegar</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Posts de Hoje
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {posts.map(post => (
+              <div key={post.id} className="border rounded-lg p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {platformIcons[post.platform as keyof typeof platformIcons]}
+                    <span className="text-sm font-medium">{post.time}</span>
+                  </div>
+                  <Badge className={statusColors[post.status as keyof typeof statusColors]}>
+                    {post.status}
+                  </Badge>
+                </div>
+                <h4 className="font-medium text-sm">{post.title}</h4>
+                <div className="flex items-center gap-1 text-xs text-gray-500">
+                  <Building2 className="h-3 w-3" />
+                  {post.client}
+                </div>
+              </div>
+            ))}
+            <Button variant="outline" size="sm" className="w-full">
+              <Eye className="h-4 w-4 mr-2" />
+              Ver todos os posts
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
+
+// CampaignsTab Component - Campaign management
+function CampaignsTab({ contacts, loading }: { contacts: Contact[], loading: boolean }) {
+  const [campaigns, setCampaigns] = useState([
+    { 
+      id: '1', 
+      name: 'Campanha Black Friday - TechCorp', 
+      client: 'TechCorp', 
+      status: 'active', 
+      budget: 5000, 
+      spent: 3200, 
+      reach: 45000, 
+      engagement: 8.5,
+      startDate: '2024-01-01',
+      endDate: '2024-01-31'
+    },
+    { 
+      id: '2', 
+      name: 'Lançamento Produto - StartupX', 
+      client: 'StartupX', 
+      status: 'paused', 
+      budget: 3000, 
+      spent: 1800, 
+      reach: 28000, 
+      engagement: 12.3,
+      startDate: '2024-01-10',
+      endDate: '2024-02-10'
+    },
+    { 
+      id: '3', 
+      name: 'Awareness Brand - AgencyY', 
+      client: 'AgencyY', 
+      status: 'completed', 
+      budget: 8000, 
+      spent: 7500, 
+      reach: 120000, 
+      engagement: 6.8,
+      startDate: '2023-12-01',
+      endDate: '2023-12-31'
+    }
+  ])
+
+  const getCampaignStatusBadge = (status: string) => {
+    const variants = {
+      'active': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+      'paused': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+      'completed': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+      'draft': 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
+    }
+    
+    const labels = {
+      'active': 'Ativa',
+      'paused': 'Pausada', 
+      'completed': 'Concluída',
+      'draft': 'Rascunho'
+    }
+
+    return (
+      <Badge className={variants[status as keyof typeof variants] || variants.draft}>
+        {labels[status as keyof typeof labels] || status}
+      </Badge>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-4">
+                <Skeleton className="h-16 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <Skeleton className="h-24 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  const totalBudget = campaigns.reduce((sum, c) => sum + c.budget, 0)
+  const totalSpent = campaigns.reduce((sum, c) => sum + c.spent, 0)
+  const averageEngagement = campaigns.reduce((sum, c) => sum + c.engagement, 0) / campaigns.length
+  const totalReach = campaigns.reduce((sum, c) => sum + c.reach, 0)
+
+  return (
+    <div className="space-y-6">
+      {/* Campaign Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Target className="h-5 w-5 text-blue-500" />
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Campanhas Ativas</p>
+                <p className="text-xl font-bold text-blue-600">{campaigns.filter(c => c.status === 'active').length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5 text-green-500" />
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Budget Total</p>
+                <p className="text-xl font-bold text-green-600">
+                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalBudget)}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-purple-500" />
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Alcance Total</p>
+                <p className="text-xl font-bold text-purple-600">{totalReach.toLocaleString('pt-BR')}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <PieChart className="h-5 w-5 text-orange-500" />
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Engagement Médio</p>
+                <p className="text-xl font-bold text-orange-600">{averageEngagement.toFixed(1)}%</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Campaign List */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold">Campanhas Ativas</h3>
+          <Button className="bg-blue-600 hover:bg-blue-700">
+            <Plus className="h-4 w-4 mr-2" />
+            Nova Campanha
+          </Button>
+        </div>
+
+        {campaigns.map(campaign => (
+          <Card key={campaign.id} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h4 className="font-semibold text-lg">{campaign.name}</h4>
+                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      <Building2 className="h-4 w-4" />
+                      {campaign.client}
+                      <span>•</span>
+                      <Calendar className="h-4 w-4" />
+                      {new Date(campaign.startDate).toLocaleDateString('pt-BR')} - {new Date(campaign.endDate).toLocaleDateString('pt-BR')}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {getCampaignStatusBadge(campaign.status)}
+                    <Button variant="ghost" size="sm">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Budget</p>
+                    <p className="font-semibold">
+                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(campaign.budget)}
+                    </p>
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                      <div 
+                        className="bg-blue-600 h-2 rounded-full" 
+                        style={{ width: `${(campaign.spent / campaign.budget) * 100}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(campaign.spent)} gasto
+                    </p>
+                  </div>
+
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Alcance</p>
+                    <p className="font-semibold text-purple-600">{campaign.reach.toLocaleString('pt-BR')}</p>
+                    <p className="text-xs text-gray-500">pessoas alcançadas</p>
+                  </div>
+
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Engagement</p>
+                    <p className="font-semibold text-orange-600">{campaign.engagement}%</p>
+                    <p className="text-xs text-gray-500">taxa de engajamento</p>
+                  </div>
+
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">ROI</p>
+                    <p className="font-semibold text-green-600">
+                      {((campaign.reach * 0.01) / campaign.spent * 100).toFixed(1)}%
+                    </p>
+                    <p className="text-xs text-gray-500">retorno estimado</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 pt-2 border-t">
+                  <Button variant="outline" size="sm">
+                    <Eye className="h-4 w-4 mr-2" />
+                    Ver Detalhes
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    <PieChart className="h-4 w-4 mr-2" />
+                    Relatório
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    <Edit className="h-4 w-4 mr-2" />
+                    Editar
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   )
 }

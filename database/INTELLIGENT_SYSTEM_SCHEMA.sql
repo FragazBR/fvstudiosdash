@@ -6,7 +6,8 @@
 -- API Keys e Integrações
 CREATE TABLE IF NOT EXISTS api_keys (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    agency_id UUID NOT NULL REFERENCES profiles(agency_id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE,
+    agency_id UUID NOT NULL REFERENCES agencies(id) ON DELETE CASCADE,
     service_name VARCHAR(100) NOT NULL, -- 'openai', 'claude', 'meta_ads', 'google_ads', etc.
     api_key_encrypted TEXT NOT NULL, -- Chave criptografada
     api_secret_encrypted TEXT, -- Secret criptografado (quando necessário)
@@ -16,13 +17,13 @@ CREATE TABLE IF NOT EXISTS api_keys (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     
-    UNIQUE(agency_id, service_name)
+    UNIQUE(user_id, service_name)
 );
 
 -- Campanhas Inteligentes
 CREATE TABLE IF NOT EXISTS intelligent_campaigns (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    agency_id UUID NOT NULL REFERENCES profiles(agency_id) ON DELETE CASCADE,
+    agency_id UUID NOT NULL REFERENCES agencies(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     platform VARCHAR(50) NOT NULL, -- 'facebook', 'instagram', 'google', 'tiktok', 'linkedin'
     external_campaign_id VARCHAR(255), -- ID da campanha na plataforma
@@ -41,7 +42,7 @@ CREATE TABLE IF NOT EXISTS intelligent_campaigns (
 -- Conteúdo Gerado por IA
 CREATE TABLE IF NOT EXISTS ai_generated_content (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    agency_id UUID NOT NULL REFERENCES profiles(agency_id) ON DELETE CASCADE,
+    agency_id UUID NOT NULL REFERENCES agencies(id) ON DELETE CASCADE,
     user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
     template_id UUID, -- referência a templates personalizados
     content_type VARCHAR(50) NOT NULL, -- 'post', 'ad', 'story', 'email', 'blog'
@@ -62,7 +63,7 @@ CREATE TABLE IF NOT EXISTS ai_generated_content (
 -- Templates Inteligentes
 CREATE TABLE IF NOT EXISTS intelligent_templates (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    agency_id UUID NOT NULL REFERENCES profiles(agency_id) ON DELETE CASCADE,
+    agency_id UUID NOT NULL REFERENCES agencies(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     description TEXT,
     content_type VARCHAR(50) NOT NULL,
@@ -81,7 +82,7 @@ CREATE TABLE IF NOT EXISTS intelligent_templates (
 -- Otimizações de Orçamento IA
 CREATE TABLE IF NOT EXISTS budget_optimizations (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    agency_id UUID NOT NULL REFERENCES profiles(agency_id) ON DELETE CASCADE,
+    agency_id UUID NOT NULL REFERENCES agencies(id) ON DELETE CASCADE,
     campaign_id UUID REFERENCES intelligent_campaigns(id) ON DELETE CASCADE,
     optimization_type VARCHAR(50) NOT NULL, -- 'increase', 'decrease', 'redistribute', 'pause'
     current_budget DECIMAL(10,2) NOT NULL,
@@ -99,7 +100,7 @@ CREATE TABLE IF NOT EXISTS budget_optimizations (
 -- Insights e Recomendações IA
 CREATE TABLE IF NOT EXISTS ai_insights (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    agency_id UUID NOT NULL REFERENCES profiles(agency_id) ON DELETE CASCADE,
+    agency_id UUID NOT NULL REFERENCES agencies(id) ON DELETE CASCADE,
     insight_type VARCHAR(50) NOT NULL, -- 'campaign', 'budget', 'content', 'performance'
     title VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
@@ -120,7 +121,7 @@ CREATE TABLE IF NOT EXISTS ai_insights (
 -- Predições e Forecasting
 CREATE TABLE IF NOT EXISTS ai_predictions (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    agency_id UUID NOT NULL REFERENCES profiles(agency_id) ON DELETE CASCADE,
+    agency_id UUID NOT NULL REFERENCES agencies(id) ON DELETE CASCADE,
     prediction_type VARCHAR(50) NOT NULL, -- 'revenue', 'conversions', 'traffic', 'cost'
     target_entity_id UUID, -- ID da campanha/projeto
     target_entity_type VARCHAR(50),
@@ -138,7 +139,7 @@ CREATE TABLE IF NOT EXISTS ai_predictions (
 -- Automações Configuradas
 CREATE TABLE IF NOT EXISTS intelligent_automations (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    agency_id UUID NOT NULL REFERENCES profiles(agency_id) ON DELETE CASCADE,
+    agency_id UUID NOT NULL REFERENCES agencies(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     description TEXT,
     automation_type VARCHAR(50) NOT NULL, -- 'budget_optimization', 'content_generation', 'reporting'
@@ -158,7 +159,7 @@ CREATE TABLE IF NOT EXISTS intelligent_automations (
 -- Log de Execuções da IA
 CREATE TABLE IF NOT EXISTS ai_execution_logs (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    agency_id UUID NOT NULL REFERENCES profiles(agency_id) ON DELETE CASCADE,
+    agency_id UUID NOT NULL REFERENCES agencies(id) ON DELETE CASCADE,
     user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
     action_type VARCHAR(100) NOT NULL, -- tipo da ação executada
     entity_id UUID, -- ID da entidade relacionada
@@ -177,7 +178,7 @@ CREATE TABLE IF NOT EXISTS ai_execution_logs (
 -- Métricas de Performance do Sistema IA
 CREATE TABLE IF NOT EXISTS ai_system_metrics (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    agency_id UUID NOT NULL REFERENCES profiles(agency_id) ON DELETE CASCADE,
+    agency_id UUID NOT NULL REFERENCES agencies(id) ON DELETE CASCADE,
     metric_date DATE NOT NULL DEFAULT CURRENT_DATE,
     total_ai_actions INTEGER DEFAULT 0,
     content_generated INTEGER DEFAULT 0,
@@ -253,14 +254,14 @@ CREATE INDEX IF NOT EXISTS idx_ai_metrics_agency_date ON ai_system_metrics(agenc
 -- RLS (Row Level Security) Policies
 -- ==================================================
 
--- API Keys - apenas usuários da agência
+-- API Keys - apenas o próprio usuário ou usuários da mesma agência
 ALTER TABLE api_keys ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "api_keys_agency_access" ON api_keys
+CREATE POLICY "api_keys_user_access" ON api_keys
     FOR ALL USING (
-        agency_id IN (
-            SELECT profiles.agency_id 
-            FROM profiles 
-            WHERE profiles.id = auth.uid()
+        user_id = auth.uid() OR agency_id = (
+            SELECT user_profiles.agency_id 
+            FROM user_profiles 
+            WHERE user_profiles.id = auth.uid()
         )
     );
 
@@ -268,10 +269,10 @@ CREATE POLICY "api_keys_agency_access" ON api_keys
 ALTER TABLE intelligent_campaigns ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "campaigns_agency_access" ON intelligent_campaigns
     FOR ALL USING (
-        agency_id IN (
-            SELECT profiles.agency_id 
-            FROM profiles 
-            WHERE profiles.id = auth.uid()
+        agency_id = (
+            SELECT user_profiles.agency_id 
+            FROM user_profiles 
+            WHERE user_profiles.id = auth.uid()
         )
     );
 
@@ -279,10 +280,10 @@ CREATE POLICY "campaigns_agency_access" ON intelligent_campaigns
 ALTER TABLE ai_generated_content ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "ai_content_agency_access" ON ai_generated_content
     FOR ALL USING (
-        agency_id IN (
-            SELECT profiles.agency_id 
-            FROM profiles 
-            WHERE profiles.id = auth.uid()
+        agency_id = (
+            SELECT user_profiles.agency_id 
+            FROM user_profiles 
+            WHERE user_profiles.id = auth.uid()
         )
     );
 
@@ -290,10 +291,10 @@ CREATE POLICY "ai_content_agency_access" ON ai_generated_content
 ALTER TABLE intelligent_templates ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "templates_access" ON intelligent_templates
     FOR ALL USING (
-        agency_id IN (
-            SELECT profiles.agency_id 
-            FROM profiles 
-            WHERE profiles.id = auth.uid()
+        agency_id = (
+            SELECT user_profiles.agency_id 
+            FROM user_profiles 
+            WHERE user_profiles.id = auth.uid()
         ) OR is_public = true
     );
 
@@ -301,10 +302,10 @@ CREATE POLICY "templates_access" ON intelligent_templates
 ALTER TABLE budget_optimizations ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "budget_opt_agency_access" ON budget_optimizations
     FOR ALL USING (
-        agency_id IN (
-            SELECT profiles.agency_id 
-            FROM profiles 
-            WHERE profiles.id = auth.uid()
+        agency_id = (
+            SELECT user_profiles.agency_id 
+            FROM user_profiles 
+            WHERE user_profiles.id = auth.uid()
         )
     );
 
@@ -312,10 +313,10 @@ CREATE POLICY "budget_opt_agency_access" ON budget_optimizations
 ALTER TABLE ai_insights ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "insights_agency_access" ON ai_insights
     FOR ALL USING (
-        agency_id IN (
-            SELECT profiles.agency_id 
-            FROM profiles 
-            WHERE profiles.id = auth.uid()
+        agency_id = (
+            SELECT user_profiles.agency_id 
+            FROM user_profiles 
+            WHERE user_profiles.id = auth.uid()
         )
     );
 
@@ -323,10 +324,10 @@ CREATE POLICY "insights_agency_access" ON ai_insights
 ALTER TABLE ai_predictions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "predictions_agency_access" ON ai_predictions
     FOR ALL USING (
-        agency_id IN (
-            SELECT profiles.agency_id 
-            FROM profiles 
-            WHERE profiles.id = auth.uid()
+        agency_id = (
+            SELECT user_profiles.agency_id 
+            FROM user_profiles 
+            WHERE user_profiles.id = auth.uid()
         )
     );
 
@@ -334,10 +335,10 @@ CREATE POLICY "predictions_agency_access" ON ai_predictions
 ALTER TABLE intelligent_automations ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "automations_agency_access" ON intelligent_automations
     FOR ALL USING (
-        agency_id IN (
-            SELECT profiles.agency_id 
-            FROM profiles 
-            WHERE profiles.id = auth.uid()
+        agency_id = (
+            SELECT user_profiles.agency_id 
+            FROM user_profiles 
+            WHERE user_profiles.id = auth.uid()
         )
     );
 
@@ -345,10 +346,10 @@ CREATE POLICY "automations_agency_access" ON intelligent_automations
 ALTER TABLE ai_execution_logs ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "ai_logs_agency_access" ON ai_execution_logs
     FOR ALL USING (
-        agency_id IN (
-            SELECT profiles.agency_id 
-            FROM profiles 
-            WHERE profiles.id = auth.uid()
+        agency_id = (
+            SELECT user_profiles.agency_id 
+            FROM user_profiles 
+            WHERE user_profiles.id = auth.uid()
         )
     );
 
@@ -356,10 +357,10 @@ CREATE POLICY "ai_logs_agency_access" ON ai_execution_logs
 ALTER TABLE ai_system_metrics ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "ai_metrics_agency_access" ON ai_system_metrics
     FOR ALL USING (
-        agency_id IN (
-            SELECT profiles.agency_id 
-            FROM profiles 
-            WHERE profiles.id = auth.uid()
+        agency_id = (
+            SELECT user_profiles.agency_id 
+            FROM user_profiles 
+            WHERE user_profiles.id = auth.uid()
         )
     );
 

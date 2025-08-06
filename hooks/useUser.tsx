@@ -80,11 +80,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             location: profile.location || undefined,
             website: profile.website || undefined,
             created_at: profile.created_at || undefined,
-            // Definir permissões baseadas no role
+            // Definir permissões baseadas no role e campos do banco
             department_permissions: getDepartmentPermissions(profile.role, profile.specialization_id),
-            can_assign_tasks: ['agency_owner', 'agency_manager', 'agency_staff'].includes(profile.role),
-            can_view_team_metrics: ['agency_owner', 'agency_manager', 'agency_staff'].includes(profile.role),
-            can_manage_team: ['agency_owner', 'agency_manager'].includes(profile.role),
+            can_assign_tasks: profile.can_assign_tasks || ['agency_owner', 'agency_manager', 'agency_staff'].includes(profile.role),
+            can_view_team_metrics: profile.can_view_team_metrics || ['agency_owner', 'agency_manager', 'agency_staff'].includes(profile.role),
+            can_manage_team: profile.can_manage_team || ['agency_owner', 'agency_manager'].includes(profile.role),
           });
         } else {
           // Se não tem perfil, cria um básico

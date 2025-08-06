@@ -31,7 +31,7 @@ CREATE EXTENSION IF NOT EXISTS "pg_stat_statements";
 CREATE TABLE IF NOT EXISTS agencies (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
-    email UNI QUE VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
     phone VARCHAR(50),
     website VARCHAR(255),
     logo_url TEXT,

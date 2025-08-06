@@ -25,6 +25,7 @@ export default function ClientTaskColumn({
   const [{ isOver }, drop] = useDrop({
     accept: "task",
     drop: (item: { id: string }) => {
+      console.log(`🎯 DROP EVENT: Task ${item.id} dropped on column ${status}`)
       onTaskMove(item.id, status);
     },
     collect: (monitor) => ({

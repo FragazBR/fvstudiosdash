@@ -16,7 +16,9 @@ import {
   CheckCircle,
   AlertCircle,
   FolderKanban,
-  Activity
+  Activity,
+  Clock,
+  Circle
 } from 'lucide-react'
 
 interface Task {
@@ -48,7 +50,7 @@ interface Task {
 
 interface Client {
   id: string;
-  name: string;
+  contact_name: string; // SCHEMA PADRONIZADO WORKSTATION
   email: string;
   company?: string;
 }
@@ -189,7 +191,7 @@ function ClientTasksContent() {
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
       <div className="lg:w-[calc(100%-16rem)] lg:ml-64 flex flex-col overflow-hidden pt-16">
         <Topbar 
-          name={client ? `Tarefas - ${client.name}` : "Tarefas do Cliente"}
+          name={client ? `Tarefas - ${client.contact_name}` : "Tarefas do Cliente"}
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
         />
@@ -210,13 +212,13 @@ function ClientTasksContent() {
                   {client && (
                     <Avatar className="h-12 w-12">
                       <AvatarFallback className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-                        {client.name.charAt(0).toUpperCase()}
+                        {client.contact_name?.charAt(0)?.toUpperCase() || client.email?.charAt(0)?.toUpperCase() || 'C'}
                       </AvatarFallback>
                     </Avatar>
                   )}
                   <div>
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                      {client ? `Tarefas - ${client.name}` : 'Carregando...'}
+                      {client ? `Tarefas - ${client.contact_name}` : 'Carregando...'}
                     </h1>
                     {client && (
                       <p className="text-gray-600 dark:text-gray-400">

@@ -47,10 +47,16 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
   // Set up drag source
   const [{ isDragging }, drag] = useDrag({
     type: "task",
-    item: { id: task.id },
+    item: () => {
+      console.log(`🖱️ DRAG START: Task ${task.id} - ${task.title}`)
+      return { id: task.id }
+    },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
+    end: (item, monitor) => {
+      console.log(`🖱️ DRAG END: Task ${task.id}, dropped: ${monitor.didDrop()}`)
+    }
   })
 
   useEffect(() => {
@@ -138,7 +144,7 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
             {task.assignees.map((assignee) => (
               <Avatar key={assignee.id} className="h-6 w-6 border-2 border-white dark:border-[#1f1f1f]">
                 <AvatarImage src={assignee.avatar || "/placeholder.svg"} alt={assignee.name} />
-                <AvatarFallback>{assignee.name.charAt(0)}</AvatarFallback>
+                <AvatarFallback>{assignee.name?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
               </Avatar>
             ))}
           </div>

@@ -109,11 +109,17 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   const [socialMediaExpanded, setSocialMediaExpanded] = useState(false);
   const { theme, resolvedTheme } = useTheme();
   const { user, loading } = useUser();
+  const [mounted, setMounted] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [urgentTasks, setUrgentTasks] = useState<Task[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [systemNotifications, setSystemNotifications] = useState<SystemNotification[]>([]);
   const [loadingData, setLoadingData] = useState(true);
+
+  // Controle de hidratação para evitar mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Buscar dados reais do banco
   useEffect(() => {
@@ -329,20 +335,22 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
           <Link href={getHomePage()} className="flex items-center space-x-3">
             <div className="h-8 w-8 relative">
               <Image
-                src={resolvedTheme === 'dark' ? "/logo-c-white.png" : "/logo-c.png"}
+                src={mounted && resolvedTheme === 'dark' ? "/logo-c-white.png" : "/logo-c.png"}
                 alt="FVSTUDIOS Logo"
                 fill
                 className="object-contain"
                 priority
+                suppressHydrationWarning
               />
             </div>
             <div className="relative w-32 h-8">
               <Image
-                src={resolvedTheme === 'dark' ? "/Logotipo-FVstudios-Branco.png" : "/Logotipo-FVstudios-Preto.png"}
+                src={mounted && resolvedTheme === 'dark' ? "/Logotipo-FVstudios-Branco.png" : "/Logotipo-FVstudios-Preto.png"}
                 alt="FVSTUDIOS"
                 fill
                 className="object-contain"
                 priority
+                suppressHydrationWarning
               />
             </div>
           </Link>

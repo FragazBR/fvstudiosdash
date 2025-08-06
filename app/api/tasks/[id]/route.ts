@@ -18,19 +18,35 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Buscar perfil do usuário para filtro de agência
+    const { data: userProfile } = await supabase
+      .from('user_profiles')
+      .select('agency_id')
+      .eq('id', user.id)
+      .single();
+
+    if (!userProfile?.agency_id) {
+      return NextResponse.json({ error: 'User profile not found' }, { status: 400 });
+    }
+
     const { data: task, error } = await supabase
       .from('tasks')
       .select(`
         *,
-        project:project_id(id, name, status, client_id),
-        assigned_to:assigned_to(id, name, email, avatar_url),
-        creator:created_by(id, name, email)
+        project:project_id(id, name, status, client_id, agency_id),
+        assigned_to:assigned_to(id, full_name, email, avatar_url),
+        creator:created_by(id, full_name, email)
       `)
       .eq('id', id)
       .single();
       
     if (error) {
       console.error('Error fetching task:', error);
+      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+    }
+
+    // Verificar se a task pertence à agência do usuário
+    if (task?.project?.agency_id !== userProfile.agency_id) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 });
     }
     
@@ -192,6 +208,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
+    console.log(`🔧 PATCH API called for task ${id}`)
+    
     const supabase = await supabaseServer();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
@@ -199,17 +217,79 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
-    
-    // Buscar dados atuais da tarefa
-    const { data: currentTask } = await supabase
-      .from('tasks')
-      .select('status, progress, assigned_to, due_date, project_id, title')
-      .eq('id', id)
+    // Buscar perfil do usuário para filtro de agência
+    const { data: userProfile } = await supabase
+      .from('user_profiles')
+      .select('agency_id')
+      .eq('id', user.id)
       .single();
 
-    if (!currentTask) {
+    if (!userProfile?.agency_id) {
+      return NextResponse.json({ error: 'User profile not found' }, { status: 400 });
+    }
+
+    const body = await request.json();
+    console.log(`🔧 PATCH body:`, body)
+    console.log(`🔧 User profile:`, userProfile)
+    
+    // Buscar dados atuais da tarefa (testando se progress existe)
+    let currentTask, taskError;
+    
+    // Primeiro, testar sem progress
+    const taskResult = await supabase
+      .from('tasks')
+      .select(`
+        status, assigned_to, due_date, project_id, title
+      `)
+      .eq('id', id)
+      .single();
+    
+    currentTask = taskResult.data;
+    taskError = taskResult.error;
+    
+    // Se funcionou, tentar adicionar progress
+    if (!taskError && currentTask) {
+      console.log('✅ Task found without progress, trying with progress...')
+      const taskWithProgressResult = await supabase
+        .from('tasks')
+        .select(`
+          status, progress, assigned_to, due_date, project_id, title
+        `)
+        .eq('id', id)
+        .single();
+        
+      if (!taskWithProgressResult.error) {
+        console.log('✅ Progress column exists, using full data')
+        currentTask = taskWithProgressResult.data;
+        taskError = taskWithProgressResult.error;
+      } else {
+        console.log('❌ Progress column issue:', taskWithProgressResult.error)
+        // Usar dados sem progress
+      }
+    }
+
+    console.log(`PATCH Task ${id}: currentTask =`, currentTask, 'error =', taskError)
+
+    if (taskError || !currentTask) {
+      console.error('Task not found or error fetching:', taskError)
       return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+    }
+
+    // Buscar projeto para verificar a agência
+    if (currentTask.project_id) {
+      const { data: project } = await supabase
+        .from('projects')
+        .select('agency_id')
+        .eq('id', currentTask.project_id)
+        .single();
+
+      console.log(`🔧 Project ${currentTask.project_id}:`, project)
+
+      // Verificar se a task pertence à agência do usuário
+      if (project?.agency_id !== userProfile.agency_id) {
+        console.error(`Task ${id} belongs to agency ${project?.agency_id}, but user belongs to ${userProfile.agency_id}`)
+        return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+      }
     }
 
     const updates: any = { ...body };
@@ -217,7 +297,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     // Se marcou como completed, adicionar timestamp
     if (body.status === 'completed' && currentTask.status !== 'completed') {
       updates.completed_at = new Date().toISOString();
-      if (!updates.progress) updates.progress = 100;
+      if (!updates.progress) updates.progress = 100; // Agora pode atualizar progress
     }
 
     // Se desmarcou completed, remover timestamp
@@ -225,17 +305,47 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       updates.completed_at = null;
     }
 
-    const { data: task, error } = await supabase
+    console.log('🔧 Updates to be applied:', updates)
+
+    // Tentar update com progress primeiro
+    let task, error;
+    const updateResult = await supabase
       .from('tasks')
       .update(updates)
       .eq('id', id)
       .select(`
         *,
-        project:project_id(id, name, client_id),
-        assigned_to:assigned_to(id, name, email, avatar_url),
-        creator:created_by(id, name)
+        project:project_id(id, name, client_id, agency_id),
+        assigned_to:assigned_to(id, full_name, email, avatar_url),
+        creator:created_by(id, full_name)
       `)
       .single();
+      
+    task = updateResult.data;
+    error = updateResult.error;
+    
+    // Se falhou e progress está no updates, tentar sem progress
+    if (error && 'progress' in updates) {
+      console.log('❌ Update failed with progress, trying without progress:', error)
+      const updatesWithoutProgress = { ...updates };
+      delete updatesWithoutProgress.progress;
+      
+      const fallbackResult = await supabase
+        .from('tasks')
+        .update(updatesWithoutProgress)
+        .eq('id', id)
+        .select(`
+          *,
+          project:project_id(id, name, client_id, agency_id),
+          assigned_to:assigned_to(id, full_name, email, avatar_url),
+          creator:created_by(id, full_name)
+        `)
+        .single();
+        
+      task = fallbackResult.data;
+      error = fallbackResult.error;
+      console.log('🔄 Fallback result:', { task: !!task, error })
+    }
       
     if (error) {
       console.error('Error updating task:', error);

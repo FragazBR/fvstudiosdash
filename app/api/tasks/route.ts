@@ -17,19 +17,42 @@ export async function GET(request: NextRequest) {
     const assigned_to = searchParams.get('assigned_to');
     const limit = parseInt(searchParams.get('limit') || '100');
     
+    // Buscar perfil do usuário para filtro de agência
+    const { data: userProfile } = await supabase
+      .from('user_profiles')
+      .select('agency_id')
+      .eq('id', user.id)
+      .single()
+
+    if (!userProfile?.agency_id) {
+      return NextResponse.json({ error: 'User profile not found' }, { status: 400 });
+    }
+
     let query = supabase
       .from('tasks')
       .select(`
         *,
-        project:project_id(id, name, status, client:client_id(id, name, company)),
-        assigned_to:assigned_to(id, name, email, avatar_url, department_id, specialization_id),
-        creator:created_by(id, name)
+        project:project_id(id, name, status),
+        assigned_to:assigned_to(id, full_name, email),
+        creator:created_by(id, full_name)
       `)
-      .order('position', { ascending: true })
+      .order('created_at', { ascending: false })
       .limit(limit);
-      
+
+    // Filtrar por agência através dos projetos
     if (project_id) {
       query = query.eq('project_id', project_id);
+    } else {
+      // Filtrar por projetos da agência do usuário
+      const { data: userProjects } = await supabase
+        .from('projects')
+        .select('id')
+        .eq('agency_id', userProfile.agency_id);
+      
+      if (userProjects && userProjects.length > 0) {
+        const projectIds = userProjects.map(p => p.id);
+        query = query.in('project_id', projectIds);
+      }
     }
     
     if (status) {
@@ -84,6 +107,17 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
+    // Buscar perfil do usuário para pegar agency_id
+    const { data: userProfile } = await supabase
+      .from('user_profiles')
+      .select('agency_id')
+      .eq('id', user.id)
+      .single()
+
+    if (!userProfile?.agency_id) {
+      return NextResponse.json({ error: 'User profile not found' }, { status: 400 });
+    }
+
     // Calcular posição para nova tarefa
     const { data: lastTask } = await supabase
       .from('tasks')
@@ -113,9 +147,9 @@ export async function POST(request: NextRequest) {
       })
       .select(`
         *,
-        project:project_id(id, name, client:client_id(id, name, company)),
-        assigned_to:assigned_to(id, name, email, avatar_url, department_id, specialization_id),
-        creator:created_by(id, name)
+        project:project_id(id, name, status),
+        assigned_to:assigned_to(id, full_name, email),
+        creator:created_by(id, full_name)
       `)
       .single();
       

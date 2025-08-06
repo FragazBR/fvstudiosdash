@@ -154,7 +154,7 @@ CREATE POLICY "Usuários podem ver notificações da sua agência"
 ON realtime_notifications FOR SELECT
 USING (
   agency_id IN (
-    SELECT agency_id FROM profiles WHERE id = auth.uid()
+    SELECT agency_id FROM user_profiles WHERE id = auth.uid()
   )
   AND (
     user_id IS NULL OR user_id = auth.uid()
@@ -165,7 +165,7 @@ CREATE POLICY "Usuários podem atualizar suas notificações"
 ON realtime_notifications FOR UPDATE
 USING (
   agency_id IN (
-    SELECT agency_id FROM profiles WHERE id = auth.uid()
+    SELECT agency_id FROM user_profiles WHERE id = auth.uid()
   )
   AND (
     user_id IS NULL OR user_id = auth.uid()
@@ -176,7 +176,7 @@ CREATE POLICY "Sistema pode inserir notificações"
 ON realtime_notifications FOR INSERT
 WITH CHECK (
   agency_id IN (
-    SELECT agency_id FROM profiles WHERE id = auth.uid()
+    SELECT agency_id FROM user_profiles WHERE id = auth.uid()
   )
 );
 
@@ -190,7 +190,7 @@ CREATE POLICY "Usuários da agência podem ver templates"
 ON notification_templates_realtime FOR SELECT
 USING (
   agency_id IN (
-    SELECT agency_id FROM profiles WHERE id = auth.uid()
+    SELECT agency_id FROM user_profiles WHERE id = auth.uid()
   )
 );
 
@@ -198,7 +198,7 @@ CREATE POLICY "Gerentes podem gerenciar templates"
 ON notification_templates_realtime FOR ALL
 USING (
   agency_id IN (
-    SELECT agency_id FROM profiles 
+    SELECT agency_id FROM user_profiles 
     WHERE id = auth.uid() 
     AND role IN ('admin', 'agency_owner', 'agency_manager')
   )
@@ -209,7 +209,7 @@ CREATE POLICY "Usuários da agência podem ver logs"
 ON notification_logs FOR SELECT
 USING (
   agency_id IN (
-    SELECT agency_id FROM profiles WHERE id = auth.uid()
+    SELECT agency_id FROM user_profiles WHERE id = auth.uid()
   )
 );
 
@@ -257,7 +257,7 @@ BEGIN
     IF template_record.target_users::text = '["all"]' THEN
       -- Enviar para todos os usuários da agência
       FOR target_user IN
-        SELECT id FROM profiles WHERE agency_id = p_agency_id
+        SELECT id FROM user_profiles WHERE agency_id = p_agency_id
       LOOP
         INSERT INTO realtime_notifications (
           agency_id,

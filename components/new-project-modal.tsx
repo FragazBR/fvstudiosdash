@@ -65,12 +65,31 @@ export function NewProjectModal({ isOpen, onClose, onProjectCreated }: NewProjec
   const fetchClients = async () => {
     try {
       setLoadingClients(true);
+      
+      // Get user profile to filter by agency
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error('Usuário não autenticado');
+        return;
+      }
+
+      const { data: userProfile } = await supabase
+        .from('user_profiles')
+        .select('agency_id')
+        .eq('id', user.id)
+        .single();
+
+      if (!userProfile?.agency_id) {
+        console.error('Perfil de usuário não encontrado');
+        return;
+      }
+
       const { data: clientsData, error } = await supabase
-        .from('contacts')
-        .select('id, name, company, email')
-        .eq('type', 'client')
+        .from('clients')
+        .select('id, contact_name, company, email')
+        .eq('agency_id', userProfile.agency_id)
         .eq('status', 'active')
-        .order('name');
+        .order('contact_name');
 
       if (error) {
         console.error('Erro ao buscar clientes:', error);
@@ -79,7 +98,7 @@ export function NewProjectModal({ isOpen, onClose, onProjectCreated }: NewProjec
 
       const transformedClients: Client[] = (clientsData || []).map(client => ({
         id: client.id,
-        name: client.name,
+        name: client.contact_name,
         company: client.company,
         email: client.email
       }));

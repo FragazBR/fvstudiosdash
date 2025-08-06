@@ -64,17 +64,36 @@ export function NewTaskModal({ isOpen, onClose, onTaskCreated, preSelectedClient
 
   const fetchProjects = async () => {
     try {
+      // Get user profile to filter by agency
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error('Usuário não autenticado');
+        return;
+      }
+
+      const { data: userProfile } = await supabase
+        .from('user_profiles')
+        .select('agency_id')
+        .eq('id', user.id)
+        .single();
+
+      if (!userProfile?.agency_id) {
+        console.error('Perfil de usuário não encontrado');
+        return;
+      }
+
       let query = supabase
         .from('projects')
         .select(`
           id,
           name,
-          contacts:client_id (
+          clients:client_id (
             id,
-            name,
+            contact_name,
             company
           )
         `)
+        .eq('agency_id', userProfile.agency_id)
         .order('name');
 
       // If preSelectedClientId is provided, filter projects for that client
@@ -93,8 +112,8 @@ export function NewTaskModal({ isOpen, onClose, onTaskCreated, preSelectedClient
         id: project.id,
         name: project.name,
         client: {
-          name: project.contacts?.name || '',
-          company: project.contacts?.company
+          name: project.clients?.contact_name || '',
+          company: project.clients?.company
         }
       }));
 
@@ -144,7 +163,7 @@ export function NewTaskModal({ isOpen, onClose, onTaskCreated, preSelectedClient
       const { data: userProfile } = await supabase
         .from('user_profiles')
         .select('id, agency_id')
-        .eq('email', session.user.email)
+        .eq('id', session.user.id)
         .single();
 
       if (!userProfile) {

@@ -10,23 +10,37 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
-    // Verificar se é o admin principal por email OU tem permissões admin
+    // Verificar se é o admin principal por email OU tem permissões admin OU pode gerenciar equipe
     const isMainAdmin = user.email === 'franco@fvstudios.com.br'
     
     if (!isMainAdmin) {
-      const { data: permissions } = await supabase
+      // Verificar permissões de agência
+      const { data: agencyPermissions } = await supabase
         .from('user_agency_permissions')
         .select('role')
         .eq('user_id', user.id)
         .maybeSingle()
 
-      if (!permissions || !['admin', 'agency_owner'].includes(permissions.role)) {
+      // Verificar permissões de perfil (can_manage_team)
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('role, agency_id')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      const hasAgencyPermissions = agencyPermissions && ['admin', 'agency_owner'].includes(agencyPermissions.role)
+      const canManageTeam = profile?.can_manage_team === true
+      const isAgencyManager = profile && ['agency_owner', 'agency_manager'].includes(profile.role)
+
+      if (!hasAgencyPermissions && !canManageTeam && !isAgencyManager) {
         return NextResponse.json({ 
-          error: 'Acesso negado. Apenas o admin principal ou usuários com permissões admin podem criar convites.',
+          error: 'Acesso negado. Você precisa ter permissões de admin, ser proprietário da agência ou ter permissão para gerenciar equipe.',
           debug: {
             email: user.email,
             isMainAdmin,
-            permissions: permissions?.role || 'none'
+            agencyPermissions: agencyPermissions?.role || 'none',
+            canManageTeam,
+            profileRole: profile?.role || 'none'
           }
         }, { status: 403 })
       }

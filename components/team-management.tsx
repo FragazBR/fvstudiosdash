@@ -132,46 +132,55 @@ export function TeamManagement() {
 
     try {
       if (inviteForm.mode === 'direct') {
-        // Cadastro direto com senha
-        const { data, error } = await supabaseBrowser().rpc('create_user_with_profile', {
-          p_email: inviteForm.email,
-          p_password: inviteForm.password,
-          p_name: inviteForm.name,
-          p_role: inviteForm.role,
-          p_agency_id: user?.agency_id || user?.id,
-          p_company: inviteForm.company,
-          p_phone: inviteForm.phone
+        // Cadastro direto com senha usando REST API
+        const response = await fetch('/api/admin/users/create-direct', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: inviteForm.email,
+            password: inviteForm.password,
+            name: inviteForm.name,
+            role: inviteForm.role,
+            agency_id: user?.agency_id || user?.id,
+            company: inviteForm.company,
+            phone: inviteForm.phone
+          })
         });
 
-        if (error) {
-          console.error('Erro ao criar usuário:', error);
-          toast.error('Erro ao criar usuário: ' + error.message);
-          return;
-        }
+        const result = await response.json();
 
-        // Check if the function returned an error in the data
-        if (data && !data.success) {
-          console.error('Erro na função create_user_with_profile:', data.error);
-          toast.error('Erro ao criar usuário: ' + data.error);
+        if (!response.ok) {
+          console.error('Erro ao criar usuário:', result.error);
+          toast.error('Erro ao criar usuário: ' + result.error);
           return;
         }
 
         toast.success(`Colaborador ${inviteForm.name} criado com sucesso!`);
       } else {
-        // Sistema de convite por email
-        const { data, error } = await supabaseBrowser().rpc('create_user_invitation', {
-          p_email: inviteForm.email,
-          p_name: inviteForm.name,
-          p_role: inviteForm.role,
-          p_agency_id: user?.agency_id || user?.id,
-          p_company: inviteForm.company,
-          p_phone: inviteForm.phone,
-          p_welcome_message: `Você foi convidado para fazer parte da equipe da ${user?.company || 'nossa agência'}!`
+        // Sistema de convite por email usando REST API
+        const response = await fetch('/api/admin/users/create-invite', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: inviteForm.email,
+            name: inviteForm.name,
+            role: inviteForm.role,
+            agency_id: user?.agency_id || user?.id,
+            company: inviteForm.company,
+            phone: inviteForm.phone,
+            welcome_message: `Você foi convidado para fazer parte da equipe da ${user?.company || 'nossa agência'}!`
+          })
         });
 
-        if (error) {
-          console.error('Erro ao criar convite:', error);
-          toast.error('Erro ao enviar convite: ' + error.message);
+        const result = await response.json();
+
+        if (!response.ok) {
+          console.error('Erro ao criar convite:', result.error);
+          toast.error('Erro ao enviar convite: ' + result.error);
           return;
         }
 

@@ -307,46 +307,55 @@ export function AgencyDashboard() {
 
     try {
       if (inviteForm.mode === 'direct') {
-        // Cadastro direto com senha
-        const { data, error } = await supabaseBrowser().rpc('create_user_with_profile', {
-          p_email: inviteForm.email,
-          p_password: inviteForm.password,
-          p_name: inviteForm.name,
-          p_role: inviteForm.role,
-          p_agency_id: user?.agency_id || user?.id,
-          p_company: inviteForm.company,
-          p_phone: inviteForm.phone
+        // Cadastro direto com senha usando REST API
+        const response = await fetch('/api/admin/users/create-direct', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: inviteForm.email,
+            password: inviteForm.password,
+            name: inviteForm.name,
+            role: inviteForm.role,
+            agency_id: user?.agency_id || user?.id,
+            company: inviteForm.company,
+            phone: inviteForm.phone
+          })
         });
 
-        if (error) {
-          console.error('Erro ao criar usuário:', error);
-          toast.error('Erro ao criar usuário: ' + error.message);
-          return;
-        }
+        const result = await response.json();
 
-        // Check if the function returned an error in the data
-        if (data && !data.success) {
-          console.error('Erro na função create_user_with_profile:', data.error);
-          toast.error('Erro ao criar usuário: ' + data.error);
+        if (!response.ok) {
+          console.error('Erro ao criar usuário:', result.error);
+          toast.error('Erro ao criar usuário: ' + result.error);
           return;
         }
 
         toast.success(`Colaborador ${inviteForm.name} criado com sucesso!`);
       } else {
-        // Sistema de convite por email
-        const { data, error } = await supabaseBrowser().rpc('create_user_invitation', {
-          p_email: inviteForm.email,
-          p_name: inviteForm.name,
-          p_role: inviteForm.role,
-          p_agency_id: user?.agency_id || user?.id,
-          p_company: inviteForm.company,
-          p_phone: inviteForm.phone,
-          p_welcome_message: `Você foi convidado para fazer parte da equipe da ${user?.company || 'nossa agência'}!`
+        // Sistema de convite por email usando REST API
+        const response = await fetch('/api/admin/users/create-invite', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: inviteForm.email,
+            name: inviteForm.name,
+            role: inviteForm.role,
+            agency_id: user?.agency_id || user?.id,
+            company: inviteForm.company,
+            phone: inviteForm.phone,
+            welcome_message: `Você foi convidado para fazer parte da equipe da ${user?.company || 'nossa agência'}!`
+          })
         });
 
-        if (error) {
-          console.error('Erro ao criar convite:', error);
-          toast.error('Erro ao enviar convite: ' + error.message);
+        const result = await response.json();
+
+        if (!response.ok) {
+          console.error('Erro ao criar convite:', result.error);
+          toast.error('Erro ao enviar convite: ' + result.error);
           return;
         }
 
@@ -533,12 +542,14 @@ export function AgencyDashboard() {
                 >
                   Dashboard
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="contracts" 
-                  className="flex items-start justify-center pt-1 text-gray-900 dark:text-white hover:text-[#01b86c] dark:hover:text-[#01b86c] data-[state=active]:bg-transparent data-[state=active]:text-[#01b86c] data-[state=active]:shadow-none transition-colors duration-200"
-                >
-                  Contratos
-                </TabsTrigger>
+                <Link href="/agency/contratos">
+                  <TabsTrigger 
+                    value="contracts" 
+                    className="flex items-start justify-center pt-1 text-gray-900 dark:text-white hover:text-[#01b86c] dark:hover:text-[#01b86c] data-[state=active]:bg-transparent data-[state=active]:text-[#01b86c] data-[state=active]:shadow-none transition-colors duration-200 cursor-pointer"
+                  >
+                    Contratos
+                  </TabsTrigger>
+                </Link>
                 <TabsTrigger 
                   value="financial" 
                   className="flex items-start justify-center pt-1 text-gray-900 dark:text-white hover:text-[#01b86c] dark:hover:text-[#01b86c] data-[state=active]:bg-transparent data-[state=active]:text-[#01b86c] data-[state=active]:shadow-none transition-colors duration-200"
@@ -841,10 +852,17 @@ export function AgencyDashboard() {
                           <div key={client.id} className="flex items-center justify-between p-4 rounded-lg border border-gray-100 dark:border-[#1f1f1f] hover:border-[#64f481]/20 dark:hover:border-[#64f481]/20 transition-all duration-200">
                             <div className="flex items-center space-x-4">
                               <Avatar>
-                                <AvatarFallback>{client.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                                <AvatarFallback>
+                                  {client.contact_name 
+                                    ? client.contact_name.split(' ').map(n => n[0]).join('').toUpperCase()
+                                    : client.email?.charAt(0).toUpperCase() || 'C'
+                                  }
+                                </AvatarFallback>
                               </Avatar>
                               <div>
-                                <h4 className="font-semibold text-gray-900 dark:text-gray-100">{client.name}</h4>
+                                <h4 className="font-semibold text-gray-900 dark:text-gray-100">
+                                  {client.contact_name || client.name || client.email || 'Cliente sem nome'}
+                                </h4>
                                 <p className="text-sm text-gray-600 dark:text-gray-400">
                                   {client.company && `${client.company} • `}{client.email}
                                 </p>
@@ -985,14 +1003,21 @@ export function AgencyDashboard() {
                         <div key={contract.id} className="flex items-center justify-between p-4 border border-gray-100 dark:border-[#1f1f1f] rounded-lg hover:border-[#64f481]/20 dark:hover:border-[#64f481]/20 transition-all duration-200">
                           <div className="flex items-center space-x-4">
                             <Avatar>
-                              <AvatarFallback>{contract.clientName.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                              <AvatarFallback>
+                                {contract.clientName 
+                                  ? contract.clientName.split(' ').map(n => n[0]).join('').toUpperCase()
+                                  : 'C'
+                                }
+                              </AvatarFallback>
                             </Avatar>
                             <div>
-                              <h4 className="font-semibold text-gray-900 dark:text-gray-100">{contract.clientName}</h4>
+                              <h4 className="font-semibold text-gray-900 dark:text-gray-100">
+                                {contract.clientName || 'Cliente não informado'}
+                              </h4>
                               <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
                                 <span>{contract.contractType}</span>
                                 <span>•</span>
-                                <span>{contract.services.join(', ')}</span>
+                                <span>{contract.services?.join(', ') || 'Serviços não informados'}</span>
                               </div>
                             </div>
                           </div>

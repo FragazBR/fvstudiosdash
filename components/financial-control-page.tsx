@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Sidebar from '@/components/sidebar'
 import Topbar from '@/components/Shared/Topbar'
 import { useUser } from '@/hooks/useUser'
+import { supabaseBrowser } from '@/lib/supabaseBrowser'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -155,8 +156,66 @@ export function FinancialControlPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [currentView, setCurrentView] = useState<'list' | 'chart'>('list')
 
+  // Estados para dados de contratos
+  const [contracts, setContracts] = useState([])
+  const [contractStats, setContractStats] = useState({
+    totalRevenue: 0,
+    monthlyRecurring: 0,
+    averageContractValue: 0,
+    activeContracts: 0
+  })
+
   const router = useRouter()
   const { user, loading } = useUser()
+  const supabase = supabaseBrowser()
+
+  // Carregar dados de contratos
+  useEffect(() => {
+    if (!loading && user) {
+      loadContracts()
+    }
+  }, [user, loading])
+
+  const loadContracts = async () => {
+    try {
+      const { data: contracts, error } = await supabase
+        .from('clients')
+        .select('*')
+        .not('contract_value', 'is', null)
+        .eq('status', 'active')
+
+      if (error) {
+        console.error('Erro ao carregar contratos:', error)
+        return
+      }
+
+      setContracts(contracts || [])
+      calculateContractStats(contracts || [])
+    } catch (error) {
+      console.error('Erro ao carregar contratos:', error)
+    }
+  }
+
+  const calculateContractStats = (contracts) => {
+    const totalRevenue = contracts.reduce((sum, c) => sum + (c.contract_value || 0), 0)
+    const monthlyRecurring = contracts
+      .filter(c => c.payment_frequency === 'monthly')
+      .reduce((sum, c) => sum + (c.contract_value || 0), 0)
+    
+    setContractStats({
+      totalRevenue,
+      monthlyRecurring,
+      averageContractValue: contracts.length > 0 ? totalRevenue / contracts.length : 0,
+      activeContracts: contracts.length
+    })
+  }
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value)
+  }
 
   // Calculate KPIs
   const currentMonth = new Date().getMonth()
@@ -252,12 +311,6 @@ export function FinancialControlPage() {
     return { icon: category.icon, color: category.color }
   }
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(amount)
-  }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR')
@@ -345,6 +398,86 @@ export function FinancialControlPage() {
                     />
                   </DialogContent>
                 </Dialog>
+              </div>
+            </div>
+
+            {/* Seção de Contratos */}
+            <div className="bg-blue-50 dark:bg-blue-900/10 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-xl font-semibold text-blue-900 dark:text-blue-100 flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Receita de Contratos
+                  </h2>
+                  <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">
+                    Visão geral da receita proveniente de contratos ativos
+                  </p>
+                </div>
+                <Button 
+                  variant="outline" 
+                  onClick={() => router.push('/agency/contratos')}
+                  className="border-blue-300 hover:bg-blue-100 dark:border-blue-700 dark:hover:bg-blue-900/20"
+                >
+                  Ver Contratos
+                </Button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Contratos Ativos</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                        {contractStats.activeContracts}
+                      </p>
+                    </div>
+                    <div className="h-10 w-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                      <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Receita Total</p>
+                      <p className="text-2xl font-bold text-green-600">
+                        {formatCurrency(contractStats.totalRevenue)}
+                      </p>
+                    </div>
+                    <div className="h-10 w-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                      <DollarSign className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Receita Mensal</p>
+                      <p className="text-2xl font-bold text-blue-600">
+                        {formatCurrency(contractStats.monthlyRecurring)}
+                      </p>
+                    </div>
+                    <div className="h-10 w-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                      <TrendingUp className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Ticket Médio</p>
+                      <p className="text-2xl font-bold text-purple-600">
+                        {formatCurrency(contractStats.averageContractValue)}
+                      </p>
+                    </div>
+                    <div className="h-10 w-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                      <BarChart3 className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 

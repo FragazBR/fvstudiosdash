@@ -22,23 +22,37 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Usuário não encontrado. Faça login primeiro.' }, { status: 401 })
     }
 
-    // Verificar se é o admin principal por email OU tem permissões admin
+    // Verificar se é o admin principal por email OU tem permissões admin OU pode gerenciar equipe
     const isMainAdmin = user.email === 'franco@fvstudios.com.br'
     
     if (!isMainAdmin) {
-      const { data: permissions } = await supabase
+      // Verificar permissões de agência
+      const { data: agencyPermissions } = await supabase
         .from('user_agency_permissions')
         .select('role')
         .eq('user_id', user.id)
         .maybeSingle()
 
-      if (!permissions || !['admin', 'agency_owner'].includes(permissions.role)) {
+      // Verificar permissões de perfil (can_manage_team)
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('can_manage_team, role, agency_id')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      const hasAgencyPermissions = agencyPermissions && ['admin', 'agency_owner'].includes(agencyPermissions.role)
+      const canManageTeam = profile?.can_manage_team === true
+      const isAgencyManager = profile && ['agency_owner', 'agency_manager'].includes(profile.role)
+
+      if (!hasAgencyPermissions && !canManageTeam && !isAgencyManager) {
         return NextResponse.json({ 
-          error: 'Acesso negado. Apenas o admin principal ou usuários com permissões admin podem criar usuários.',
+          error: 'Acesso negado. Entre em contato com o administrador para configurar suas permissões de gerenciamento de equipe.',
+          suggestion: 'Chame o endpoint POST /api/admin/setup-permissions para configurar automaticamente as permissões.',
           debug: {
             email: user.email,
-            isMainAdmin,
-            permissions: permissions?.role || 'none'
+            profileRole: profile?.role || 'no-profile',
+            canManageTeam: profile?.can_manage_team || false,
+            needsPermissionUpdate: true
           }
         }, { status: 403 })
       }
@@ -46,7 +60,11 @@ export async function POST(request: NextRequest) {
 
     console.log('📝 Parseando dados do body...')
     const body = await request.json()
-    console.log('✅ Body parseado com sucesso:', { 
+    console.log('✅ Body completo recebido:', JSON.stringify(body, null, 2))
+    console.log('🔍 Role específico recebido:', { 
+      role: body.role,
+      typeof_role: typeof body.role,
+      role_length: body.role?.length,
       email: body.email, 
       name: body.name, 
       role: body.role,
@@ -200,12 +218,57 @@ export async function POST(request: NextRequest) {
       }
 
       console.log('✅ Usuário criado via API:', newUser.id)
-    } catch (apiError) {
-      console.error('❌ Erro na API de criação:', apiError)
-      return NextResponse.json({ 
-        error: 'Erro de comunicação com API de autenticação',
-        details: apiError instanceof Error ? apiError.message : 'Unknown error'
-      }, { status: 500 })
+
+      // Criar perfil do usuário na tabela user_profiles
+      console.log('📝 Criando perfil do usuário...')
+    
+    // Definir permissões baseadas no role
+    const getPermissionsByRole = (userRole) => {
+      switch (userRole) {
+        case 'admin':
+          return { can_manage_team: true, can_assign_tasks: true, can_view_team_metrics: true }
+        case 'agency_owner':
+          return { can_manage_team: true, can_assign_tasks: true, can_view_team_metrics: true }
+        case 'agency_manager':
+          return { can_manage_team: true, can_assign_tasks: true, can_view_team_metrics: true }
+        case 'agency_staff':
+          return { can_manage_team: false, can_assign_tasks: true, can_view_team_metrics: true }
+        default:
+          return { can_manage_team: false, can_assign_tasks: false, can_view_team_metrics: false }
+      }
+    }
+    
+    const permissions = getPermissionsByRole(role)
+    
+    console.log('🔍 Debug criação de perfil:', {
+      role: role,
+      permissions: permissions,
+      email: email
+    })
+    
+    const profileData = {
+      id: newUser.id,
+      email: email,
+      name: name,
+      role: role,
+      agency_id: finalAgencyId,
+      company: company || null,
+      phone: phone || null,
+      ...permissions
+    }
+    
+    console.log('📝 Dados do perfil a serem inseridos:', profileData)
+    
+    const { error: profileError } = await adminClient
+      .from('user_profiles')
+      .insert(profileData)
+      
+    if (profileError) {
+      console.error('❌ Erro ao criar perfil:', profileError)
+      // Não falhar a criação do usuário por causa do perfil, mas alertar
+      console.log('⚠️ Usuário criado mas perfil pode estar incompleto')
+    } else {
+      console.log('✅ Perfil do usuário criado com sucesso')
     }
 
     // Criar permissões do usuário se não for admin global

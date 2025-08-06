@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
-import { NewProjectModal } from '@/components/new-project-modal'
+import { AdvancedProjectModal } from '@/components/advanced-project-modal'
 import {
   FolderKanban,
   Search,
@@ -26,34 +26,36 @@ import {
   Building2
 } from 'lucide-react'
 
+// SCHEMA PADRONIZADO WORKSTATION
 interface Project {
   id: string;
   name: string;
   description?: string;
-  status: 'active' | 'completed' | 'on_hold' | 'cancelled';
-  priority: 'low' | 'medium' | 'high' | 'urgent';
-  budget_total?: number;
-  budget_spent?: number;
+  status: 'draft' | 'planning' | 'active' | 'on_hold' | 'completed' | 'canceled' | 'archived'; // ENUMs padronizados
+  priority: 'low' | 'medium' | 'high' | 'urgent'; // priority_level enum
+  budget_cents?: number; // Valores em centavos para precisão
   start_date?: string;
   end_date?: string;
+  progress_percentage?: number; // Campo do schema workstation
   created_at: string;
   client?: {
     id: string;
-    name: string;
+    contact_name: string; // Usar contact_name do schema
     email: string;
     company?: string;
   };
   creator?: {
     id: string;
-    name: string;
+    full_name: string; // Usar full_name do schema
   };
+  workstation_id?: string; // Referência à workstation
   tasks?: any[];
 }
 
 interface ClientGroup {
   client: {
     id: string;
-    name: string;
+    name: string; // Mapeado de contact_name
     email: string;
     company?: string;
   };
@@ -119,7 +121,12 @@ function ProjectsContent() {
             const clientId = project.client.id
             if (!acc[clientId]) {
               acc[clientId] = {
-                client: project.client,
+                client: {
+                  id: project.client.id,
+                  name: project.client.contact_name, // Mapear contact_name para name
+                  email: project.client.email,
+                  company: project.client.company
+                },
                 projects: [],
                 totalBudget: 0,
                 activeProjects: 0,
@@ -127,7 +134,7 @@ function ProjectsContent() {
               }
             }
             acc[clientId].projects.push(project)
-            acc[clientId].totalBudget += project.budget_total || 0
+            acc[clientId].totalBudget += (project.budget_cents || 0) / 100 // Converter centavos para reais
             if (project.status === 'active') acc[clientId].activeProjects++
             if (project.status === 'completed') acc[clientId].completedProjects++
           }
@@ -140,7 +147,7 @@ function ProjectsContent() {
         // Calcular estatísticas
         const totalProjects = projectsData.length
         const activeProjects = projectsData.filter((p: Project) => p.status === 'active').length
-        const totalBudget = projectsData.reduce((sum: number, p: Project) => sum + (p.budget_total || 0), 0)
+        const totalBudget = projectsData.reduce((sum: number, p: Project) => sum + ((p.budget_cents || 0) / 100), 0)
         const totalClients = clientGroupsArray.length
 
         setStats({
@@ -162,9 +169,9 @@ function ProjectsContent() {
   }
 
   const filteredClientGroups = clientGroups.filter(group =>
-    group.client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    group.client.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     group.client.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    group.projects.some(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    group.projects.some(p => p.name?.toLowerCase().includes(searchTerm.toLowerCase()))
   )
 
   // Se há um cliente específico selecionado, filtrar apenas esse
@@ -392,9 +399,9 @@ function ProjectsContent() {
                                       {project.priority}
                                     </Badge>
                                   </div>
-                                  {project.budget_total && (
+                                  {project.budget_cents && (
                                     <span className="font-semibold text-gray-900 dark:text-gray-100">
-                                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 }).format(project.budget_total)}
+                                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 }).format(project.budget_cents / 100)}
                                     </span>
                                   )}
                                 </div>
@@ -442,8 +449,8 @@ function ProjectsContent() {
         </main>
       </div>
       
-      {/* New Project Modal */}
-      <NewProjectModal
+      {/* Advanced Project Modal */}
+      <AdvancedProjectModal
         isOpen={isNewProjectModalOpen}
         onClose={() => setIsNewProjectModalOpen(false)}
         onProjectCreated={fetchProjects}

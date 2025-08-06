@@ -24,13 +24,14 @@ interface ClientTask {
     status: string;
     client?: {
       id: string;
-      name: string;
+      contact_name: string; // SCHEMA PADRONIZADO WORKSTATION
       company?: string;
     };
   };
   assigned_to?: {
     id: string;
-    name: string;
+    full_name?: string; // SCHEMA PADRONIZADO WORKSTATION
+    name?: string; // Para compatibilidade
     email: string;
     avatar_url?: string;
   };
@@ -48,17 +49,18 @@ const FIVE_PHASE_STATUSES = {
   'todo': 'todo',
   'in-progress': 'in_progress', 
   'approval': 'review',
-  'finalization': 'ready', // New status for finalization phase
+  'finalization': 'review', // Usar review para finalização também
   'done': 'completed'
 } as const;
 
-// Map API status to our 5-phase kanban status
-const mapApiStatusToKanban = (apiStatus: string): FivePhaseStatus => {
+// Map API status to our 5-phase kanban status (with progress consideration)
+const mapApiStatusToKanban = (apiStatus: string, progress: number = 0): FivePhaseStatus => {
   switch (apiStatus) {
     case 'todo': return 'todo'
     case 'in_progress': return 'in-progress'
-    case 'review': return 'approval'
-    case 'ready': return 'finalization'
+    case 'review': 
+      // Diferenciar approval (75%) de finalization (90%) pelo progresso
+      return progress >= 90 ? 'finalization' : 'approval'
     case 'completed': return 'done'
     case 'cancelled': return 'done'
     default: return 'todo'
@@ -88,7 +90,7 @@ const convertToKanbanTask = (clientTask: ClientTask) => ({
   title: clientTask.title,
   project: clientTask.project?.name || 'Sem projeto',
   priority: clientTask.priority === 'urgent' ? 'high' : clientTask.priority as 'low' | 'medium' | 'high',
-  status: mapApiStatusToKanban(clientTask.status),
+  status: mapApiStatusToKanban(clientTask.status, clientTask.progress), // Passar progress para mapeamento
   dueDate: clientTask.due_date || new Date().toISOString(),
   attachments: 0,
   comments: 0,
@@ -96,7 +98,7 @@ const convertToKanbanTask = (clientTask: ClientTask) => ({
   subtasks: { completed: 0, total: 0 },
   assignees: clientTask.assigned_to ? [{
     id: clientTask.assigned_to.id,
-    name: clientTask.assigned_to.name,
+    name: clientTask.assigned_to.full_name || clientTask.assigned_to.name || clientTask.assigned_to.email || 'Usuário', // SCHEMA PADRONIZADO
     avatar: clientTask.assigned_to.avatar_url || '/placeholder-avatar.png'
   }] : [],
   description: clientTask.description
@@ -147,6 +149,7 @@ export default function ClientTaskBoard({ clientId, onTaskCreated }: ClientTaskB
           taskResults.forEach(tasks => allTasks.push(...tasks))
         }
         
+        console.log(`📋 Loaded ${allTasks.length} tasks from API:`, allTasks.map(t => ({ id: t.id, title: t.title, status: t.status, progress: t.progress })))
         setTasks(allTasks)
       }
     } catch (error) {
@@ -159,12 +162,20 @@ export default function ClientTaskBoard({ clientId, onTaskCreated }: ClientTaskB
 
   // Handle moving a task to a different status with automatic progress calculation
   const handleTaskMove = async (taskId: string, newStatus: FivePhaseStatus) => {
+    console.log(`🎯 DRAG AND DROP: Moving task ${taskId} to ${newStatus}`)
+    
     const task = tasks.find(t => t.id === taskId)
-    if (!task) return
+    if (!task) {
+      console.error('❌ Task not found locally:', taskId)
+      return
+    }
 
     const kanbanStatus = newStatus
     const newApiStatus = mapKanbanStatusToApi(kanbanStatus)
     const newProgress = getProgressByPhase(kanbanStatus)
+    
+    console.log(`🔄 Mapping: ${kanbanStatus} -> ${newApiStatus} (${newProgress}%)`)
+    console.log(`📤 Sending API request to PATCH /api/tasks/${taskId}`)
     
     try {
       // Update task status and progress via API
@@ -179,7 +190,12 @@ export default function ClientTaskBoard({ clientId, onTaskCreated }: ClientTaskB
         }),
       })
 
+      console.log(`📥 API Response status: ${response.status}`)
+      
       if (response.ok) {
+        const result = await response.json()
+        console.log('✅ Task updated successfully:', result.task)
+        
         // Update local state
         setTasks((prevTasks) => {
           const updatedTasks = prevTasks.map((t) => {
@@ -190,6 +206,8 @@ export default function ClientTaskBoard({ clientId, onTaskCreated }: ClientTaskB
                 progress: newProgress,
                 completed_at: kanbanStatus === 'done' ? new Date().toISOString() : undefined
               }
+              
+              console.log(`🔄 Local state updated for task ${taskId}:`, updatedTask)
               
               // Show completion toast
               if (kanbanStatus === "done" && t.status !== 'completed') {
@@ -219,16 +237,19 @@ export default function ClientTaskBoard({ clientId, onTaskCreated }: ClientTaskB
             }
             return t
           })
+          console.log(`🔄 Total tasks after update: ${updatedTasks.length}`)
           return updatedTasks
         })
       } else {
-        console.error('Failed to update task status:', response.status)
+        const errorText = await response.text()
+        console.error('❌ API Error:', response.status, errorText)
         toast({
           title: "Erro ao atualizar tarefa",
-          description: "Não foi possível atualizar o status da tarefa.",
+          description: `Falha na API: ${response.status} - ${errorText}`,
           variant: "destructive"
         })
       }
+
     } catch (error) {
       console.error('Error updating task status:', error)
       toast({
@@ -247,9 +268,16 @@ export default function ClientTaskBoard({ clientId, onTaskCreated }: ClientTaskB
 
   // Filter tasks by status for kanban columns (5-phase)
   const getTasksByStatus = (status: FivePhaseStatus) => {
-    return tasks
-      .filter((task) => mapApiStatusToKanban(task.status) === status)
-      .map(convertToKanbanTask)
+    const filteredTasks = tasks.filter((task) => {
+      const mappedStatus = mapApiStatusToKanban(task.status, task.progress)
+      const matches = mappedStatus === status
+      if (matches) {
+        console.log(`📋 Task ${task.id} (${task.title}) mapped from ${task.status} (${task.progress}%) to ${mappedStatus}, matches ${status}`)
+      }
+      return matches
+    })
+    console.log(`📋 Column ${status}: ${filteredTasks.length} tasks`)
+    return filteredTasks.map(convertToKanbanTask)
   }
 
   if (loading) {

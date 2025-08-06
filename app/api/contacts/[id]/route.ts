@@ -18,11 +18,23 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Buscar contact básico primeiro
+    // Buscar perfil do usuário para filtro de agência
+    const { data: userProfile } = await supabase
+      .from('user_profiles')
+      .select('agency_id')
+      .eq('id', user.id)
+      .single();
+
+    if (!userProfile?.agency_id) {
+      return NextResponse.json({ error: 'User profile not found' }, { status: 400 });
+    }
+
+    // Buscar client básico primeiro (SCHEMA PADRONIZADO WORKSTATION)
     const { data: contact, error } = await supabase
-      .from('contacts')
+      .from('clients')
       .select('*')
       .eq('id', id)
+      .eq('agency_id', userProfile.agency_id)
       .single();
       
     if (error) {
@@ -30,10 +42,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Contact not found' }, { status: 404 });
     }
 
-    // Buscar dados relacionados opcionalmente
+    // Buscar dados relacionados opcionalmente (SCHEMA PADRONIZADO)
     const { data: creator } = await supabase
       .from('user_profiles')
-      .select('id, name, email')
+      .select('id, full_name, email')
       .eq('id', contact.created_by)
       .single();
 
@@ -88,17 +100,29 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       custom_fields
     } = body;
 
-    // Buscar dados atuais do contato
+    // Buscar perfil do usuário para filtro de agência
+    const { data: userProfile } = await supabase
+      .from('user_profiles')
+      .select('agency_id')
+      .eq('id', user.id)
+      .single();
+
+    if (!userProfile?.agency_id) {
+      return NextResponse.json({ error: 'User profile not found' }, { status: 400 });
+    }
+
+    // Buscar dados atuais do client (SCHEMA PADRONIZADO)
     const { data: currentContact } = await supabase
-      .from('contacts')
+      .from('clients')
       .select('status, type')
       .eq('id', id)
+      .eq('agency_id', userProfile.agency_id)
       .single();
 
     const { data: contact, error } = await supabase
-      .from('contacts')
+      .from('clients')
       .update({
-        name,
+        contact_name: name, // USAR CONTACT_NAME PADRONIZADO
         email,
         phone,
         company,
@@ -114,9 +138,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         custom_fields
       })
       .eq('id', id)
+      .eq('agency_id', userProfile.agency_id)
       .select(`
         *,
-        creator:created_by(id, name)
+        creator:created_by(id, full_name)
       `)
       .single();
       
@@ -160,10 +185,22 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       }, { status: 409 });
     }
 
+    // Buscar perfil do usuário para filtro de agência  
+    const { data: userProfile } = await supabase
+      .from('user_profiles')
+      .select('agency_id')
+      .eq('id', user.id)
+      .single();
+
+    if (!userProfile?.agency_id) {
+      return NextResponse.json({ error: 'User profile not found' }, { status: 400 });
+    }
+
     const { error } = await supabase
-      .from('contacts')
+      .from('clients')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .eq('agency_id', userProfile.agency_id);
       
     if (error) {
       console.error('Error deleting contact:', error);
