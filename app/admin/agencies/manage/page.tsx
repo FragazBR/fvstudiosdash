@@ -150,74 +150,20 @@ function AgencyManagementContent() {
   const loadAgencies = async () => {
     try {
       setLoading(true);
+      console.log('🏢 Carregando agências via API...');
       
-      // Buscar agências com informações adicionais
-      const { data: agenciesData, error } = await supabase
-        .from('agencies')
-        .select(`
-          *,
-          created_by_user:auth.users!agencies_created_by_fkey(
-            id,
-            email,
-            raw_user_meta_data
-          )
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error loading agencies:', error);
-        toast.error('Erro ao carregar agências');
-        return;
+      // Usar a API de listagem de agências
+      const response = await fetch('/api/admin/agencies/list');
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao carregar agências');
       }
-
-      // Buscar estatísticas para cada agência
-      const agenciesWithStats = await Promise.all(
-        (agenciesData || []).map(async (agency) => {
-          // Contar usuários da agência
-          const { count: userCount } = await supabase
-            .from('user_agency_permissions')
-            .select('id', { count: 'exact' })
-            .eq('agency_id', agency.id);
-
-          // Contar clientes da agência
-          const { count: clientCount } = await supabase
-            .from('user_agency_permissions')
-            .select('id', { count: 'exact' })
-            .eq('agency_id', agency.id)
-            .eq('role', 'client');
-
-          // Contar assinaturas ativas
-          const { count: subscriptionCount } = await supabase
-            .from('user_subscriptions')
-            .select('id', { count: 'exact' })
-            .eq('agency_id', agency.id)
-            .eq('status', 'active');
-
-          // Buscar nome do owner
-          const { data: ownerData } = await supabase
-            .from('user_agency_permissions')
-            .select(`
-              auth.users!inner(
-                raw_user_meta_data
-              )
-            `)
-            .eq('agency_id', agency.id)
-            .eq('role', 'agency_owner')
-            .single();
-
-          return {
-            ...agency,
-            total_users: userCount || 0,
-            total_clients: clientCount || 0,
-            active_subscriptions: subscriptionCount || 0,
-            owner_name: ownerData?.auth?.users?.raw_user_meta_data?.name || 'N/A'
-          };
-        })
-      );
-
-      setAgencies(agenciesWithStats);
+      
+      console.log('✅ Agências carregadas:', data.agencies?.length || 0);
+      setAgencies(data.agencies || []);
     } catch (error) {
-      console.error('Error loading agencies:', error);
+      console.error('❌ Erro ao carregar agências:', error);
       toast.error('Erro ao carregar agências');
     } finally {
       setLoading(false);
