@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
+import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
 export async function POST(request: NextRequest) {
   console.log('🚀 API create-direct iniciada')
@@ -93,7 +94,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Verificar se email já existe
-    const { data: existingUser } = await supabase.auth.admin.getUserByEmail(email)
+    console.log('🔍 Verificando se email já existe:', email)
+    const { data: existingUser } = await supabaseAdmin.auth.admin.getUserByEmail(email)
     if (existingUser?.user) {
       return NextResponse.json({ 
         error: 'Usuário já existe no sistema' 
@@ -154,7 +156,7 @@ export async function POST(request: NextRequest) {
     // Criar usuário no Supabase Auth
     console.log('👤 Criando usuário no Supabase Auth:', { email, name, role })
     
-    const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+    const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
       email_confirm: true, // Confirmar email automaticamente
