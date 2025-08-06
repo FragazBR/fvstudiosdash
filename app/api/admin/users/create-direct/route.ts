@@ -91,29 +91,56 @@ export async function POST(request: NextRequest) {
 
     // Criar nova agência se necessário
     if (create_new_agency && new_agency_name) {
-      const { data: newAgency, error: agencyError } = await supabase
-        .from('agencies')
-        .insert({
-          name: new_agency_name,
-          email: email, // Email do dono da agência
-          phone: phone || null,
-          status: 'active',
-          created_by: user.id
-        })
-        .select()
-        .single()
+      console.log('🏢 Tentando criar nova agência:', new_agency_name)
+      
+      try {
+        const { data: newAgency, error: agencyError } = await supabase
+          .from('agencies')
+          .insert({
+            name: new_agency_name,
+            email: email, // Email do dono da agência
+            phone: phone || null,
+            status: 'active',
+            created_by: user.id
+          })
+          .select()
+          .single()
 
-      if (agencyError) {
-        console.error('Erro ao criar agência:', agencyError)
+        if (agencyError) {
+          console.error('❌ Erro detalhado ao criar agência:', {
+            error: agencyError,
+            message: agencyError.message,
+            details: agencyError.details,
+            hint: agencyError.hint,
+            code: agencyError.code
+          })
+          
+          return NextResponse.json({ 
+            error: 'Erro ao criar agência - verifique se a estrutura da tabela está correta',
+            details: agencyError.message,
+            debug_info: {
+              code: agencyError.code,
+              hint: agencyError.hint,
+              agency_name: new_agency_name,
+              suggestion: 'Execute o script fix_agencies_table_structure.sql no banco de produção'
+            }
+          }, { status: 500 })
+        }
+
+        console.log('✅ Agência criada com sucesso:', newAgency)
+        finalAgencyId = newAgency.id
+      } catch (dbError) {
+        console.error('❌ Erro de banco ao criar agência:', dbError)
         return NextResponse.json({ 
-          error: 'Erro ao criar agência: ' + agencyError.message 
+          error: 'Erro de conexão com banco de dados ao criar agência',
+          details: dbError instanceof Error ? dbError.message : 'Unknown database error'
         }, { status: 500 })
       }
-
-      finalAgencyId = newAgency.id
     }
 
     // Criar usuário no Supabase Auth
+    console.log('👤 Criando usuário no Supabase Auth:', { email, name, role })
+    
     const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
       email,
       password,
@@ -129,17 +156,25 @@ export async function POST(request: NextRequest) {
     })
 
     if (createError) {
-      console.error('Erro ao criar usuário:', createError)
+      console.error('❌ Erro ao criar usuário no Auth:', {
+        error: createError,
+        message: createError.message,
+        email: email
+      })
       return NextResponse.json({ 
-        error: 'Erro ao criar usuário: ' + createError.message 
+        error: 'Erro ao criar usuário no sistema de autenticação: ' + createError.message,
+        details: createError
       }, { status: 500 })
     }
 
     if (!newUser.user) {
+      console.error('❌ Usuário não foi criado - resposta vazia do Auth')
       return NextResponse.json({ 
-        error: 'Falha ao criar usuário' 
+        error: 'Falha ao criar usuário - resposta vazia do sistema de autenticação' 
       }, { status: 500 })
     }
+
+    console.log('✅ Usuário criado no Auth:', newUser.user.id)
 
     // Criar permissões do usuário se não for admin global
     if (role !== 'admin' && finalAgencyId) {
