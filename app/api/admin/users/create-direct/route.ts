@@ -2,8 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
 
 export async function POST(request: NextRequest) {
+  console.log('🚀 API create-direct iniciada')
+  
   try {
+    console.log('📡 Criando cliente Supabase...')
     const supabase = await supabaseServer()
+    
+    console.log('🔐 Verificando autenticação...')
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (authError) {
@@ -38,7 +43,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    console.log('📝 Parseando dados do body...')
     const body = await request.json()
+    console.log('✅ Body parseado com sucesso:', { 
+      email: body.email, 
+      name: body.name, 
+      role: body.role,
+      create_new_agency: body.create_new_agency 
+    })
+    
     const { 
       email, 
       password, 
@@ -248,10 +261,19 @@ export async function POST(request: NextRequest) {
     }, { status: 201 })
 
   } catch (error) {
-    console.error('Erro no endpoint de criação direta:', error)
-    return NextResponse.json({ 
-      error: 'Erro interno do servidor' 
-    }, { status: 500 })
+    console.error('❌ Erro crítico no endpoint de criação direta:', error)
+    
+    // Retornar informações detalhadas do erro para debug
+    const errorInfo = {
+      error: 'Erro interno do servidor',
+      details: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace',
+      timestamp: new Date().toISOString(),
+      endpoint: 'create-direct',
+      user_email: 'hidden for security'
+    }
+    
+    return NextResponse.json(errorInfo, { status: 500 })
   }
 }
 
