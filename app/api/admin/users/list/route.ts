@@ -40,6 +40,8 @@ export async function GET(request: NextRequest) {
     const role = url.searchParams.get('role') || ''
     const agency_id = url.searchParams.get('agency_id') || ''
 
+    console.log('🔍 Buscando usuários do Supabase Auth...')
+    
     // Buscar usuários do Supabase Auth
     const { data: authUsers, error: usersError } = await supabase.auth.admin.listUsers({
       page: Math.floor(offset / 50) + 1,
@@ -47,21 +49,34 @@ export async function GET(request: NextRequest) {
     })
 
     if (usersError) {
-      console.error('Erro ao buscar usuários:', usersError)
-      return NextResponse.json({ error: 'Erro ao buscar usuários' }, { status: 500 })
+      console.error('❌ Erro ao buscar usuários do Auth:', usersError)
+      return NextResponse.json({ 
+        error: 'Erro ao buscar usuários do sistema de autenticação', 
+        details: usersError.message
+      }, { status: 500 })
     }
 
-    // Buscar permissões dos usuários
+    console.log(`✅ Encontrados ${authUsers.users.length} usuários no Auth`)
+
+    // Buscar permissões dos usuários com tratamento de erro
     const userIds = authUsers.users.map(u => u.id)
-    const { data: userPermissions } = await supabase
+    console.log(`🔍 Buscando permissões para ${userIds.length} usuários...`)
+    
+    const { data: userPermissions, error: permError } = await supabase
       .from('user_agency_permissions')
       .select(`
         user_id,
         role,
         agency_id,
-        agencies!inner(name)
+        agencies(name)
       `)
       .in('user_id', userIds)
+
+    if (permError) {
+      console.error('⚠️ Erro ao buscar permissões (continuando sem elas):', permError)
+    }
+
+    console.log(`✅ Encontradas ${userPermissions?.length || 0} permissões`)
 
     // Combinar dados
     let users = authUsers.users.map(authUser => {
