@@ -93,14 +93,9 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Verificar se email já existe
-    console.log('🔍 Verificando se email já existe:', email)
-    const { data: existingUser } = await supabaseAdmin.auth.admin.getUserByEmail(email)
-    if (existingUser?.user) {
-      return NextResponse.json({ 
-        error: 'Usuário já existe no sistema' 
-      }, { status: 409 })
-    }
+    // Pular verificação de email existente (função não disponível na biblioteca)
+    console.log('ℹ️ Pulando verificação de email - será tratado na criação')
+    const adminClient = supabaseAdmin()
 
     let finalAgencyId = agency_id
 
@@ -109,7 +104,7 @@ export async function POST(request: NextRequest) {
       console.log('🏢 Tentando criar nova agência:', new_agency_name)
       
       try {
-        const { data: newAgency, error: agencyError } = await supabase
+        const { data: newAgency, error: agencyError } = await adminClient
           .from('agencies')
           .insert({
             name: new_agency_name,
@@ -153,50 +148,72 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Criar usuário no Supabase Auth
-    console.log('👤 Criando usuário no Supabase Auth:', { email, name, role })
+    // Criar usuário usando REST API diretamente
+    console.log('👤 Criando usuário via REST API:', { email, name, role })
     
-    const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true, // Confirmar email automaticamente
-      user_metadata: {
-        name,
-        role,
-        company: company || null,
-        phone: phone || null,
-        created_by_admin: true,
-        created_by: user.id
+    try {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+      const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+      
+      const userPayload = {
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: {
+          name,
+          role,
+          company: company || null,
+          phone: phone || null,
+          created_by_admin: true,
+          created_by: user.id
+        }
       }
-    })
-
-    if (createError) {
-      console.error('❌ Erro ao criar usuário no Auth:', {
-        error: createError,
-        message: createError.message,
-        email: email
+      
+      console.log('📡 Enviando requisição para criar usuário...')
+      const response = await fetch(`${supabaseUrl}/auth/v1/admin/users`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${serviceRoleKey}`,
+          'apikey': serviceRoleKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(userPayload)
       })
+      
+      const responseData = await response.json()
+      console.log('📥 Resposta da criação:', { status: response.status, data: responseData })
+      
+      if (!response.ok) {
+        console.error('❌ Erro ao criar usuário via API:', responseData)
+        return NextResponse.json({ 
+          error: 'Erro ao criar usuário: ' + (responseData.error_description || responseData.message || 'Unknown error'),
+          details: responseData
+        }, { status: 500 })
+      }
+      
+      const newUser = responseData
+      if (!newUser.id) {
+        console.error('❌ Usuário criado mas sem ID')
+        return NextResponse.json({ 
+          error: 'Usuário criado mas resposta inválida' 
+        }, { status: 500 })
+      }
+
+      console.log('✅ Usuário criado via API:', newUser.id)
+    } catch (apiError) {
+      console.error('❌ Erro na API de criação:', apiError)
       return NextResponse.json({ 
-        error: 'Erro ao criar usuário no sistema de autenticação: ' + createError.message,
-        details: createError
+        error: 'Erro de comunicação com API de autenticação',
+        details: apiError instanceof Error ? apiError.message : 'Unknown error'
       }, { status: 500 })
     }
-
-    if (!newUser.user) {
-      console.error('❌ Usuário não foi criado - resposta vazia do Auth')
-      return NextResponse.json({ 
-        error: 'Falha ao criar usuário - resposta vazia do sistema de autenticação' 
-      }, { status: 500 })
-    }
-
-    console.log('✅ Usuário criado no Auth:', newUser.user.id)
 
     // Criar permissões do usuário se não for admin global
     if (role !== 'admin' && finalAgencyId) {
-      const { error: permError } = await supabase
+      const { error: permError } = await adminClient
         .from('user_agency_permissions')
         .insert({
-          user_id: newUser.user.id,
+          user_id: newUser.id,
           agency_id: finalAgencyId,
           role: role,
           permissions: getDefaultPermissions(role),
@@ -211,10 +228,10 @@ export async function POST(request: NextRequest) {
 
     // Criar assinatura do plano se fornecido
     if (plan_id && role !== 'admin') {
-      const { error: subscriptionError } = await supabase
+      const { error: subscriptionError } = await adminClient
         .from('user_subscriptions')
         .insert({
-          user_id: newUser.user.id,
+          user_id: newUser.id,
           agency_id: finalAgencyId,
           plan_id: plan_id,
           interval_type: 'monthly',
@@ -231,12 +248,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Log da ação
-    await supabase
+    await adminClient
       .from('admin_action_logs')
       .insert({
         admin_user_id: user.id,
         action: 'create_user_directly',
-        target_user_id: newUser.user.id,
+        target_user_id: newUser.id,
         target_email: email,
         details: {
           name,
@@ -253,11 +270,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       user: {
-        id: newUser.user.id,
-        email: newUser.user.email,
+        id: newUser.id,
+        email: newUser.email,
         name,
         role,
-        created_at: newUser.user.created_at
+        created_at: newUser.created_at
       },
       message: 'Usuário criado com sucesso!'
     }, { status: 201 })
