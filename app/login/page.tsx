@@ -61,8 +61,6 @@ export default function LoginPage() {
         // Determinar role padrão baseado no email
         const defaultRole = data.user.email?.includes('@fvstudios.com') ? 'admin' : 'free_user'
         const defaultName = data.user.email?.split('@')[0] || 'Usuário'
-        const defaultCompany = data.user.email?.includes('@fvstudios.com') ? 'FVStudios' : null
-        const defaultPlan = defaultRole === 'admin' ? 'enterprise' : 'free'
         
         // Se não tem perfil, cria um básico
         const { data: newProfile, error: createError } = await supabase
@@ -86,9 +84,7 @@ export default function LoginPage() {
           console.log('Novo perfil criado:', newProfile)
           // Redireciona baseado no role criado
           const redirectPath = newProfile.role === 'admin' ? '/admin' : '/dashboard'
-          setTimeout(() => {
-            window.location.href = redirectPath;
-          }, 100);
+          window.location.href = redirectPath;
         } else {
           setError('Erro ao criar perfil do usuário');
         }
@@ -108,35 +104,35 @@ export default function LoginPage() {
 
       // Redireciona baseado no role
       let redirectPath = '';
-      if (role === 'admin') {
-        redirectPath = '/admin';
-      } else if (role === 'agency_owner') {
-        redirectPath = '/agency';
-      } else if (role === 'agency_manager') {
-        redirectPath = '/agency';
-      } else if (role === 'agency_staff') {
-        redirectPath = '/agency';
-      } else if (role === 'agency_client') {
-        redirectPath = '/client';
-      } else if (role === 'independent_producer') {
-        redirectPath = '/independent';
-      } else if (role === 'independent_client') {
-        redirectPath = '/client';
-      } else if (role === 'influencer') {
-        redirectPath = '/influencer';
-      } else if (role === 'free_user') {
-        redirectPath = '/dashboard';
-      } else {
-        setError('Tipo de usuário inválido');
-        return;
+      switch (role) {
+        case 'admin':
+          redirectPath = '/admin';
+          break;
+        case 'agency_owner':
+        case 'agency_manager':
+        case 'agency_staff':
+          redirectPath = '/agency';
+          break;
+        case 'agency_client':
+        case 'independent_client':
+          redirectPath = '/client';
+          break;
+        case 'independent_producer':
+          redirectPath = '/independent';
+          break;
+        case 'influencer':
+          redirectPath = '/influencer';
+          break;
+        case 'free_user':
+          redirectPath = '/dashboard';
+          break;
+        default:
+          setError('Tipo de usuário inválido');
+          return;
       }
 
       console.log('Redirecionando para:', redirectPath);
-      
-      // Força redirecionamento imediato
-      setTimeout(() => {
-        window.location.href = redirectPath;
-      }, 100);
+      window.location.href = redirectPath;
       
     } catch (error) {
       console.error('Login error:', error);
